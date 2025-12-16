@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - Epic Green</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 650px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .invoice-info {
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .invoice-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .invoice-info td {
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        .invoice-info td:first-child {
+            font-weight: 600;
+            width: 40%;
+            color: #666666;
+        }
+        .invoice-details {
+            margin: 25px 0;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .invoice-table th {
+            background-color: #4CAF50;
+            color: #ffffff;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .invoice-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 14px;
+        }
+        .invoice-table tr:last-child td {
+            border-bottom: none;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .totals {
+            margin-top: 20px;
+            border-top: 2px solid #eeeeee;
+            padding-top: 15px;
+        }
+        .totals table {
+            width: 100%;
+            max-width: 300px;
+            margin-left: auto;
+        }
+        .totals td {
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        .totals td:first-child {
+            text-align: right;
+            padding-right: 20px;
+            font-weight: 600;
+            color: #666666;
+        }
+        .totals td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
+        .total-row {
+            border-top: 2px solid #4CAF50;
+            font-size: 16px !important;
+        }
+        .total-row td {
+            padding-top: 12px !important;
+            color: #4CAF50 !important;
+        }
+        .payment-info {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .payment-info h3 {
+            margin: 0 0 10px 0;
+            color: #856404;
+            font-size: 16px;
+        }
+        .payment-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #856404;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .notes {
+            background-color: #f0f7ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .footer {
+            background-color: #f9f9f9;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #666666;
+        }
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .footer .social-links {
+            margin: 15px 0;
+        }
+        .footer .social-links a {
+            display: inline-block;
+            margin: 0 8px;
+            color: #666666;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .invoice-table {
+                font-size: 12px;
+            }
+            .invoice-table th,
+            .invoice-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🌿 Epic Green</h1>
+            <p>Premium Spice Production & Distribution</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Greeting -->
+            <div class="greeting">
+                <p>Dear <strong th:text="${customerName}">Customer Name</strong>,</p>
+                <p>Thank you for your business! Please find your invoice details below.</p>
+            </div>
+
+            <!-- Invoice Info -->
+            <div class="invoice-info">
+                <table>
+                    <tr>
+                        <td>Invoice Number:</td>
+                        <td><strong th:text="${invoiceNumber}">INV-2024-001</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Invoice Date:</td>
+                        <td th:text="${invoiceDate}">2024-12-11</td>
+                    </tr>
+                    <tr>
+                        <td>Due Date:</td>
+                        <td th:text="${dueDate}">2024-12-31</td>
+                    </tr>
+                    <tr>
+                        <td>Payment Terms:</td>
+                        <td th:text="${paymentTerms}">Net 30</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Invoice Items -->
+            <div class="invoice-details">
+                <h2 style="font-size: 18px; margin-bottom: 15px; color: #333333;">Invoice Items</h2>
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-right">Unit Price</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item, iterStat : ${items}">
+                            <td th:text="${iterStat.count}">1</td>
+                            <td>
+                                <strong th:text="${item.productName}">Ceylon Cinnamon Powder</strong>
+                                <div style="font-size: 12px; color: #888888;" th:text="${item.description}"></div>
+                            </td>
+                            <td class="text-center" th:text="${item.quantity + ' ' + item.unit}">10 kg</td>
+                            <td class="text-right" th:text="${item.unitPrice}">LKR 1,500.00</td>
+                            <td class="text-right" th:text="${item.lineTotal}">LKR 15,000.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Totals -->
+                <div class="totals">
+                    <table>
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td th:text="${subtotal}">LKR 45,000.00</td>
+                        </tr>
+                        <tr th:if="${discountAmount > 0}">
+                            <td>Discount <span th:text="${'(' + discountPercentage + '%)'}">(10%)</span>:</td>
+                            <td th:text="${'-' + discountAmount}">-LKR 4,500.00</td>
+                        </tr>
+                        <tr>
+                            <td>Tax <span th:text="${'(' + taxPercentage + '%)'}">(8%)</span>:</td>
+                            <td th:text="${taxAmount}">LKR 3,240.00</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>Total Amount:</td>
+                            <td th:text="${totalAmount}">LKR 43,740.00</td>
+                        </tr>
+                        <tr th:if="${paidAmount > 0}">
+                            <td>Paid Amount:</td>
+                            <td th:text="${paidAmount}">LKR 10,000.00</td>
+                        </tr>
+                        <tr th:if="${balanceAmount > 0}" style="color: #ff5722;">
+                            <td>Balance Due:</td>
+                            <td th:text="${balanceAmount}">LKR 33,740.00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="payment-info" th:if="${balanceAmount > 0}">
+                <h3>⚠️ Payment Due</h3>
+                <p><strong>Amount Due:</strong> <span th:text="${balanceAmount}">LKR 33,740.00</span></p>
+                <p><strong>Due Date:</strong> <span th:text="${dueDate}">2024-12-31</span></p>
+                <p>Please make payment before the due date to avoid late payment charges.</p>
+            </div>
+
+            <!-- Bank Details -->
+            <div class="notes">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1976D2;">Bank Details</h3>
+                <p style="margin: 5px 0;"><strong>Bank:</strong> <span th:text="${bankName}">Bank of Ceylon</span></p>
+                <p style="margin: 5px 0;"><strong>Account Name:</strong> <span th:text="${accountName}">Epic Green (Pvt) Ltd</span></p>
+                <p style="margin: 5px 0;"><strong>Account Number:</strong> <span th:text="${accountNumber}">123456789</span></p>
+                <p style="margin: 5px 0;"><strong>Branch:</strong> <span th:text="${branchName}">Colombo Main</span></p>
+            </div>
+
+            <!-- Notes -->
+            <div th:if="${notes}" style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #999;">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px;">Notes</h3>
+                <p style="margin: 0; font-size: 14px;" th:text="${notes}">Thank you for your business!</p>
+            </div>
+
+            <!-- View Online Button -->
+            <div class="text-center">
+                <a th:href="${invoiceUrl}" class="button">View Invoice Online</a>
+            </div>
+
+            <!-- Closing -->
+            <p style="margin-top: 30px; font-size: 14px;">
+                If you have any questions about this invoice, please contact us at 
+                <a th:href="${'mailto:' + companyEmail}" th:text="${companyEmail}" style="color: #4CAF50;">accounts@epicgreen.lk</a> 
+                or call <span th:text="${companyPhone}">+94 11 1234567</span>.
+            </p>
+
+            <p style="font-size: 14px;">
+                Best regards,<br>
+                <strong>Epic Green Team</strong>
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Epic Green (Pvt) Ltd</strong></p>
+            <p th:text="${companyAddress}">123 Spice Lane, Colombo 03, Sri Lanka</p>
+            <p>
+                Phone: <span th:text="${companyPhone}">+94 11 1234567</span> | 
+                Email: <a th:href="${'mailto:' + companyEmail}" th:text="${companyEmail}">info@epicgreen.lk</a>
+            </p>
+            <p>
+                Website: <a th:href="${companyWebsite}" th:text="${companyWebsite}">www.epicgreen.lk</a>
+            </p>
+            <div class="social-links">
+                <a href="#" title="Facebook">📘 Facebook</a>
+                <a href="#" title="Instagram">📷 Instagram</a>
+                <a href="#" title="LinkedIn">💼 LinkedIn</a>
+            </div>
+            <p style="font-size: 12px; color: #999999; margin-top: 15px;">
+                This is an automated email. Please do not reply to this email address.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

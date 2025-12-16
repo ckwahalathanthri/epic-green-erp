@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+  # ===================================================
+  # MySQL Database
+  # ===================================================
+  mysql:
+    image: mysql:8.0
+    container_name: epic-green-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: epic_green_db
+      MYSQL_USER: epicgreen
+      MYSQL_PASSWORD: epicgreen123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database-schema:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - epic-green-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
+  # ===================================================
+  # Redis Cache
+  # ===================================================
+  redis:
+    image: redis:7-alpine
+    container_name: epic-green-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - epic-green-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ===================================================
+  # RabbitMQ Message Queue
+  # ===================================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: epic-green-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: epicgreen
+      RABBITMQ_DEFAULT_PASS: epicgreen123
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - epic-green-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===================================================
+  # Spring Boot Application (Optional - for production)
+  # ===================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-green-app
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_USERNAME: epicgreen
+      DB_PASSWORD: epicgreen123
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/epic_green_db?useSSL=false&serverTimezone=Asia/Colombo
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: epicgreen
+      RABBITMQ_PASSWORD: epicgreen123
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - epic-green-network
+    profiles:
+      - production  # Only start with --profile production
+
+  # ===================================================
+  # phpMyAdmin (Optional - Database Management UI)
+  # ===================================================
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: epic-green-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - epic-green-network
+    profiles:
+      - tools  # Only start with --profile tools
+
+  # ===================================================
+  # Redis Commander (Optional - Redis Management UI)
+  # ===================================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: epic-green-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8082:8081"
+    depends_on:
+      - redis
+    networks:
+      - epic-green-network
+    profiles:
+      - tools  # Only start with --profile tools
+
+# ===================================================
+# Networks
+# ===================================================
+networks:
+  epic-green-network:
+    driver: bridge
+
+# ===================================================
+# Volumes
+# ===================================================
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
