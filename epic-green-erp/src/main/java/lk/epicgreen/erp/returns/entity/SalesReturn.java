@@ -57,7 +57,55 @@ public class SalesReturn extends AuditEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false, foreignKey = @ForeignKey(name = "fk_sales_return_customer"))
     private Customer customer;
-    
+
+    /**
+     * Customer ID (denormalized for queries)
+     */
+    @Column(name = "customer_id", insertable = false, updatable = false)
+    private Long customerId;
+
+    /**
+     * Customer name (denormalized for display)
+     */
+    @Column(name = "customer_name", length = 200)
+    private String customerName;
+
+    /**
+     * Sales order ID (denormalized for queries)
+     */
+    @Column(name = "sales_order_id", insertable = false, updatable = false)
+    private Long salesOrderId;
+
+    /**
+     * Sales order number (denormalized for display)
+     */
+    @Column(name = "sales_order_number", length = 50)
+    private String salesOrderNumber;
+
+    /**
+     * Invoice ID (denormalized for queries)
+     */
+    @Column(name = "invoice_id", insertable = false, updatable = false)
+    private Long invoiceId;
+
+    /**
+     * Invoice number (denormalized for display)
+     */
+    @Column(name = "invoice_number", length = 50)
+    private String invoiceNumber;
+
+    /**
+     * Warehouse ID (denormalized for queries)
+     */
+    @Column(name = "warehouse_id", insertable = false, updatable = false)
+    private Long warehouseId;
+
+    /**
+     * Warehouse name (denormalized for display)
+     */
+    @Column(name = "warehouse_name", length = 200)
+    private String warehouseName;
+
     /**
      * Original invoice reference (optional)
      */
