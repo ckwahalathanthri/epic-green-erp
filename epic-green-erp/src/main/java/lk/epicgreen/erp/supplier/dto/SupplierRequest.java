@@ -1,72 +1,106 @@
 package lk.epicgreen.erp.supplier.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 /**
  * Supplier Request DTO
- * DTO for supplier operations
  * 
  * @author Epic Green Development Team
  * @version 1.0
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SupplierRequest {
     
-    @NotBlank(message = "Supplier code is required")
     private String supplierCode;
     
     @NotBlank(message = "Supplier name is required")
+    @Size(max = 200, message = "Supplier name cannot exceed 200 characters")
     private String supplierName;
     
-    private String supplierType;
+    @Size(max = 200, message = "Company name cannot exceed 200 characters")
+    private String companyName;
     
-    @NotBlank(message = "Contact person is required")
+    @Size(max = 200, message = "Contact person cannot exceed 200 characters")
     private String contactPerson;
     
     @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email cannot exceed 100 characters")
     private String email;
     
+    @Size(max = 20, message = "Phone cannot exceed 20 characters")
     private String phone;
     
+    @Size(max = 20, message = "Mobile cannot exceed 20 characters")
     private String mobile;
     
+    @Size(max = 20, message = "Fax cannot exceed 20 characters")
     private String fax;
     
+    @Size(max = 200, message = "Website cannot exceed 200 characters")
     private String website;
     
+    @Size(max = 500, message = "Address cannot exceed 500 characters")
     private String address;
     
+    @Size(max = 100, message = "City cannot exceed 100 characters")
     private String city;
     
+    @Size(max = 100, message = "State/Province cannot exceed 100 characters")
     private String stateProvince;
     
-    private String postalCode;
-    
+    @Size(max = 100, message = "Country cannot exceed 100 characters")
     private String country;
     
+    @Size(max = 20, message = "Postal code cannot exceed 20 characters")
+    private String postalCode;
+    
+    @Size(max = 50, message = "Tax number cannot exceed 50 characters")
     private String taxNumber;
     
+    @Size(max = 50, message = "Registration number cannot exceed 50 characters")
     private String registrationNumber;
     
-    private String paymentTerms;
+    @Size(max = 50, message = "Supplier type cannot exceed 50 characters")
+    private String supplierType;
     
-    private Integer creditDays;
+    @Min(value = 1, message = "Rating must be between 1 and 5")
+    @Max(value = 5, message = "Rating must be between 1 and 5")
+    private Integer rating;
     
+    @DecimalMin(value = "0.0", message = "Credit limit must be positive")
     private Double creditLimit;
     
+    @Min(value = 0, message = "Credit days must be positive")
+    private Integer creditDays;
+    
+    @Size(max = 500, message = "Payment terms cannot exceed 500 characters")
+    private String paymentTerms;
+    
+    @Size(max = 500, message = "Delivery terms cannot exceed 500 characters")
+    private String deliveryTerms;
+    
+    @Size(max = 200, message = "Bank name cannot exceed 200 characters")
     private String bankName;
     
-    private String bankAccountNumber;
+    @Size(max = 50, message = "Bank account number cannot exceed 50 characters")
+    private String bankAccountNo;
     
-    private String bankAccountName;
-    
+    @Size(max = 200, message = "Bank branch cannot exceed 200 characters")
     private String bankBranch;
     
+    @Size(max = 50, message = "Bank SWIFT code cannot exceed 50 characters")
+    private String bankSwiftCode;
+    
+    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;
 }

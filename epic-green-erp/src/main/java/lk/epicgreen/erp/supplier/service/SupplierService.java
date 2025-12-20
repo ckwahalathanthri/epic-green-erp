@@ -4,6 +4,7 @@ import lk.epicgreen.erp.supplier.dto.SupplierRequest;
 import lk.epicgreen.erp.supplier.entity.Supplier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,10 @@ public interface SupplierService {
     List<Supplier> getApprovedSuppliers();
     List<Supplier> getPendingApprovalSuppliers();
     List<Supplier> getRejectedSuppliers();
+
+    @Transactional(readOnly = true)
+    List<Supplier> getSuppliersByStatus(String status);
+
     List<Supplier> getBlockedSuppliers();
     List<Supplier> getSuppliersByType(String supplierType);
     List<Supplier> getSuppliersByCity(String city);
@@ -78,6 +83,15 @@ public interface SupplierService {
     // ===================================================================
     
     void updateCreditLimit(Long supplierId, Double newCreditLimit);
+
+    @Transactional(readOnly = true)
+    Long countSuppliersByStatus(String status);
+
+    @Transactional(readOnly = true)
+    Long countActiveSuppliers();
+
+    Supplier updateCreditSettings(Long supplierId, Double creditLimit, Integer creditDays);
+
     void enableCredit(Long supplierId, Double creditLimit, Integer creditDays);
     void disableCredit(Long supplierId);
     void updateCurrentBalance(Long supplierId, Double newBalance);
@@ -119,7 +133,22 @@ public interface SupplierService {
     // ===================================================================
     // STATISTICS
     // ===================================================================
-    
+
+    void updateSupplierBalance(Long supplierId, Double amount);
+
+    void addPurchaseToSupplier(Long supplierId, Double amount);
+
+    void recordPaymentToSupplier(Long supplierId, Double amount);
+
+    @Transactional(readOnly = true)
+    boolean canExtendCredit(Long supplierId, Double amount);
+
+    Supplier updateSupplierRating(Long supplierId, Integer rating);
+
+    Supplier addSupplierReview(Long supplierId, Integer rating, String comments);
+
+    void incrementSupplierOrderCount(Long supplierId);
+
     Map<String, Object> getSupplierStatistics();
     List<Map<String, Object>> getSupplierTypeDistribution();
     List<Map<String, Object>> getStatusDistribution();
@@ -131,5 +160,12 @@ public interface SupplierService {
     Double getAverageCreditLimit();
     Double getAverageRating();
     Double getAverageCurrentBalance();
+
+    @Transactional(readOnly = true)
+    Map<String, Object> getSupplierSummary(Long supplierId);
+
+    @Transactional(readOnly = true)
+    List<Map<String, Object>> getTopSuppliersByOrders(int limit);
+
     Map<String, Object> getDashboardStatistics();
 }
