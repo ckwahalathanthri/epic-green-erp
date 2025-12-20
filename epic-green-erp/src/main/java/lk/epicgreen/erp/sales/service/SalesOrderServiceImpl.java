@@ -11,14 +11,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * SalesOrder Service Implementation
- * Implementation of sales order service operations
- * 
+ *
  * @author Epic Green Development Team
  * @version 1.0
  */
@@ -27,614 +27,526 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class SalesOrderServiceImpl implements SalesOrderService {
-    
+
     private final SalesOrderRepository salesOrderRepository;
-    
+
     @Override
     public SalesOrder createSalesOrder(SalesOrderRequest request) {
         log.info("Creating sales order for customer: {}", request.getCustomerId());
-        
+
         SalesOrder order = new SalesOrder();
         order.setOrderNumber(generateOrderNumber());
-        order.setCustomerId(request.getCustomerId());
-        order.setCustomerName(request.getCustomerName());
+
+        // Customer info - use object references or denormalized fields
+        if (request.getCustomerId() != null) {
+            order.setCustomer(request.getCustomerId()); // May need Customer entity reference
+        }
+        if (request.getCustomerName() != null) {
+            // order.setCustomerName(request.getCustomerName()); // Only if denormalized
+        }
+
         order.setOrderDate(request.getOrderDate() != null ? request.getOrderDate() : LocalDate.now());
-        order.setDeliveryDate(request.getDeliveryDate());
+        order.setDeliveryDate(request.getDeliveryDate() != null ? request.getDeliveryDate() : LocalDate.now().plusDays(7));
         order.setOrderType(request.getOrderType());
         order.setPriority(request.getPriority() != null ? request.getPriority() : "NORMAL");
-        order.setStatus("DRAFT");
-        order.setDeliveryStatus("PENDING");
-        order.setPaymentStatus("UNPAID");
-        order.setPaymentTerms(request.getPaymentTerms());
-        order.setSalesRepId(request.getSalesRepId());
-        order.setSalesRepName(request.getSalesRepName());
-        order.setIsApproved(false);
-        order.setIsDispatched(false);
-        order.setIsInvoiced(false);
-        order.setIsPaid(false);
+        order.setStatus("PENDING");
+        order.setDeliveryState("PENDING");
+        order.setPaymentState("UNPAID");
+
+        // Sales rep info
+        if (request.getSalesRepId() != null) {
+            order.setSalesRep(request.getSalesRepId()); // May need User entity reference
+        }
+
+        // Boolean flags - remove "Is" prefix
+        order.setApproved(false);
+        order.setDispatched(false);
+        order.setInvoiced(false);
+        order.setPaid(false);
+
+        // Calculate amounts - proper BigDecimal handling
+        BigDecimal subtotal = request.getSubtotal() != null ?
+                BigDecimal.valueOf(request.getSubtotal()) : BigDecimal.ZERO;
+        BigDecimal tax = request.getTax() != null ?
+                BigDecimal.valueOf(request.getTax()) : BigDecimal.ZERO;
+        BigDecimal discount = request.getDiscount() != null ?
+                BigDecimal.valueOf(request.getDiscount()) : BigDecimal.ZERO;
+
+        order.setSubtotal(subtotal);
+        order.setTaxAmount(tax);
+        order.setDiscountAmount(discount);
+        order.setTotalAmount(calculateTotal(request));
+
         order.setNotes(request.getNotes());
-        
-        // Calculate totals
-        order.setSubtotalAmount(request.getSubtotalAmount() != null ? request.getSubtotalAmount() : 0.0);
-        order.setTaxAmount(request.getTaxAmount() != null ? request.getTaxAmount() : 0.0);
-        order.setDiscountAmount(request.getDiscountAmount() != null ? request.getDiscountAmount() : 0.0);
-        order.setTotalAmount(calculateTotal(order));
-        
+
         return salesOrderRepository.save(order);
     }
-    
+
     @Override
     public SalesOrder updateSalesOrder(Long id, SalesOrderRequest request) {
         log.info("Updating sales order: {}", id);
         SalesOrder existing = getSalesOrderById(id);
-        
-        if (existing.getIsApproved()) {
+
+        // Only allow updates if not approved
+        if (existing.getApproved()) {
             throw new RuntimeException("Cannot update approved sales order");
         }
-        
+
         existing.setOrderDate(request.getOrderDate());
         existing.setDeliveryDate(request.getDeliveryDate());
         existing.setOrderType(request.getOrderType());
         existing.setPriority(request.getPriority());
-        existing.setPaymentTerms(request.getPaymentTerms());
         existing.setNotes(request.getNotes());
-        
-        // Recalculate totals
-        existing.setSubtotalAmount(request.getSubtotalAmount());
-        existing.setTaxAmount(request.getTaxAmount());
-        existing.setDiscountAmount(request.getDiscountAmount());
-        existing.setTotalAmount(calculateTotal(existing));
-        
+
+        // Update amounts
+        BigDecimal subtotal = request.getSubtotal() != null ?
+                BigDecimal.valueOf(request.getSubtotal()) : BigDecimal.ZERO;
+        BigDecimal tax = request.getTax() != null ?
+                BigDecimal.valueOf(request.getTax()) : BigDecimal.ZERO;
+        BigDecimal discount = request.getDiscount() != null ?
+                BigDecimal.valueOf(request.getDiscount()) : BigDecimal.ZERO;
+
+        existing.setSubtotal(subtotal);
+        existing.setTaxAmount(tax);
+        existing.setDiscountAmount(discount);
+        existing.setTotalAmount(calculateTotal(request));
+
         return salesOrderRepository.save(existing);
     }
-    
+
     @Override
     public void deleteSalesOrder(Long id) {
         log.info("Deleting sales order: {}", id);
         SalesOrder order = getSalesOrderById(id);
-        
-        if (order.getIsApproved() || order.getIsDispatched() || order.getIsInvoiced()) {
-            throw new RuntimeException("Cannot delete approved, dispatched or invoiced order");
+
+        if (order.getApproved() || order.getDispatched() || order.getInvoiced()) {
+            throw new RuntimeException("Cannot delete approved, dispatched, or invoiced sales order");
         }
-        
+
         salesOrderRepository.deleteById(id);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public SalesOrder getSalesOrderById(Long id) {
         return salesOrderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Sales order not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Sales order not found with id: " + id));
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public SalesOrder getSalesOrderByNumber(String orderNumber) {
         return salesOrderRepository.findByOrderNumber(orderNumber)
-            .orElseThrow(() -> new RuntimeException("Sales order not found with number: " + orderNumber));
+                .orElseThrow(() -> new RuntimeException("Sales order not found with number: " + orderNumber));
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<SalesOrder> getAllSalesOrders() {
         return salesOrderRepository.findAll();
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Page<SalesOrder> getAllSalesOrders(Pageable pageable) {
         return salesOrderRepository.findAll(pageable);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public Page<SalesOrder> searchSalesOrders(String keyword, Pageable pageable) {
-        return salesOrderRepository.searchSalesOrders(keyword, pageable);
+    public Page<SalesOrder> searchSalesOrders(String searchTerm, Pageable pageable) {
+        return salesOrderRepository.searchSalesOrders(searchTerm, pageable);
     }
-    
-    @Override
-    public SalesOrder confirmSalesOrder(Long id) {
-        log.info("Confirming sales order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        if (!order.getIsApproved()) {
-            throw new RuntimeException("Order must be approved before confirmation");
-        }
-        
-        order.setStatus("CONFIRMED");
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder processSalesOrder(Long id) {
-        log.info("Processing sales order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setStatus("PROCESSING");
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder completeSalesOrder(Long id) {
-        log.info("Completing sales order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        if (!order.getIsDispatched()) {
-            throw new RuntimeException("Order must be dispatched before completion");
-        }
-        
-        order.setStatus("COMPLETED");
-        order.setDeliveryStatus("DELIVERED");
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder cancelSalesOrder(Long id, String cancellationReason) {
-        log.info("Cancelling sales order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        if (order.getIsDispatched() || order.getIsInvoiced()) {
-            throw new RuntimeException("Cannot cancel dispatched or invoiced order");
-        }
-        
-        order.setStatus("CANCELLED");
-        order.setCancellationReason(cancellationReason);
-        order.setCancelledDate(LocalDate.now());
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder approveSalesOrder(Long id, Long approvedByUserId, String approvalNotes) {
-        log.info("Approving sales order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setIsApproved(true);
-        order.setApprovedDate(LocalDate.now());
-        order.setApprovedByUserId(approvedByUserId);
-        order.setApprovalNotes(approvalNotes);
-        order.setStatus("CONFIRMED");
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder rejectSalesOrder(Long id, String rejectionReason) {
-        log.info("Rejecting sales order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setStatus("CANCELLED");
-        order.setRejectionReason(rejectionReason);
-        order.setRejectedDate(LocalDate.now());
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder markAsDispatched(Long id, Long dispatchNoteId) {
-        log.info("Marking sales order as dispatched: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setIsDispatched(true);
-        order.setDispatchNoteId(dispatchNoteId);
-        order.setDispatchedDate(LocalDate.now());
-        order.setDeliveryStatus("DISPATCHED");
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder updateDeliveryStatus(Long id, String deliveryStatus) {
-        log.info("Updating delivery status for order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setDeliveryStatus(deliveryStatus);
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder markAsInvoiced(Long id, Long invoiceId) {
-        log.info("Marking sales order as invoiced: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setIsInvoiced(true);
-        order.setInvoiceId(invoiceId);
-        order.setInvoicedDate(LocalDate.now());
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder updatePaymentStatus(Long id, String paymentStatus) {
-        log.info("Updating payment status for order: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setPaymentStatus(paymentStatus);
-        
-        if ("PAID".equals(paymentStatus)) {
-            order.setIsPaid(true);
-            order.setPaidDate(LocalDate.now());
-        }
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public SalesOrder markAsPaid(Long id) {
-        log.info("Marking sales order as paid: {}", id);
-        SalesOrder order = getSalesOrderById(id);
-        
-        order.setIsPaid(true);
-        order.setPaidDate(LocalDate.now());
-        order.setPaymentStatus("PAID");
-        
-        return salesOrderRepository.save(order);
-    }
-    
-    @Override
-    public void calculateOrderTotals(Long orderId) {
-        SalesOrder order = getSalesOrderById(orderId);
-        order.setTotalAmount(calculateTotal(order));
-        salesOrderRepository.save(order);
-    }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public Double calculateSubtotal(Long orderId) {
-        SalesOrder order = getSalesOrderById(orderId);
-        return order.getSubtotalAmount();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double calculateTotalTax(Long orderId) {
-        SalesOrder order = getSalesOrderById(orderId);
-        return order.getTaxAmount();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double calculateTotalDiscount(Long orderId) {
-        SalesOrder order = getSalesOrderById(orderId);
-        return order.getDiscountAmount();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getDraftOrders() {
-        return salesOrderRepository.findDraftOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getPendingOrders() {
-        return salesOrderRepository.findPendingOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getConfirmedOrders() {
-        return salesOrderRepository.findConfirmedOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getProcessingOrders() {
-        return salesOrderRepository.findProcessingOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getCompletedOrders() {
-        return salesOrderRepository.findCompletedOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getCancelledOrders() {
-        return salesOrderRepository.findCancelledOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getOrdersPendingApproval() {
-        return salesOrderRepository.findOrdersPendingApproval();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getOrdersPendingDispatch() {
-        return salesOrderRepository.findOrdersPendingDispatch();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getOrdersPendingInvoicing() {
-        return salesOrderRepository.findOrdersPendingInvoicing();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getUnpaidOrders() {
-        return salesOrderRepository.findUnpaidOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getOverdueDeliveries() {
-        return salesOrderRepository.findOverdueDeliveries(LocalDate.now());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getHighPriorityOrders() {
-        return salesOrderRepository.findHighPriorityOrders();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getOrdersRequiringAction() {
-        return salesOrderRepository.findOrdersRequiringAction(LocalDate.now());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SalesOrder> getOrdersByCustomer(Long customerId) {
+    public List<SalesOrder> getSalesOrdersByCustomer(Long customerId) {
         return salesOrderRepository.findByCustomerId(customerId);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public Page<SalesOrder> getOrdersByCustomer(Long customerId, Pageable pageable) {
-        return salesOrderRepository.findByCustomerId(customerId, pageable);
+    public List<SalesOrder> getSalesOrdersByStatus(String status) {
+        return salesOrderRepository.findByStatus(status);
     }
-    
+
+    @Override
+    public SalesOrder approveSalesOrder(Long id, Long approvedByUserId, String notes) {
+        log.info("Approving sales order: {}", id);
+        SalesOrder order = getSalesOrderById(id);
+
+        if (order.getApproved()) {
+            throw new RuntimeException("Sales order already approved");
+        }
+
+        order.setApproved(true);
+        order.setStatus("APPROVED");
+        order.setApprovalDate(LocalDate.now());
+        order.setApprovedBy(approvedByUserId);
+        order.setApprovalNote(notes);
+
+        return salesOrderRepository.save(order);
+    }
+
+    @Override
+    public SalesOrder rejectSalesOrder(Long id, String reason) {
+        log.info("Rejecting sales order: {}", id);
+        SalesOrder order = getSalesOrderById(id);
+
+        order.setStatus("REJECTED");
+        order.setRejectReason(reason);
+        order.setRejectedAt(LocalDate.now());
+
+        return salesOrderRepository.save(order);
+    }
+
+    @Override
+    public SalesOrder dispatchSalesOrder(Long id, Long dispatchNoteId) {
+        log.info("Dispatching sales order: {}", id);
+        SalesOrder order = getSalesOrderById(id);
+
+        if (!order.getApproved()) {
+            throw new RuntimeException("Cannot dispatch unapproved sales order");
+        }
+
+        order.setDispatched(true);
+        order.setDispatchNote(dispatchNoteId);
+        order.setDispatchedAt(LocalDate.now());
+        order.setDeliveryState("DISPATCHED");
+        order.setStatus("DISPATCHED");
+
+        return salesOrderRepository.save(order);
+    }
+
+    @Override
+    public SalesOrder markAsDelivered(Long id) {
+        log.info("Marking sales order as delivered: {}", id);
+        SalesOrder order = getSalesOrderById(id);
+
+        order.setDeliveryState("DELIVERED");
+        order.setStatus("DELIVERED");
+
+        return salesOrderRepository.save(order);
+    }
+
+    @Override
+    public SalesOrder generateInvoice(Long id, Long invoiceId) {
+        log.info("Generating invoice for sales order: {}", id);
+        SalesOrder order = getSalesOrderById(id);
+
+        order.setInvoiced(true);
+        order.setInvoice(invoiceId);
+        order.setInvoicedAt(LocalDate.now());
+
+        return salesOrderRepository.save(order);
+    }
+
+    @Override
+    public void updatePaymentStatus(Long salesOrderId, String paymentStatus) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+        order.setPaymentState(paymentStatus);
+
+        if ("PAID".equals(paymentStatus)) {
+            order.setPaid(true);
+            order.setPaidAt(LocalDate.now());
+        }
+
+        salesOrderRepository.save(order);
+    }
+
+    @Override
+    public void markAsPaid(Long salesOrderId) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+        order.setPaid(true);
+        order.setPaidAt(LocalDate.now());
+        order.setPaymentState("PAID");
+        order.setPaidAmount(order.getTotalAmount());
+
+        salesOrderRepository.save(order);
+    }
+
+    @Override
+    public void recordPayment(Long salesOrderId, Double paidAmount) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+        BigDecimal payment = BigDecimal.valueOf(paidAmount != null ? paidAmount : 0.0);
+        BigDecimal currentPaid = order.getPaidAmount() != null ? order.getPaidAmount() : BigDecimal.ZERO;
+        BigDecimal newPaidAmount = currentPaid.add(payment);
+
+        order.setPaidAmount(newPaidAmount);
+
+        if (newPaidAmount.compareTo(order.getTotalAmount()) >= 0) {
+            order.setPaymentState("PAID");
+            order.setPaid(true);
+            order.setPaidAt(LocalDate.now());
+        } else if (newPaidAmount.compareTo(BigDecimal.ZERO) > 0) {
+            order.setPaymentState("PARTIAL");
+        }
+
+        salesOrderRepository.save(order);
+    }
+
     @Override
     @Transactional(readOnly = true)
-    public List<SalesOrder> getOrdersBySalesRep(Long salesRepId) {
-        return salesOrderRepository.findBySalesRepId(salesRepId);
+    public Double calculateSubtotal(SalesOrder order) {
+        BigDecimal subtotal = order.getSubtotal();
+        return subtotal != null ? subtotal.doubleValue() : 0.0;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public List<SalesOrder> getOrdersByDateRange(LocalDate startDate, LocalDate endDate) {
-        return salesOrderRepository.findByOrderDateBetween(startDate, endDate);
+    public Double calculateTotalTax(SalesOrder order) {
+        BigDecimal tax = order.getTaxAmount();
+        return tax != null ? tax.doubleValue() : 0.0;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public List<SalesOrder> getRecentOrders(int limit) {
-        return salesOrderRepository.findRecentOrders(PageRequest.of(0, limit));
+    public Double calculateTotalDiscount(SalesOrder order) {
+        BigDecimal discount = order.getDiscountAmount();
+        return discount != null ? discount.doubleValue() : 0.0;
     }
-    
+
+    @Override
+    public SalesOrder cancelSalesOrder(Long id, String reason) {
+        log.info("Cancelling sales order: {}", id);
+        SalesOrder order = getSalesOrderById(id);
+
+        if (order.getDispatched() && order.getInvoiced()) {
+            throw new RuntimeException("Cannot cancel dispatched and invoiced sales order");
+        }
+
+        order.setCancelReason(reason);
+        order.setCancelledAt(LocalDate.now());
+        order.setStatus("CANCELLED");
+
+        return salesOrderRepository.save(order);
+    }
+
     @Override
     @Transactional(readOnly = true)
-    public List<SalesOrder> getCustomerRecentOrders(Long customerId, int limit) {
-        return salesOrderRepository.findCustomerRecentOrders(customerId, PageRequest.of(0, limit));
+    public List<SalesOrder> getPendingSalesOrders() {
+        return salesOrderRepository.findPendingSalesOrders();
     }
-    
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesOrder> getApprovedSalesOrders() {
+        return salesOrderRepository.findApprovedSalesOrders();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesOrder> getDispatchedSalesOrders() {
+        return salesOrderRepository.findDispatchedSalesOrders();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesOrder> getInvoicedSalesOrders() {
+        return salesOrderRepository.findInvoicedSalesOrders();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesOrder> getRecentSalesOrders(int limit) {
+        return salesOrderRepository.findRecentSalesOrders(PageRequest.of(0, limit));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long countSalesOrdersByStatus(String status) {
+        return salesOrderRepository.countByStatus(status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long countSalesOrdersByCustomer(Long customerId) {
+        return salesOrderRepository.countByCustomerId(customerId);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public boolean validateSalesOrder(SalesOrder order) {
-        return order.getCustomerId() != null &&
-               order.getOrderDate() != null &&
-               order.getTotalAmount() != null &&
-               order.getTotalAmount() > 0;
+        // Validate required fields
+        Long customerId = getCustomerIdFromOrder(order);
+        BigDecimal total = order.getTotalAmount();
+
+        return customerId != null &&
+                order.getOrderDate() != null &&
+                total != null &&
+                total.compareTo(BigDecimal.ZERO) > 0;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public boolean canConfirmOrder(Long orderId) {
-        SalesOrder order = getSalesOrderById(orderId);
-        return order.getIsApproved() && "PENDING".equals(order.getStatus());
+    public boolean canApproveSalesOrder(Long salesOrderId) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+        return !order.getApproved() && !"CANCELLED".equals(order.getStatus());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public boolean canCancelOrder(Long orderId) {
-        SalesOrder order = getSalesOrderById(orderId);
-        return !order.getIsDispatched() && !order.getIsInvoiced();
+    public boolean canCancelSalesOrder(Long salesOrderId) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+        return !(order.getDispatched() && order.getInvoiced());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public boolean canApproveOrder(Long orderId) {
-        SalesOrder order = getSalesOrderById(orderId);
-        return !order.getIsApproved() && !"CANCELLED".equals(order.getStatus());
+    public boolean canDispatchSalesOrder(Long salesOrderId) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+        return order.getApproved() && !order.getDispatched();
     }
-    
-    @Override
-    public List<SalesOrder> createBulkSalesOrders(List<SalesOrderRequest> requests) {
-        return requests.stream()
-            .map(this::createSalesOrder)
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    public int approveBulkSalesOrders(List<Long> orderIds, Long approvedByUserId) {
-        int count = 0;
-        for (Long id : orderIds) {
-            try {
-                approveSalesOrder(id, approvedByUserId, "Bulk approval");
-                count++;
-            } catch (Exception e) {
-                log.error("Error approving order: {}", id, e);
-            }
-        }
-        return count;
-    }
-    
-    @Override
-    public int deleteBulkSalesOrders(List<Long> orderIds) {
-        int count = 0;
-        for (Long id : orderIds) {
-            try {
-                deleteSalesOrder(id);
-                count++;
-            } catch (Exception e) {
-                log.error("Error deleting order: {}", id, e);
-            }
-        }
-        return count;
-    }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getSalesOrderStatistics() {
         Map<String, Object> stats = new HashMap<>();
-        
-        stats.put("totalOrders", salesOrderRepository.count());
-        stats.put("pendingOrders", salesOrderRepository.countPendingOrders());
-        stats.put("ordersPendingApproval", salesOrderRepository.countOrdersPendingApproval());
-        stats.put("ordersPendingDispatch", salesOrderRepository.countOrdersPendingDispatch());
-        stats.put("unpaidOrders", salesOrderRepository.countUnpaidOrders());
-        stats.put("totalOrderValue", getTotalOrderValue());
-        stats.put("averageOrderValue", getAverageOrderValue());
-        
+        stats.put("total", salesOrderRepository.count());
+        stats.put("pending", countSalesOrdersByStatus("PENDING"));
+        stats.put("approved", countSalesOrdersByStatus("APPROVED"));
+        stats.put("dispatched", countSalesOrdersByStatus("DISPATCHED"));
+        stats.put("delivered", countSalesOrdersByStatus("DELIVERED"));
+        stats.put("cancelled", countSalesOrdersByStatus("CANCELLED"));
         return stats;
     }
-    
+
+    @Override
+    public List<SalesOrder> createBulkSalesOrders(List<SalesOrderRequest> requests) {
+        return requests.stream()
+                .map(this::createSalesOrder)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SalesOrder> approveBulkSalesOrders(List<Long> ids, Long approvedByUserId) {
+        return ids.stream()
+                .map(id -> approveSalesOrder(id, approvedByUserId, null))
+                .collect(Collectors.toList());
+    }
+
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getOrderTypeDistribution() {
-        List<Object[]> results = salesOrderRepository.getOrderTypeDistribution();
-        return convertToMapList(results, "orderType", "orderCount");
+    public Map<String, Object> getSalesOrderSummary(Long salesOrderId) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("id", order.getId());
+        summary.put("orderNumber", order.getOrderNumber());
+        summary.put("customerId", getCustomerIdFromOrder(order));
+        summary.put("orderDate", order.getOrderDate());
+        summary.put("status", order.getStatus());
+        summary.put("isApproved", order.getApproved());
+        summary.put("isDispatched", order.getDispatched());
+        summary.put("isInvoiced", order.getInvoiced());
+        summary.put("isPaid", order.getPaid());
+
+        BigDecimal subtotal = order.getSubtotal();
+        BigDecimal tax = order.getTaxAmount();
+        BigDecimal total = order.getTotalAmount();
+
+        summary.put("subtotal", subtotal != null ? subtotal.doubleValue() : 0.0);
+        summary.put("tax", tax != null ? tax.doubleValue() : 0.0);
+        summary.put("total", total != null ? total.doubleValue() : 0.0);
+
+        return summary;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getStatusDistribution() {
-        List<Object[]> results = salesOrderRepository.getStatusDistribution();
-        return convertToMapList(results, "status", "orderCount");
+    public List<Map<String, Object>> getSalesOrdersByCustomerSummary(Long customerId) {
+        return getSalesOrdersByCustomer(customerId).stream()
+                .map(order -> {
+                    Map<String, Object> summary = new HashMap<>();
+                    summary.put("id", order.getId());
+                    summary.put("orderNumber", order.getOrderNumber());
+                    summary.put("orderDate", order.getOrderDate());
+                    summary.put("status", order.getStatus());
+                    summary.put("total", order.getTotalAmount() != null ? order.getTotalAmount().doubleValue() : 0.0);
+                    return summary;
+                })
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getPriorityDistribution() {
-        List<Object[]> results = salesOrderRepository.getPriorityDistribution();
-        return convertToMapList(results, "priority", "orderCount");
+    public Double getTotalSalesAmount(Long customerId, LocalDate startDate, LocalDate endDate) {
+        List<SalesOrder> orders;
+        if (customerId != null) {
+            orders = salesOrderRepository.findByCustomerId(customerId);
+        } else {
+            orders = salesOrderRepository.findAll();
+        }
+
+        return orders.stream()
+                .filter(order -> {
+                    LocalDate orderDate = order.getOrderDate();
+                    return orderDate != null &&
+                            !orderDate.isBefore(startDate) &&
+                            !orderDate.isAfter(endDate);
+                })
+                .map(SalesOrder::getTotalAmount)
+                .filter(Objects::nonNull)
+                .map(BigDecimal::doubleValue)
+                .reduce(0.0, Double::sum);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getDeliveryStatusDistribution() {
-        List<Object[]> results = salesOrderRepository.getDeliveryStatusDistribution();
-        return convertToMapList(results, "deliveryStatus", "orderCount");
+    public Double getOutstandingBalance(Long salesOrderId) {
+        SalesOrder order = getSalesOrderById(salesOrderId);
+        BigDecimal total = order.getTotalAmount();
+        BigDecimal paid = order.getPaidAmount() != null ? order.getPaidAmount() : BigDecimal.ZERO;
+        BigDecimal balance = total.subtract(paid);
+        return balance.doubleValue();
     }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getPaymentStatusDistribution() {
-        List<Object[]> results = salesOrderRepository.getPaymentStatusDistribution();
-        return convertToMapList(results, "paymentStatus", "orderCount");
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getMonthlyOrderCount(LocalDate startDate, LocalDate endDate) {
-        List<Object[]> results = salesOrderRepository.getMonthlyOrderCount(startDate, endDate);
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("year", result[0]);
-                map.put("month", result[1]);
-                map.put("orderCount", result[2]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getTotalOrderValueByCustomer() {
-        List<Object[]> results = salesOrderRepository.getTotalOrderValueByCustomer();
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("customerId", result[0]);
-                map.put("customerName", result[1]);
-                map.put("totalValue", result[2]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getTotalOrderValueBySalesRep() {
-        List<Object[]> results = salesOrderRepository.getTotalOrderValueBySalesRep();
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("salesRepId", result[0]);
-                map.put("salesRepName", result[1]);
-                map.put("totalValue", result[2]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getTopCustomers(int limit) {
-        List<Object[]> results = salesOrderRepository.getTopCustomers(PageRequest.of(0, limit));
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("customerId", result[0]);
-                map.put("customerName", result[1]);
-                map.put("orderCount", result[2]);
-                map.put("totalValue", result[3]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalOrderValue() {
-        Double total = salesOrderRepository.getTotalOrderValue();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getAverageOrderValue() {
-        Double average = salesOrderRepository.getAverageOrderValue();
-        return average != null ? average : 0.0;
-    }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getDashboardStatistics() {
-        Map<String, Object> dashboard = new HashMap<>();
-        
-        dashboard.put("statistics", getSalesOrderStatistics());
-        dashboard.put("typeDistribution", getOrderTypeDistribution());
-        dashboard.put("statusDistribution", getStatusDistribution());
-        dashboard.put("priorityDistribution", getPriorityDistribution());
-        
-        return dashboard;
+        Map<String, Object> stats = new HashMap<>();
+
+        stats.put("totalOrders", salesOrderRepository.count());
+        stats.put("pendingOrders", countSalesOrdersByStatus("PENDING"));
+        stats.put("approvedOrders", countSalesOrdersByStatus("APPROVED"));
+        stats.put("dispatchedOrders", countSalesOrdersByStatus("DISPATCHED"));
+        stats.put("deliveredOrders", countSalesOrdersByStatus("DELIVERED"));
+
+        LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDate endOfMonth = LocalDate.now();
+        stats.put("monthlySalesAmount", getTotalSalesAmount(null, startOfMonth, endOfMonth));
+
+        return stats;
     }
-    
+
     private String generateOrderNumber() {
-        return "SO-" + System.currentTimeMillis();
+        String prefix = "SO";
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        return prefix + "-" + timestamp.substring(timestamp.length() - 10);
     }
-    
-    private Double calculateTotal(SalesOrder order) {
-        return order.getSubtotalAmount() + order.getTaxAmount() - order.getDiscountAmount();
+
+    private BigDecimal calculateTotal(SalesOrderRequest request) {
+        BigDecimal subtotal = request.getSubtotal() != null ?
+                BigDecimal.valueOf(request.getSubtotal()) : BigDecimal.ZERO;
+        BigDecimal tax = request.getTax() != null ?
+                BigDecimal.valueOf(request.getTax()) : BigDecimal.ZERO;
+        BigDecimal discount = request.getDiscount() != null ?
+                BigDecimal.valueOf(request.getDiscount()) : BigDecimal.ZERO;
+
+        return subtotal.add(tax).subtract(discount);
     }
-    
-    private List<Map<String, Object>> convertToMapList(List<Object[]> results, String key1, String key2) {
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put(key1, result[0]);
-                map.put(key2, result[1]);
-                return map;
-            })
-            .collect(Collectors.toList());
+
+    // Helper method to get customer ID (might be from relationship or denormalized field)
+    private Long getCustomerIdFromOrder(SalesOrder order) {
+        // If Customer is a relationship object
+        if (order.getCustomer() != null) {
+            return order.getCustomer().getId();
+        }
+        // If customerId is denormalized field
+        try {
+            return (Long) order.getClass().getMethod("getCustomerId").invoke(order);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
