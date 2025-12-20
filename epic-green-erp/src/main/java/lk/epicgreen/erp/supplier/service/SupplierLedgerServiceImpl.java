@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class SupplierLedgerServiceImpl implements SupplierLedgerService {
+public abstract class SupplierLedgerServiceImpl implements SupplierLedgerService {
     
     private final SupplierLedgerRepository supplierLedgerRepository;
     private final SupplierRepository supplierRepository;
@@ -196,7 +196,6 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         return supplierLedgerRepository.findBySupplierId(supplierId, pageable);
     }
     
-    @Override
     @Transactional(readOnly = true)
     public List<SupplierLedger> getLedgerEntriesByDateRange(Long supplierId, LocalDate startDate, LocalDate endDate) {
         if (supplierId != null) {
@@ -207,7 +206,6 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         }
     }
     
-    @Override
     @Transactional(readOnly = true)
     public List<SupplierLedger> getLedgerEntriesByType(Long supplierId, String transactionType) {
         if (supplierId != null) {
@@ -217,7 +215,6 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         }
     }
     
-    @Override
     @Transactional(readOnly = true)
     public BigDecimal getTotalDebits(Long supplierId, LocalDate startDate, LocalDate endDate) {
         List<SupplierLedger> entries = getLedgerEntriesByDateRange(supplierId, startDate, endDate);
@@ -227,7 +224,6 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
-    @Override
     @Transactional(readOnly = true)
     public BigDecimal getTotalCredits(Long supplierId, LocalDate startDate, LocalDate endDate) {
         List<SupplierLedger> entries = getLedgerEntriesByDateRange(supplierId, startDate, endDate);
@@ -237,7 +233,6 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
-    @Override
     @Transactional(readOnly = true)
     public BigDecimal getSupplierBalance(Long supplierId) {
         Supplier supplier = supplierRepository.findById(supplierId)
@@ -246,7 +241,6 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
             supplier.getOutstandingBalance() : BigDecimal.ZERO;
     }
     
-    @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getSupplierLedgerSummary(Long supplierId, LocalDate startDate, LocalDate endDate) {
         Map<String, Object> summary = new HashMap<>();
@@ -266,7 +260,6 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         return summary;
     }
     
-    @Override
     @Transactional(readOnly = true)
     public List<SupplierLedger> getUnreconciledEntries(Long supplierId) {
         if (supplierId != null) {
@@ -281,7 +274,7 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         }
     }
     
-    @Override
+    @Transactional
     public void reconcileLedgerEntry(Long id) {
         log.info("Reconciling ledger entry: {}", id);
         SupplierLedger ledger = getLedgerEntryById(id);
@@ -290,7 +283,7 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         supplierLedgerRepository.save(ledger);
     }
     
-    @Override
+    @Transactional
     public void unreconcileLedgerEntry(Long id) {
         log.info("Unreconciling ledger entry: {}", id);
         SupplierLedger ledger = getLedgerEntryById(id);
@@ -299,7 +292,7 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         supplierLedgerRepository.save(ledger);
     }
     
-    @Override
+    @Transactional
     public SupplierLedger recordPurchase(Long supplierId, Long purchaseOrderId, String poNumber, 
                                         Double amount, String description) {
         SupplierLedgerRequest request = SupplierLedgerRequest.builder()
@@ -317,7 +310,7 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         return createLedgerEntry(request);
     }
     
-    @Override
+    @Transactional
     public SupplierLedger recordPayment(Long supplierId, String paymentType, Double amount, 
                                        String chequeNo, LocalDate chequeDate, String bank, 
                                        String description) {
@@ -338,7 +331,7 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         return createLedgerEntry(request);
     }
     
-    @Override
+    @Transactional
     public SupplierLedger recordCreditNote(Long supplierId, String creditNoteNumber, 
                                           Double amount, String description) {
         SupplierLedgerRequest request = SupplierLedgerRequest.builder()
@@ -355,7 +348,7 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         return createLedgerEntry(request);
     }
     
-    @Override
+    @Transactional
     public SupplierLedger recordDebitNote(Long supplierId, String debitNoteNumber, 
                                          Double amount, String description) {
         SupplierLedgerRequest request = SupplierLedgerRequest.builder()
@@ -434,6 +427,35 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
                 aging.put("over90", over90.doubleValue());
                 
                 return aging;
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getSuppliersWithHighestCredit(int limit) {
+        List<Supplier> allSuppliers = supplierRepository.findAll();
+        
+        return allSuppliers.stream()
+            .filter(s -> {
+                BigDecimal balance = s.getOutstandingBalance();
+                return balance != null && balance.compareTo(BigDecimal.ZERO) > 0;
+            })
+            .sorted((s1, s2) -> {
+                BigDecimal balance1 = s1.getOutstandingBalance();
+                BigDecimal balance2 = s2.getOutstandingBalance();
+                return balance2.compareTo(balance1); // Descending order
+            })
+            .limit(limit)
+            .map(supplier -> {
+                Map<String, Object> summary = new HashMap<>();
+                summary.put("supplierId", supplier.getId());
+                summary.put("supplierName", supplier.getName());
+                summary.put("outstandingBalance", supplier.getOutstandingBalance().doubleValue());
+                summary.put("creditLimit", supplier.getCreditLimit() != null ? 
+                    supplier.getCreditLimit().doubleValue() : 0.0);
+                summary.put("creditDays", supplier.getCreditDays());
+                return summary;
             })
             .collect(Collectors.toList());
     }

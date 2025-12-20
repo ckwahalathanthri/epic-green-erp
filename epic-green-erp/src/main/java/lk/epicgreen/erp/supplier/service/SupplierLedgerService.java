@@ -4,6 +4,7 @@ import lk.epicgreen.erp.supplier.dto.SupplierLedgerRequest;
 import lk.epicgreen.erp.supplier.entity.SupplierLedger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -116,6 +117,10 @@ public interface SupplierLedgerService {
     Double getTotalCreditAmount();
     Double getAverageTransactionAmount();
     List<Map<String, Object>> getSuppliersWithHighestDebit(int limit);
+
+    @Transactional(readOnly = true)
+    List<Map<String, Object>> getAgingSummary();
+
     List<Map<String, Object>> getSuppliersWithHighestCredit(int limit);
     Map<String, Object> getDashboardStatistics();
 }

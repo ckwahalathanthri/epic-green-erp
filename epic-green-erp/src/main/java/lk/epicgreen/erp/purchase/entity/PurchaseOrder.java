@@ -735,7 +735,7 @@ public class PurchaseOrder extends AuditEntity {
                 supplierId = supplier.getId();
             }
             if (supplierName == null) {
-                supplierName = supplier.getSupplierName();
+                supplierName = supplier.getName();
             }
         }
         if (orderDate == null && poDate != null) {
@@ -761,7 +761,7 @@ public class PurchaseOrder extends AuditEntity {
                 supplierId = supplier.getId();
             }
             if (supplierName == null) {
-                supplierName = supplier.getSupplierName();
+                supplierName = supplier.getName();
             }
         }
     }
