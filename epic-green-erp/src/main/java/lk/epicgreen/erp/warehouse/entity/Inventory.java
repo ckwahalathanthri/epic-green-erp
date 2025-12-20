@@ -1,261 +1,212 @@
 package lk.epicgreen.erp.warehouse.entity;
 
 import jakarta.persistence.*;
-import lk.epicgreen.erp.common.audit.AuditEntity;
-import lk.epicgreen.erp.product.entity.Product;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
- * Inventory entity
- * Represents product stock at specific warehouse locations
+ * Inventory Entity - Complete version with all required fields
  * 
  * @author Epic Green Development Team
  * @version 1.0
  */
 @Entity
-@Table(name = "inventory",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uk_inventory_product_warehouse_location",
-            columnNames = {"product_id", "warehouse_id", "location_id", "batch_number"})
-    },
-    indexes = {
-        @Index(name = "idx_inventory_product", columnList = "product_id"),
-        @Index(name = "idx_inventory_warehouse", columnList = "warehouse_id"),
-        @Index(name = "idx_inventory_location", columnList = "location_id"),
-        @Index(name = "idx_inventory_batch", columnList = "batch_number")
-    }
-)
-@Getter
-@Setter
+@Table(name = "inventory", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"product_id", "warehouse_id"})
+})
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Inventory extends AuditEntity {
+@EntityListeners(AuditingEntityListener.class)
+public class Inventory {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    /**
-     * Product reference
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false, foreignKey = @ForeignKey(name = "fk_inventory_product"))
-    private Product product;
+    // Product information (denormalized)
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
     
-    /**
-     * Warehouse reference
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "warehouse_id", nullable = false, foreignKey = @ForeignKey(name = "fk_inventory_warehouse"))
-    private Warehouse warehouse;
+    @Column(name = "product_code", length = 50)
+    private String productCode;
     
-    /**
-     * Warehouse location reference
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id", foreignKey = @ForeignKey(name = "fk_inventory_location"))
-    private WarehouseLocation location;
+    @Column(name = "product_name", length = 200)
+    private String productName;
     
-    /**
-     * Batch number (for batch tracked items)
-     */
-    @Column(name = "batch_number", length = 50)
-    private String batchNumber;
+    // Warehouse information (denormalized)
+    @Column(name = "warehouse_id", nullable = false)
+    private Long warehouseId;
     
-    /**
-     * Serial number (for serial tracked items)
-     */
-    @Column(name = "serial_number", length = 50)
-    private String serialNumber;
+    @Column(name = "warehouse_name", length = 200)
+    private String warehouseName;
     
-    /**
-     * Available quantity (on hand)
-     */
-    @Column(name = "available_quantity", precision = 15, scale = 3, nullable = false)
-    private BigDecimal availableQuantity;
+    // Quantity fields (Double for decimal quantities)
+    @Column(name = "quantity_on_hand", precision = 15, scale = 3)
+    private Double quantityOnHand;
     
-    /**
-     * Allocated quantity (reserved for orders)
-     */
-    @Column(name = "allocated_quantity", precision = 15, scale = 3)
-    private BigDecimal allocatedQuantity;
+    @Column(name = "quantity_available", precision = 15, scale = 3)
+    private Double quantityAvailable;
     
-    /**
-     * In transit quantity (being moved)
-     */
-    @Column(name = "in_transit_quantity", precision = 15, scale = 3)
-    private BigDecimal inTransitQuantity;
+    @Column(name = "quantity_reserved", precision = 15, scale = 3)
+    private Double quantityReserved;
     
-    /**
-     * Damaged quantity
-     */
-    @Column(name = "damaged_quantity", precision = 15, scale = 3)
-    private BigDecimal damagedQuantity;
+    @Column(name = "quantity_allocated", precision = 15, scale = 3)
+    private Double quantityAllocated;
     
-    /**
-     * Unit of measurement
-     */
-    @Column(name = "unit", length = 10)
-    private String unit;
+    @Column(name = "quantity_damaged", precision = 15, scale = 3)
+    private Double quantityDamaged;
     
-    /**
-     * Manufacturing date
-     */
-    @Column(name = "manufacturing_date")
-    private LocalDate manufacturingDate;
+    @Column(name = "quantity_expired", precision = 15, scale = 3)
+    private Double quantityExpired;
     
-    /**
-     * Expiry date
-     */
-    @Column(name = "expiry_date")
-    private LocalDate expiryDate;
+    // Stock level settings
+    @Column(name = "reorder_level")
+    private Integer reorderLevel;
     
-    /**
-     * Last stock count date
-     */
+    @Column(name = "reorder_quantity")
+    private Integer reorderQuantity;
+    
+    @Column(name = "max_stock_level")
+    private Integer maxStockLevel;
+    
+    @Column(name = "min_stock_level")
+    private Integer minStockLevel;
+    
+    // Cost fields (Double for monetary values)
+    @Column(name = "unit_cost", precision = 15, scale = 2)
+    private Double unitCost;
+    
+    @Column(name = "average_cost", precision = 15, scale = 2)
+    private Double averageCost;
+    
+    @Column(name = "last_cost", precision = 15, scale = 2)
+    private Double lastCost;
+    
+    @Column(name = "total_value", precision = 15, scale = 2)
+    private Double totalValue;
+    
+    // Status fields
+    @Column(name = "status", length = 50)
+    private String status; // ACTIVE, INACTIVE, DISCONTINUED
+    
+    @Column(name = "stock_status", length = 50)
+    private String stockStatus; // IN_STOCK, LOW_STOCK, OUT_OF_STOCK, OVERSTOCK
+    
+    // Tracking fields
+    @Column(name = "last_updated")
+    private LocalDateTime lastUpdated;
+    
+    @Column(name = "last_movement_date")
+    private LocalDateTime lastMovementDate;
+    
     @Column(name = "last_stock_count_date")
-    private LocalDate lastStockCountDate;
+    private LocalDateTime lastStockCountDate;
     
-    /**
-     * Cost per unit (for this batch/lot)
-     */
-    @Column(name = "cost_per_unit", precision = 15, scale = 2)
-    private BigDecimal costPerUnit;
-    
-    /**
-     * Currency
-     */
-    @Column(name = "currency", length = 10)
-    private String currency;
-    
-    /**
-     * Quality status (GOOD, DAMAGED, QUARANTINE, EXPIRED)
-     */
-    @Column(name = "quality_status", length = 20)
-    private String qualityStatus;
-    
-    /**
-     * Notes
-     */
-    @Column(name = "notes", length = 500)
+    @Column(name = "notes", length = 1000)
     private String notes;
     
-    /**
-     * Gets total quantity (available + allocated + in transit)
-     */
-    @Transient
-    public BigDecimal getTotalQuantity() {
-        BigDecimal total = availableQuantity != null ? availableQuantity : BigDecimal.ZERO;
-        if (allocatedQuantity != null) {
-            total = total.add(allocatedQuantity);
-        }
-        if (inTransitQuantity != null) {
-            total = total.add(inTransitQuantity);
-        }
-        return total;
-    }
+    // Audit fields
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
     
-    /**
-     * Gets unallocated quantity (available - allocated)
-     */
-    @Transient
-    public BigDecimal getUnallocatedQuantity() {
-        BigDecimal available = availableQuantity != null ? availableQuantity : BigDecimal.ZERO;
-        BigDecimal allocated = allocatedQuantity != null ? allocatedQuantity : BigDecimal.ZERO;
-        BigDecimal unallocated = available.subtract(allocated);
-        return unallocated.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : unallocated;
-    }
+    @CreatedBy
+    @Column(name = "created_by", updatable = false)
+    private String createdBy;
     
-    /**
-     * Gets total stock value
-     */
-    @Transient
-    public BigDecimal getStockValue() {
-        if (costPerUnit == null) {
-            return BigDecimal.ZERO;
-        }
-        return getTotalQuantity().multiply(costPerUnit);
-    }
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
     
-    /**
-     * Checks if inventory is expired
-     */
-    @Transient
-    public boolean isExpired() {
-        return expiryDate != null && LocalDate.now().isAfter(expiryDate);
-    }
-    
-    /**
-     * Checks if inventory is near expiry (within 30 days)
-     */
-    @Transient
-    public boolean isNearExpiry() {
-        if (expiryDate == null) {
-            return false;
-        }
-        LocalDate thirtyDaysFromNow = LocalDate.now().plusDays(30);
-        return !expiryDate.isBefore(LocalDate.now()) && expiryDate.isBefore(thirtyDaysFromNow);
-    }
-    
-    /**
-     * Gets days until expiry
-     */
-    @Transient
-    public Long getDaysUntilExpiry() {
-        if (expiryDate == null) {
-            return null;
-        }
-        return java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
-    }
-    
-    /**
-     * Checks if stock is available
-     */
-    @Transient
-    public boolean isAvailable() {
-        return availableQuantity != null && 
-               availableQuantity.compareTo(BigDecimal.ZERO) > 0 &&
-               "GOOD".equals(qualityStatus) &&
-               !isExpired();
-    }
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    private String updatedBy;
     
     @PrePersist
     protected void onCreate() {
-        super.onCreate();
-        if (availableQuantity == null) {
-            availableQuantity = BigDecimal.ZERO;
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
         }
-        if (allocatedQuantity == null) {
-            allocatedQuantity = BigDecimal.ZERO;
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
         }
-        if (inTransitQuantity == null) {
-            inTransitQuantity = BigDecimal.ZERO;
+        if (lastUpdated == null) {
+            lastUpdated = LocalDateTime.now();
         }
-        if (damagedQuantity == null) {
-            damagedQuantity = BigDecimal.ZERO;
+        if (quantityOnHand == null) {
+            quantityOnHand = 0.0;
         }
-        if (qualityStatus == null) {
-            qualityStatus = "GOOD";
+        if (quantityAvailable == null) {
+            quantityAvailable = 0.0;
         }
-        if (currency == null) {
-            currency = "LKR";
+        if (quantityReserved == null) {
+            quantityReserved = 0.0;
+        }
+        if (quantityAllocated == null) {
+            quantityAllocated = 0.0;
+        }
+        if (quantityDamaged == null) {
+            quantityDamaged = 0.0;
+        }
+        if (quantityExpired == null) {
+            quantityExpired = 0.0;
+        }
+        if (status == null) {
+            status = "ACTIVE";
+        }
+        if (stockStatus == null) {
+            stockStatus = "IN_STOCK";
         }
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Inventory)) return false;
-        Inventory inventory = (Inventory) o;
-        return id != null && id.equals(inventory.getId());
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+        lastUpdated = LocalDateTime.now();
     }
     
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    /**
+     * Calculate available quantity
+     * Available = OnHand - Reserved - Allocated - Damaged - Expired
+     */
+    public Double calculateAvailableQuantity() {
+        double onHand = quantityOnHand != null ? quantityOnHand : 0.0;
+        double reserved = quantityReserved != null ? quantityReserved : 0.0;
+        double allocated = quantityAllocated != null ? quantityAllocated : 0.0;
+        double damaged = quantityDamaged != null ? quantityDamaged : 0.0;
+        double expired = quantityExpired != null ? quantityExpired : 0.0;
+        
+        return onHand - reserved - allocated - damaged - expired;
+    }
+    
+    /**
+     * Update stock status based on quantity
+     */
+    public void updateStockStatus() {
+        double available = calculateAvailableQuantity();
+        Integer reorder = reorderLevel != null ? reorderLevel : 0;
+        Integer max = maxStockLevel != null ? maxStockLevel : Integer.MAX_VALUE;
+        
+        if (available <= 0) {
+            stockStatus = "OUT_OF_STOCK";
+        } else if (available <= reorder) {
+            stockStatus = "LOW_STOCK";
+        } else if (available >= max) {
+            stockStatus = "OVERSTOCK";
+        } else {
+            stockStatus = "IN_STOCK";
+        }
     }
 }

@@ -5,59 +5,76 @@ import lk.epicgreen.erp.warehouse.entity.Inventory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Inventory Service Interface
- * Service for inventory operations
+ * Inventory Service Interface - Complete
  * 
  * @author Epic Green Development Team
  * @version 1.0
  */
 public interface InventoryService {
     
-    // ===================================================================
-    // CRUD OPERATIONS
-    // ===================================================================
-    
+    // CRUD Operations
     Inventory createInventory(InventoryRequest request);
     Inventory updateInventory(Long id, InventoryRequest request);
     void deleteInventory(Long id);
     Inventory getInventoryById(Long id);
     Inventory getInventoryByProductAndWarehouse(Long productId, Long warehouseId);
+    
+    // List Operations
     List<Inventory> getAllInventory();
     Page<Inventory> getAllInventory(Pageable pageable);
-    Page<Inventory> searchInventory(String keyword, Pageable pageable);
+    List<Inventory> getInventoryByProduct(Long productId);
+    List<Inventory> getInventoryByWarehouse(Long warehouseId);
     
-    // ===================================================================
-    // STOCK OPERATIONS
-    // ===================================================================
+    // Stock Movement Operations
+    void addStock(Long inventoryId, Double quantity, Double cost);
+    void removeStock(Long inventoryId, Double quantity);
+    void adjustStock(Long inventoryId, Double newQuantity, String reason);
+    void transferStock(Long fromInventoryId, Long toInventoryId, Double quantity);
     
+    // Reservation Operations
+    void reserveStock(Long inventoryId, Double quantity);
+    void releaseReservation(Long inventoryId, Double quantity);
+    
+    // Allocation Operations
+    void allocateStock(Long inventoryId, Double quantity);
+    void releaseAllocation(Long inventoryId, Double quantity);
+    
+    // Quality Control Operations
+    void recordDamagedStock(Long inventoryId, Double quantity);
+    void recordExpiredStock(Long inventoryId, Double quantity);
+    
+    // Stock Level Management
+    void updateStockLevels(Long inventoryId, Integer reorderLevel, Integer maxLevel, Integer minLevel);
+    
+    // Query Operations
+    Double getAvailableQuantity(Long productId, Long warehouseId);
+    boolean isStockAvailable(Long productId, Long warehouseId, Double requiredQuantity);
+    List<Inventory> getLowStockItems();
+    List<Inventory> getOutOfStockItems();
+    
+    // Reporting
+    Map<String, Object> getInventorySummary(Long inventoryId);
+    Map<String, Object> getDashboardStatistics();
+    Map<String, Object> getInventoryStatistics();
+    Map<String, Object> calculateInventoryMetrics(Long inventoryId);
+    
+    // Search
+    Page<Inventory> searchInventory(String searchTerm, Pageable pageable);
+    
+    // Convenience Methods (aliases)
     void increaseStock(Long inventoryId, Double quantity);
     void decreaseStock(Long inventoryId, Double quantity);
-    void adjustStock(Long inventoryId, Double newQuantity, String reason);
-    void reserveStock(Long inventoryId, Double quantity);
     void releaseReservedStock(Long inventoryId, Double quantity);
-    void allocateStock(Long inventoryId, Double quantity);
     void deallocateStock(Long inventoryId, Double quantity);
     void markDamaged(Long inventoryId, Double quantity, String reason);
     void markExpired(Long inventoryId, Double quantity, String reason);
-    void updateAvailableQuantity(Long inventoryId);
+    void recordStockCount(Long inventoryId, Double actualQuantity, String notes);
     
-    // ===================================================================
-    // STOCK COUNT OPERATIONS
-    // ===================================================================
-    
-    void recordStockCount(Long inventoryId, Double countedQuantity, String countedBy);
-    void updateLastStockCountDate(Long inventoryId, LocalDate countDate);
-    List<Inventory> getInventoryRequiringStockCount(int daysThreshold);
-    
-    // ===================================================================
-    // QUERY OPERATIONS
-    // ===================================================================
-    
+    // Query by Status
     List<Inventory> getActiveInventory();
     List<Inventory> getInventoryWithStock();
     List<Inventory> getInventoryWithoutStock();
@@ -68,67 +85,17 @@ public interface InventoryService {
     List<Inventory> getInventoryBelowReorderLevel();
     List<Inventory> getInventoryAboveMaxStockLevel();
     List<Inventory> getInventoryWithReservedStock();
-    List<Inventory> getInventoryWithAllocatedStock();
     List<Inventory> getInventoryWithDamagedStock();
     List<Inventory> getInventoryWithExpiredStock();
-    List<Inventory> getInventoryWithAvailableStock();
-    List<Inventory> getInventoryByValueRange(Double minValue, Double maxValue);
-    List<Inventory> getHighValueInventory(Double threshold);
-    List<Inventory> getSlowMovingInventory(int daysThreshold);
-    List<Inventory> getFastMovingInventory(int daysThreshold);
+    
+    // Analytics
+    List<Inventory> getSlowMovingInventory(int days);
+    List<Inventory> getFastMovingInventory(int days);
     List<Inventory> getWarehouseInventory(Long warehouseId);
     List<Inventory> getProductInventoryAcrossWarehouses(Long productId);
-    List<Inventory> getRecentInventoryUpdates(int limit);
-    
-    // ===================================================================
-    // STOCK STATUS OPERATIONS
-    // ===================================================================
-    
-    void updateStockStatus(Long inventoryId);
-    void recalculateAllStockStatuses();
-    String determineStockStatus(Inventory inventory);
-    
-    // ===================================================================
-    // VALIDATION
-    // ===================================================================
-    
-    boolean validateInventory(Inventory inventory);
-    boolean hasAvailableStock(Long inventoryId, Double requiredQuantity);
-    boolean canReserveStock(Long inventoryId, Double quantity);
-    boolean canAllocateStock(Long inventoryId, Double quantity);
-    
-    // ===================================================================
-    // CALCULATIONS
-    // ===================================================================
-    
-    Double calculateAvailableQuantity(Inventory inventory);
-    Double calculateTotalValue(Inventory inventory);
-    void recalculateInventoryValues(Long inventoryId);
-    Map<String, Object> calculateInventoryMetrics(Long inventoryId);
-    
-    // ===================================================================
-    // BATCH OPERATIONS
-    // ===================================================================
-    
-    List<Inventory> createBulkInventory(List<InventoryRequest> requests);
-    int adjustBulkStock(List<Long> inventoryIds, String reason);
-    int deleteInventoryBulk(List<Long> inventoryIds);
-    
-    // ===================================================================
-    // STATISTICS
-    // ===================================================================
-    
-    Map<String, Object> getInventoryStatistics();
-    List<Map<String, Object>> getStockStatusDistribution();
-    List<Map<String, Object>> getInventoryByWarehouse();
-    List<Map<String, Object>> getInventoryTurnoverData();
+    List<Inventory> getInventoryRequiringStockCount(int daysSinceLastCount);
+    List<Inventory> getHighValueInventory(Double minValue);
+    List<Inventory> getRecentInventoryUpdates(int days);
     List<Inventory> getTopValueInventoryItems(int limit);
     List<Inventory> getTopQuantityInventoryItems(int limit);
-    Double getTotalQuantityOnHand();
-    Double getTotalAvailableQuantity();
-    Double getTotalReservedQuantity();
-    Double getTotalAllocatedQuantity();
-    Double getTotalInventoryValue();
-    Double getInventoryValueByWarehouse(Long warehouseId);
-    Map<String, Object> getDashboardStatistics();
 }

@@ -1,30 +1,22 @@
 package lk.epicgreen.erp.warehouse.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 /**
  * Inventory Request DTO
- * DTO for inventory operations
  * 
  * @author Epic Green Development Team
  * @version 1.0
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class InventoryRequest {
-    
-    @NotNull(message = "Warehouse ID is required")
-    private Long warehouseId;
-    
-    private String warehouseCode;
-    
-    private String warehouseName;
     
     @NotNull(message = "Product ID is required")
     private Long productId;
@@ -33,52 +25,47 @@ public class InventoryRequest {
     
     private String productName;
     
-    @NotNull(message = "Quantity is required")
-    private Double quantity;
+    @NotNull(message = "Warehouse ID is required")
+    private Long warehouseId;
     
-    private Double reservedQuantity;
+    private String warehouseName;
     
-    private Double availableQuantity;
+    @DecimalMin(value = "0.0", message = "Quantity on hand must be positive")
+    private Double quantityOnHand;
     
-    private String unit;
+    @DecimalMin(value = "0.0", message = "Quantity reserved must be positive")
+    private Double quantityReserved;
     
-    private String batchNumber;
+    @DecimalMin(value = "0.0", message = "Quantity allocated must be positive")
+    private Double quantityAllocated;
     
-    private String lotNumber;
+    @DecimalMin(value = "0.0", message = "Quantity damaged must be positive")
+    private Double quantityDamaged;
     
-    private String serialNumber;
+    @DecimalMin(value = "0.0", message = "Quantity expired must be positive")
+    private Double quantityExpired;
     
-    private LocalDate manufactureDate;
-    
-    private LocalDate expiryDate;
-    
-    private String location; // Bin location within warehouse
-    
-    private String zone;
-    
-    private String aisle;
-    
-    private String rack;
-    
-    private String shelf;
-    
-    private String bin;
-    
-    private Double unitCost;
-    
-    private Double totalCost;
-    
+    @Min(value = 0, message = "Reorder level must be positive")
     private Integer reorderLevel;
     
+    @Min(value = 0, message = "Reorder quantity must be positive")
     private Integer reorderQuantity;
     
-    private Integer minStockLevel;
-    
+    @Min(value = 0, message = "Max stock level must be positive")
     private Integer maxStockLevel;
     
-    private String inventoryStatus; // AVAILABLE, RESERVED, DAMAGED, EXPIRED, QUARANTINE
+    @Min(value = 0, message = "Min stock level must be positive")
+    private Integer minStockLevel;
     
-    private String qualityStatus; // APPROVED, REJECTED, PENDING
+    @DecimalMin(value = "0.0", message = "Unit cost must be positive")
+    private Double unitCost;
     
+    @DecimalMin(value = "0.0", message = "Average cost must be positive")
+    private Double averageCost;
+    
+    @DecimalMin(value = "0.0", message = "Last cost must be positive")
+    private Double lastCost;
+    
+    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;
 }

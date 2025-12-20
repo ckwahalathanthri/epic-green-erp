@@ -6,19 +6,17 @@ import lk.epicgreen.erp.warehouse.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Inventory Service Implementation
- * Implementation of inventory service operations
+ * Inventory Service Implementation - Complete
  * 
  * @author Epic Green Development Team
  * @version 1.0
@@ -34,11 +32,13 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     public Inventory createInventory(InventoryRequest request) {
         log.info("Creating inventory for product: {} in warehouse: {}", 
-                 request.getProductId(), request.getWarehouseId());
+            request.getProductId(), request.getWarehouseId());
         
         // Check if inventory already exists
-        if (inventoryRepository.existsByProductIdAndWarehouseId(
-                request.getProductId(), request.getWarehouseId())) {
+        Optional<Inventory> existing = inventoryRepository
+            .findByProductIdAndWarehouseId(request.getProductId(), request.getWarehouseId());
+        
+        if (existing.isPresent()) {
             throw new RuntimeException("Inventory already exists for this product in this warehouse");
         }
         
@@ -59,8 +59,8 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setMaxStockLevel(request.getMaxStockLevel());
         inventory.setMinStockLevel(request.getMinStockLevel());
         inventory.setUnitCost(request.getUnitCost());
-        inventory.setAverageCost(request.getUnitCost());
-        inventory.setLastCost(request.getUnitCost());
+        inventory.setAverageCost(request.getAverageCost());
+        inventory.setLastCost(request.getLastCost());
         inventory.setTotalValue(calculateTotalValue(inventory));
         inventory.setStatus("ACTIVE");
         inventory.setStockStatus(determineStockStatus(inventory));
@@ -81,8 +81,6 @@ public class InventoryServiceImpl implements InventoryService {
         existing.setUnitCost(request.getUnitCost());
         existing.setLastUpdated(LocalDateTime.now());
         
-        updateStockStatus(id);
-        
         return inventoryRepository.save(existing);
     }
     
@@ -91,8 +89,9 @@ public class InventoryServiceImpl implements InventoryService {
         log.info("Deleting inventory: {}", id);
         Inventory inventory = getInventoryById(id);
         
+        // Check if there's any stock
         if (inventory.getQuantityOnHand() > 0) {
-            throw new RuntimeException("Cannot delete inventory with stock on hand");
+            throw new RuntimeException("Cannot delete inventory with existing stock");
         }
         
         inventoryRepository.deleteById(id);
@@ -127,576 +126,603 @@ public class InventoryServiceImpl implements InventoryService {
     
     @Override
     @Transactional(readOnly = true)
-    public Page<Inventory> searchInventory(String keyword, Pageable pageable) {
-        return inventoryRepository.searchInventory(keyword, pageable);
+    public List<Inventory> getInventoryByProduct(Long productId) {
+        return inventoryRepository.findByProductId(productId);
     }
     
     @Override
-    public void increaseStock(Long inventoryId, Double quantity) {
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryByWarehouse(Long warehouseId) {
+        return inventoryRepository.findByWarehouseId(warehouseId);
+    }
+    
+    @Override
+    public void addStock(Long inventoryId, Double quantity, Double cost) {
+        log.info("Adding {} units to inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
-        inventory.setQuantityOnHand(inventory.getQuantityOnHand() + quantity);
-        updateAvailableQuantity(inventoryId);
-        updateStockStatus(inventoryId);
+        
+        Double currentQty = inventory.getQuantityOnHand();
+        Double newQty = currentQty + quantity;
+        inventory.setQuantityOnHand(newQty);
+        
+        // Update costs using weighted average
+        updateAverageCost(inventory, quantity, cost);
+        inventory.setLastCost(cost);
+        inventory.setTotalValue(calculateTotalValue(inventory));
         inventory.setLastMovementDate(LocalDateTime.now());
         inventory.setLastUpdated(LocalDateTime.now());
+        
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
-    public void decreaseStock(Long inventoryId, Double quantity) {
+    public void removeStock(Long inventoryId, Double quantity) {
+        log.info("Removing {} units from inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
         
-        if (inventory.getQuantityOnHand() < quantity) {
-            throw new RuntimeException("Insufficient stock. Available: " + inventory.getQuantityOnHand());
+        Double currentQty = inventory.getQuantityOnHand();
+        if (currentQty < quantity) {
+            throw new RuntimeException("Insufficient stock. Available: " + currentQty + ", Requested: " + quantity);
         }
         
-        inventory.setQuantityOnHand(inventory.getQuantityOnHand() - quantity);
-        updateAvailableQuantity(inventoryId);
-        updateStockStatus(inventoryId);
+        Double newQty = currentQty - quantity;
+        inventory.setQuantityOnHand(newQty);
+        inventory.setTotalValue(calculateTotalValue(inventory));
         inventory.setLastMovementDate(LocalDateTime.now());
         inventory.setLastUpdated(LocalDateTime.now());
+        
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
     public void adjustStock(Long inventoryId, Double newQuantity, String reason) {
-        log.info("Adjusting stock for inventory: {} to quantity: {}", inventoryId, newQuantity);
+        log.info("Adjusting inventory {} to quantity: {} - Reason: {}", inventoryId, newQuantity, reason);
         Inventory inventory = getInventoryById(inventoryId);
         
         inventory.setQuantityOnHand(newQuantity);
-        updateAvailableQuantity(inventoryId);
-        updateStockStatus(inventoryId);
+        inventory.setQuantityAvailable(newQuantity);
+        inventory.setTotalValue(calculateTotalValue(inventory));
         inventory.setLastMovementDate(LocalDateTime.now());
         inventory.setLastUpdated(LocalDateTime.now());
         
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
     public void reserveStock(Long inventoryId, Double quantity) {
+        log.info("Reserving {} units from inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
         
-        if (inventory.getQuantityAvailable() < quantity) {
-            throw new RuntimeException("Insufficient available stock. Available: " + 
-                                     inventory.getQuantityAvailable());
+        Double available = inventory.getQuantityAvailable();
+        if (available < quantity) {
+            throw new RuntimeException("Insufficient available stock. Available: " + available + ", Requested: " + quantity);
         }
         
-        inventory.setQuantityReserved(inventory.getQuantityReserved() + quantity);
-        updateAvailableQuantity(inventoryId);
+        Double currentReserved = inventory.getQuantityReserved();
+        inventory.setQuantityReserved(currentReserved + quantity);
+        inventory.setQuantityAvailable(inventory.calculateAvailableQuantity());
         inventory.setLastUpdated(LocalDateTime.now());
+        
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
-    public void releaseReservedStock(Long inventoryId, Double quantity) {
+    public void releaseReservation(Long inventoryId, Double quantity) {
+        log.info("Releasing {} reserved units from inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
         
-        if (inventory.getQuantityReserved() < quantity) {
-            throw new RuntimeException("Insufficient reserved stock. Reserved: " + 
-                                     inventory.getQuantityReserved());
+        Double currentReserved = inventory.getQuantityReserved();
+        if (currentReserved < quantity) {
+            throw new RuntimeException("Cannot release more than reserved. Reserved: " + currentReserved);
         }
         
-        inventory.setQuantityReserved(inventory.getQuantityReserved() - quantity);
-        updateAvailableQuantity(inventoryId);
+        inventory.setQuantityReserved(currentReserved - quantity);
+        inventory.setQuantityAvailable(inventory.calculateAvailableQuantity());
         inventory.setLastUpdated(LocalDateTime.now());
+        
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
     public void allocateStock(Long inventoryId, Double quantity) {
+        log.info("Allocating {} units from inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
         
-        if (inventory.getQuantityAvailable() < quantity) {
-            throw new RuntimeException("Insufficient available stock. Available: " + 
-                                     inventory.getQuantityAvailable());
+        Double available = inventory.getQuantityAvailable();
+        if (available < quantity) {
+            throw new RuntimeException("Insufficient available stock. Available: " + available);
         }
         
-        inventory.setQuantityAllocated(inventory.getQuantityAllocated() + quantity);
-        updateAvailableQuantity(inventoryId);
+        Double currentAllocated = inventory.getQuantityAllocated();
+        inventory.setQuantityAllocated(currentAllocated + quantity);
+        inventory.setQuantityAvailable(inventory.calculateAvailableQuantity());
         inventory.setLastUpdated(LocalDateTime.now());
+        
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
-    public void deallocateStock(Long inventoryId, Double quantity) {
+    public void releaseAllocation(Long inventoryId, Double quantity) {
+        log.info("Releasing {} allocated units from inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
         
-        if (inventory.getQuantityAllocated() < quantity) {
-            throw new RuntimeException("Insufficient allocated stock. Allocated: " + 
-                                     inventory.getQuantityAllocated());
+        Double currentAllocated = inventory.getQuantityAllocated();
+        if (currentAllocated < quantity) {
+            throw new RuntimeException("Cannot release more than allocated. Allocated: " + currentAllocated);
         }
         
-        inventory.setQuantityAllocated(inventory.getQuantityAllocated() - quantity);
-        updateAvailableQuantity(inventoryId);
+        inventory.setQuantityAllocated(currentAllocated - quantity);
+        inventory.setQuantityAvailable(inventory.calculateAvailableQuantity());
         inventory.setLastUpdated(LocalDateTime.now());
+        
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
-    public void markDamaged(Long inventoryId, Double quantity, String reason) {
+    public void recordDamagedStock(Long inventoryId, Double quantity) {
+        log.info("Recording {} damaged units in inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
         
-        if (inventory.getQuantityOnHand() < quantity) {
-            throw new RuntimeException("Insufficient stock to mark as damaged");
+        Double currentQty = inventory.getQuantityOnHand();
+        if (currentQty < quantity) {
+            throw new RuntimeException("Cannot record more damaged than on hand");
         }
         
-        inventory.setQuantityDamaged(inventory.getQuantityDamaged() + quantity);
-        inventory.setQuantityOnHand(inventory.getQuantityOnHand() - quantity);
-        updateAvailableQuantity(inventoryId);
-        updateStockStatus(inventoryId);
+        Double currentDamaged = inventory.getQuantityDamaged();
+        inventory.setQuantityDamaged(currentDamaged + quantity);
+        inventory.setQuantityOnHand(currentQty - quantity);
+        inventory.setQuantityAvailable(inventory.calculateAvailableQuantity());
         inventory.setLastUpdated(LocalDateTime.now());
+        
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
-    public void markExpired(Long inventoryId, Double quantity, String reason) {
+    public void recordExpiredStock(Long inventoryId, Double quantity) {
+        log.info("Recording {} expired units in inventory: {}", quantity, inventoryId);
         Inventory inventory = getInventoryById(inventoryId);
         
-        if (inventory.getQuantityOnHand() < quantity) {
-            throw new RuntimeException("Insufficient stock to mark as expired");
+        Double currentQty = inventory.getQuantityOnHand();
+        if (currentQty < quantity) {
+            throw new RuntimeException("Cannot record more expired than on hand");
         }
         
-        inventory.setQuantityExpired(inventory.getQuantityExpired() + quantity);
-        inventory.setQuantityOnHand(inventory.getQuantityOnHand() - quantity);
-        updateAvailableQuantity(inventoryId);
-        updateStockStatus(inventoryId);
-        inventory.setLastUpdated(LocalDateTime.now());
-        inventoryRepository.save(inventory);
-    }
-    
-    @Override
-    public void updateAvailableQuantity(Long inventoryId) {
-        Inventory inventory = getInventoryById(inventoryId);
-        Double available = calculateAvailableQuantity(inventory);
-        inventory.setQuantityAvailable(available);
-        inventoryRepository.save(inventory);
-    }
-    
-    @Override
-    public void recordStockCount(Long inventoryId, Double countedQuantity, String countedBy) {
-        log.info("Recording stock count for inventory: {}", inventoryId);
-        Inventory inventory = getInventoryById(inventoryId);
-        
-        inventory.setQuantityOnHand(countedQuantity);
-        inventory.setLastStockCountDate(LocalDate.now());
-        updateAvailableQuantity(inventoryId);
-        updateStockStatus(inventoryId);
+        Double currentExpired = inventory.getQuantityExpired();
+        inventory.setQuantityExpired(currentExpired + quantity);
+        inventory.setQuantityOnHand(currentQty - quantity);
+        inventory.setQuantityAvailable(inventory.calculateAvailableQuantity());
         inventory.setLastUpdated(LocalDateTime.now());
         
+        updateStockStatus(inventory);
         inventoryRepository.save(inventory);
     }
     
     @Override
-    public void updateLastStockCountDate(Long inventoryId, LocalDate countDate) {
+    public void updateStockLevels(Long inventoryId, Integer reorderLevel, Integer maxLevel, Integer minLevel) {
         Inventory inventory = getInventoryById(inventoryId);
-        inventory.setLastStockCountDate(countDate);
-        inventoryRepository.save(inventory);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryRequiringStockCount(int daysThreshold) {
-        LocalDate thresholdDate = LocalDate.now().minusDays(daysThreshold);
-        return inventoryRepository.findInventoryRequiringStockCount(thresholdDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getActiveInventory() {
-        return inventoryRepository.findActiveInventory();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryWithStock() {
-        return inventoryRepository.findInventoryWithStock();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryWithoutStock() {
-        return inventoryRepository.findInventoryWithoutStock();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getLowStockInventory() {
-        return inventoryRepository.findLowStockInventory();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getOutOfStockInventory() {
-        return inventoryRepository.findOutOfStockInventory();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getOverstockInventory() {
-        return inventoryRepository.findOverstockInventory();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getOptimalStockInventory() {
-        return inventoryRepository.findOptimalStockInventory();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryBelowReorderLevel() {
-        return inventoryRepository.findInventoryBelowReorderLevel();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryAboveMaxStockLevel() {
-        return inventoryRepository.findInventoryAboveMaxStockLevel();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryWithReservedStock() {
-        return inventoryRepository.findInventoryWithReservedStock();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryWithAllocatedStock() {
-        return inventoryRepository.findInventoryWithAllocatedStock();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryWithDamagedStock() {
-        return inventoryRepository.findInventoryWithDamagedStock();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryWithExpiredStock() {
-        return inventoryRepository.findInventoryWithExpiredStock();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryWithAvailableStock() {
-        return inventoryRepository.findInventoryWithAvailableStock();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getInventoryByValueRange(Double minValue, Double maxValue) {
-        return inventoryRepository.findByValueRange(minValue, maxValue);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getHighValueInventory(Double threshold) {
-        return inventoryRepository.findHighValueInventory(threshold);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getSlowMovingInventory(int daysThreshold) {
-        LocalDateTime thresholdDate = LocalDateTime.now().minusDays(daysThreshold);
-        return inventoryRepository.findSlowMovingInventory(thresholdDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getFastMovingInventory(int daysThreshold) {
-        LocalDateTime thresholdDate = LocalDateTime.now().minusDays(daysThreshold);
-        return inventoryRepository.findFastMovingInventory(thresholdDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getWarehouseInventory(Long warehouseId) {
-        return inventoryRepository.findWarehouseInventorySummary(warehouseId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getProductInventoryAcrossWarehouses(Long productId) {
-        return inventoryRepository.findProductInventoryAcrossWarehouses(productId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Inventory> getRecentInventoryUpdates(int limit) {
-        return inventoryRepository.findRecentInventoryUpdates(PageRequest.of(0, limit));
-    }
-    
-    @Override
-    public void updateStockStatus(Long inventoryId) {
-        Inventory inventory = getInventoryById(inventoryId);
-        String newStatus = determineStockStatus(inventory);
-        inventory.setStockStatus(newStatus);
-        inventoryRepository.save(inventory);
-    }
-    
-    @Override
-    public void recalculateAllStockStatuses() {
-        List<Inventory> allInventory = inventoryRepository.findAll();
-        allInventory.forEach(inventory -> {
-            inventory.setStockStatus(determineStockStatus(inventory));
-            inventoryRepository.save(inventory);
-        });
-    }
-    
-    @Override
-    public String determineStockStatus(Inventory inventory) {
-        Double quantityOnHand = inventory.getQuantityOnHand();
-        Double reorderLevel = inventory.getReorderLevel() != null ? inventory.getReorderLevel() : 0.0;
-        Double maxStockLevel = inventory.getMaxStockLevel() != null ? inventory.getMaxStockLevel() : 0.0;
         
-        if (quantityOnHand == 0) {
-            return "OUT_OF_STOCK";
-        } else if (reorderLevel > 0 && quantityOnHand <= reorderLevel) {
-            return "LOW";
-        } else if (maxStockLevel > 0 && quantityOnHand > maxStockLevel) {
-            return "OVERSTOCK";
-        } else {
-            return "OPTIMAL";
+        if (reorderLevel != null) inventory.setReorderLevel(reorderLevel);
+        if (maxLevel != null) inventory.setMaxStockLevel(maxLevel);
+        if (minLevel != null) inventory.setMinStockLevel(minLevel);
+        
+        updateStockStatus(inventory);
+        inventoryRepository.save(inventory);
+    }
+    
+    @Override
+    public void transferStock(Long fromInventoryId, Long toInventoryId, Double quantity) {
+        removeStock(fromInventoryId, quantity);
+        
+        Inventory fromInv = getInventoryById(fromInventoryId);
+        addStock(toInventoryId, quantity, fromInv.getAverageCost());
+    }
+    
+    // Query Operations
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Double getAvailableQuantity(Long productId, Long warehouseId) {
+        Inventory inventory = getInventoryByProductAndWarehouse(productId, warehouseId);
+        return inventory.calculateAvailableQuantity();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isStockAvailable(Long productId, Long warehouseId, Double requiredQuantity) {
+        try {
+            Inventory inventory = getInventoryByProductAndWarehouse(productId, warehouseId);
+            return inventory.getProductId() != null && 
+                   inventory.getWarehouseId() != null &&
+                   inventory.getQuantityOnHand() >= requiredQuantity;
+        } catch (RuntimeException e) {
+            return false;
         }
     }
     
     @Override
     @Transactional(readOnly = true)
-    public boolean validateInventory(Inventory inventory) {
-        return inventory.getProductId() != null &&
-               inventory.getWarehouseId() != null &&
-               inventory.getQuantityOnHand() != null &&
-               inventory.getQuantityOnHand() >= 0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public boolean hasAvailableStock(Long inventoryId, Double requiredQuantity) {
-        Inventory inventory = getInventoryById(inventoryId);
-        return inventory.getQuantityAvailable() >= requiredQuantity;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public boolean canReserveStock(Long inventoryId, Double quantity) {
-        return hasAvailableStock(inventoryId, quantity);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public boolean canAllocateStock(Long inventoryId, Double quantity) {
-        return hasAvailableStock(inventoryId, quantity);
-    }
-    
-    @Override
-    public Double calculateAvailableQuantity(Inventory inventory) {
-        return inventory.getQuantityOnHand() - 
-               inventory.getQuantityReserved() - 
-               inventory.getQuantityAllocated();
-    }
-    
-    @Override
-    public Double calculateTotalValue(Inventory inventory) {
-        return inventory.getQuantityOnHand() * 
-               (inventory.getAverageCost() != null ? inventory.getAverageCost() : 0.0);
-    }
-    
-    @Override
-    public void recalculateInventoryValues(Long inventoryId) {
-        Inventory inventory = getInventoryById(inventoryId);
-        inventory.setTotalValue(calculateTotalValue(inventory));
-        inventoryRepository.save(inventory);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Map<String, Object> calculateInventoryMetrics(Long inventoryId) {
-        Inventory inventory = getInventoryById(inventoryId);
-        Map<String, Object> metrics = new HashMap<>();
-        
-        metrics.put("quantityOnHand", inventory.getQuantityOnHand());
-        metrics.put("quantityAvailable", inventory.getQuantityAvailable());
-        metrics.put("quantityReserved", inventory.getQuantityReserved());
-        metrics.put("quantityAllocated", inventory.getQuantityAllocated());
-        metrics.put("totalValue", inventory.getTotalValue());
-        metrics.put("stockStatus", inventory.getStockStatus());
-        metrics.put("reorderLevel", inventory.getReorderLevel());
-        metrics.put("maxStockLevel", inventory.getMaxStockLevel());
-        
-        return metrics;
-    }
-    
-    @Override
-    public List<Inventory> createBulkInventory(List<InventoryRequest> requests) {
-        return requests.stream()
-            .map(this::createInventory)
+    public List<Inventory> getLowStockItems() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double qty = inv.getQuantityAvailable() != null ? inv.getQuantityAvailable() : 0.0;
+                Integer reorder = inv.getReorderLevel() != null ? inv.getReorderLevel() : 0;
+                return qty <= reorder;
+            })
             .collect(Collectors.toList());
     }
     
     @Override
-    public int adjustBulkStock(List<Long> inventoryIds, String reason) {
-        int count = 0;
-        for (Long id : inventoryIds) {
-            try {
-                updateStockStatus(id);
-                count++;
-            } catch (Exception e) {
-                log.error("Error adjusting inventory: {}", id, e);
-            }
-        }
-        return count;
-    }
-    
-    @Override
-    public int deleteInventoryBulk(List<Long> inventoryIds) {
-        int count = 0;
-        for (Long id : inventoryIds) {
-            try {
-                deleteInventory(id);
-                count++;
-            } catch (Exception e) {
-                log.error("Error deleting inventory: {}", id, e);
-            }
-        }
-        return count;
+    @Transactional(readOnly = true)
+    public List<Inventory> getOutOfStockItems() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double qty = inv.getQuantityOnHand() != null ? inv.getQuantityOnHand() : 0.0;
+                return qty <= 0;
+            })
+            .collect(Collectors.toList());
     }
     
     @Override
     @Transactional(readOnly = true)
-    public Map<String, Object> getInventoryStatistics() {
-        Map<String, Object> stats = new HashMap<>();
+    public Map<String, Object> getInventorySummary(Long inventoryId) {
+        Inventory inventory = getInventoryById(inventoryId);
         
-        stats.put("totalItems", inventoryRepository.count());
-        stats.put("lowStockItems", inventoryRepository.countLowStockItems());
-        stats.put("outOfStockItems", inventoryRepository.countOutOfStockItems());
-        stats.put("overstockItems", inventoryRepository.countOverstockItems());
-        stats.put("totalQuantityOnHand", getTotalQuantityOnHand());
-        stats.put("totalAvailableQuantity", getTotalAvailableQuantity());
-        stats.put("totalReservedQuantity", getTotalReservedQuantity());
-        stats.put("totalAllocatedQuantity", getTotalAllocatedQuantity());
-        stats.put("totalInventoryValue", getTotalInventoryValue());
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("id", inventory.getId());
+        summary.put("productId", inventory.getProductId());
+        summary.put("warehouseId", inventory.getWarehouseId());
+        summary.put("quantityOnHand", inventory.getQuantityOnHand());
+        summary.put("quantityAvailable", inventory.getQuantityAvailable());
+        summary.put("quantityReserved", inventory.getQuantityReserved());
+        summary.put("quantityAllocated", inventory.getQuantityAllocated());
+        summary.put("totalValue", inventory.getTotalValue());
+        summary.put("stockStatus", inventory.getStockStatus());
+        summary.put("reorderLevel", inventory.getReorderLevel());
+        summary.put("maxStockLevel", inventory.getMaxStockLevel());
+        
+        return summary;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getDashboardStatistics() {
+        List<Inventory> allInventory = inventoryRepository.findAll();
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalItems", allInventory.size());
+        stats.put("lowStockItems", getLowStockItems().size());
+        stats.put("outOfStockItems", getOutOfStockItems().size());
+        
+        Double totalValue = allInventory.stream()
+            .map(inv -> inv.getQuantityOnHand() * (inv.getAverageCost() != null ? inv.getAverageCost() : 0.0))
+            .reduce(0.0, Double::sum);
+        
+        stats.put("totalInventoryValue", totalValue);
         
         return stats;
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getStockStatusDistribution() {
-        List<Object[]> results = inventoryRepository.getStockStatusDistribution();
-        return convertToMapList(results, "stockStatus", "itemCount");
+    public Map<String, Object> getInventoryStatistics() {
+        return getDashboardStatistics();
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getInventoryByWarehouse() {
-        List<Object[]> results = inventoryRepository.getInventoryByWarehouse();
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("warehouseId", result[0]);
-                map.put("warehouseName", result[1]);
-                map.put("itemCount", result[2]);
-                map.put("totalQuantity", result[3]);
-                map.put("totalValue", result[4]);
-                return map;
+    public Map<String, Object> calculateInventoryMetrics(Long inventoryId) {
+        return getInventorySummary(inventoryId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Inventory> searchInventory(String searchTerm, Pageable pageable) {
+        List<Inventory> results = inventoryRepository.searchInventory(searchTerm);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), results.size());
+        
+        return new PageImpl<>(
+            results.subList(start, end),
+            pageable,
+            results.size()
+        );
+    }
+    
+    // Convenience methods (aliases)
+    
+    @Override
+    public void increaseStock(Long inventoryId, Double quantity) {
+        Inventory inventory = getInventoryById(inventoryId);
+        addStock(inventoryId, quantity, inventory.getAverageCost());
+    }
+    
+    @Override
+    public void decreaseStock(Long inventoryId, Double quantity) {
+        removeStock(inventoryId, quantity);
+    }
+    
+    @Override
+    public void releaseReservedStock(Long inventoryId, Double quantity) {
+        releaseReservation(inventoryId, quantity);
+    }
+    
+    @Override
+    public void deallocateStock(Long inventoryId, Double quantity) {
+        releaseAllocation(inventoryId, quantity);
+    }
+    
+    @Override
+    public void markDamaged(Long inventoryId, Double quantity, String reason) {
+        recordDamagedStock(inventoryId, quantity);
+    }
+    
+    @Override
+    public void markExpired(Long inventoryId, Double quantity, String reason) {
+        recordExpiredStock(inventoryId, quantity);
+    }
+    
+    @Override
+    public void recordStockCount(Long inventoryId, Double actualQuantity, String notes) {
+        adjustStock(inventoryId, actualQuantity, notes);
+    }
+    
+    // Query by Status
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getActiveInventory() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> "ACTIVE".equals(inv.getStatus()))
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryWithStock() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double qty = inv.getQuantityOnHand();
+                return qty != null && qty > 0;
             })
             .collect(Collectors.toList());
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getInventoryTurnoverData() {
-        List<Object[]> results = inventoryRepository.getInventoryTurnoverData();
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("productId", result[0]);
-                map.put("productName", result[1]);
-                map.put("quantityOnHand", result[2]);
-                map.put("averageCost", result[3]);
-                map.put("lastMovementDate", result[4]);
-                return map;
+    public List<Inventory> getInventoryWithoutStock() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double qty = inv.getQuantityOnHand();
+                return qty == null || qty <= 0;
             })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getLowStockInventory() {
+        return getLowStockItems();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getOutOfStockInventory() {
+        return getOutOfStockItems();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getOverstockInventory() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double qty = inv.getQuantityOnHand();
+                Integer max = inv.getMaxStockLevel();
+                return qty != null && max != null && qty >= max;
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getOptimalStockInventory() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double qty = inv.getQuantityOnHand();
+                Integer reorder = inv.getReorderLevel();
+                Integer max = inv.getMaxStockLevel();
+                return qty != null && reorder != null && max != null &&
+                       qty > reorder && qty < max;
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryBelowReorderLevel() {
+        return getLowStockItems();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryAboveMaxStockLevel() {
+        return getOverstockInventory();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryWithReservedStock() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double reserved = inv.getQuantityReserved();
+                return reserved != null && reserved > 0;
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryWithDamagedStock() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double damaged = inv.getQuantityDamaged();
+                return damaged != null && damaged > 0;
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryWithExpiredStock() {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double expired = inv.getQuantityExpired();
+                return expired != null && expired > 0;
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getSlowMovingInventory(int days) {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                LocalDateTime lastMovement = inv.getLastMovementDate();
+                return lastMovement == null || lastMovement.isBefore(cutoffDate);
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getFastMovingInventory(int days) {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                LocalDateTime lastMovement = inv.getLastMovementDate();
+                return lastMovement != null && lastMovement.isAfter(cutoffDate);
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getWarehouseInventory(Long warehouseId) {
+        return getInventoryByWarehouse(warehouseId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getProductInventoryAcrossWarehouses(Long productId) {
+        return getInventoryByProduct(productId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryRequiringStockCount(int daysSinceLastCount) {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysSinceLastCount);
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                LocalDateTime lastCount = inv.getLastStockCountDate();
+                return lastCount == null || lastCount.isBefore(cutoffDate);
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getHighValueInventory(Double minValue) {
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                Double value = inv.getTotalValue();
+                return value != null && value >= minValue;
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> getRecentInventoryUpdates(int days) {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> {
+                LocalDateTime updated = inv.getLastUpdated();
+                return updated != null && updated.isAfter(cutoffDate);
+            })
+            .sorted((i1, i2) -> i2.getLastUpdated().compareTo(i1.getLastUpdated()))
             .collect(Collectors.toList());
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<Inventory> getTopValueInventoryItems(int limit) {
-        return inventoryRepository.getTopValueInventoryItems(PageRequest.of(0, limit));
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> inv.getTotalValue() != null)
+            .sorted((i1, i2) -> Double.compare(
+                i2.getTotalValue() != null ? i2.getTotalValue() : 0.0,
+                i1.getTotalValue() != null ? i1.getTotalValue() : 0.0
+            ))
+            .limit(limit)
+            .collect(Collectors.toList());
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<Inventory> getTopQuantityInventoryItems(int limit) {
-        return inventoryRepository.getTopQuantityInventoryItems(PageRequest.of(0, limit));
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalQuantityOnHand() {
-        Double total = inventoryRepository.getTotalQuantityOnHand();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalAvailableQuantity() {
-        Double total = inventoryRepository.getTotalAvailableQuantity();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalReservedQuantity() {
-        Double total = inventoryRepository.getTotalReservedQuantity();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalAllocatedQuantity() {
-        Double total = inventoryRepository.getTotalAllocatedQuantity();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalInventoryValue() {
-        Double total = inventoryRepository.getTotalInventoryValue();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getInventoryValueByWarehouse(Long warehouseId) {
-        Double total = inventoryRepository.getInventoryValueByWarehouse(warehouseId);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Map<String, Object> getDashboardStatistics() {
-        Map<String, Object> dashboard = new HashMap<>();
-        
-        dashboard.put("statistics", getInventoryStatistics());
-        dashboard.put("stockStatusDistribution", getStockStatusDistribution());
-        dashboard.put("inventoryByWarehouse", getInventoryByWarehouse());
-        dashboard.put("topValueItems", getTopValueInventoryItems(10));
-        
-        return dashboard;
-    }
-    
-    private List<Map<String, Object>> convertToMapList(List<Object[]> results, String key1, String key2) {
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put(key1, result[0]);
-                map.put(key2, result[1]);
-                return map;
-            })
+        return inventoryRepository.findAll().stream()
+            .filter(inv -> inv.getQuantityOnHand() != null)
+            .sorted((i1, i2) -> Double.compare(
+                i2.getQuantityOnHand() != null ? i2.getQuantityOnHand() : 0.0,
+                i1.getQuantityOnHand() != null ? i1.getQuantityOnHand() : 0.0
+            ))
+            .limit(limit)
             .collect(Collectors.toList());
+    }
+    
+    // Helper methods
+    
+    private void updateAverageCost(Inventory inventory, Double newQuantity, Double newCost) {
+        if (newCost == null || newCost == 0.0) return;
+        
+        Double currentQty = inventory.getQuantityOnHand() != null ? inventory.getQuantityOnHand() : 0.0;
+        Double currentAvgCost = inventory.getAverageCost() != null ? inventory.getAverageCost() : 0.0;
+        
+        Double totalCost = (currentQty * currentAvgCost) + (newQuantity * newCost);
+        Double totalQty = currentQty + newQuantity;
+        
+        if (totalQty > 0) {
+            Double newAvgCost = totalCost / totalQty;
+            inventory.setAverageCost(newAvgCost);
+        }
+    }
+    
+    private Double calculateTotalValue(Inventory inventory) {
+        Double qty = inventory.getQuantityOnHand() != null ? inventory.getQuantityOnHand() : 0.0;
+        Double avgCost = inventory.getAverageCost() != null ? inventory.getAverageCost() : 0.0;
+        return qty * avgCost;
+    }
+    
+    private void updateStockStatus(Inventory inventory) {
+        inventory.updateStockStatus();
+        inventory.setTotalValue(calculateTotalValue(inventory));
+    }
+    
+    private String determineStockStatus(Inventory inventory) {
+        Double qty = inventory.getQuantityOnHand() != null ? inventory.getQuantityOnHand() : 0.0;
+        Integer reorder = inventory.getReorderLevel() != null ? inventory.getReorderLevel() : 0;
+        Integer max = inventory.getMaxStockLevel() != null ? inventory.getMaxStockLevel() : Integer.MAX_VALUE;
+        
+        if (qty <= 0) return "OUT_OF_STOCK";
+        if (qty <= reorder) return "LOW_STOCK";
+        if (qty >= max) return "OVERSTOCK";
+        return "IN_STOCK";
     }
 }
