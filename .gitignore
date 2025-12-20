@@ -5,8 +5,8 @@
 *.jar
 
 # Maven
-target/
-dist/
+epic-green-erp/target/
+epic-green-erp/dist/
 
 ### IntelliJ IDEA ###
 .idea
