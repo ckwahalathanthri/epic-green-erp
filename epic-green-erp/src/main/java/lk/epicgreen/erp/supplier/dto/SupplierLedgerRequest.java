@@ -1,7 +1,8 @@
 package lk.epicgreen.erp.supplier.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,12 +10,12 @@ import java.time.LocalDate;
 
 /**
  * SupplierLedger Request DTO
- * DTO for supplier ledger operations
  * 
  * @author Epic Green Development Team
  * @version 1.0
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SupplierLedgerRequest {
@@ -22,35 +23,48 @@ public class SupplierLedgerRequest {
     @NotNull(message = "Supplier ID is required")
     private Long supplierId;
     
-    @NotNull(message = "Transaction type is required")
-    private String transactionType;
+    private String supplierName;
     
     @NotNull(message = "Transaction date is required")
     private LocalDate transactionDate;
     
-    private String referenceNumber;
+    @NotBlank(message = "Transaction type is required")
+    private String transactionType; // PURCHASE, PAYMENT, CREDIT_NOTE, DEBIT_NOTE, OPENING_BALANCE
     
-    private String referenceType;
+    private String referenceType; // PURCHASE_ORDER, PAYMENT, ADJUSTMENT
     
     private Long referenceId;
     
-    @NotNull(message = "Debit amount is required")
+    private String referenceNumber;
+    
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    private String description;
+    
+    @DecimalMin(value = "0.0", message = "Debit amount must be positive")
     private Double debitAmount;
     
-    @NotNull(message = "Credit amount is required")
+    @DecimalMin(value = "0.0", message = "Credit amount must be positive")
     private Double creditAmount;
     
-    private String paymentMethod;
+    // Payment details
+    private String paymentType; // CASH, CHEQUE, BANK_TRANSFER, CREDIT
     
-    private String chequeNumber;
+    @Size(max = 50, message = "Cheque number cannot exceed 50 characters")
+    private String chequeNo;
     
     private LocalDate chequeDate;
     
-    private String bankName;
+    @Size(max = 200, message = "Bank name cannot exceed 200 characters")
+    private String bank;
     
-    private String description;
+    @Size(max = 100, message = "Bank account cannot exceed 100 characters")
+    private String bankAccount;
     
-    private String notes;
+    @Size(max = 200, message = "Transaction reference cannot exceed 200 characters")
+    private String transactionReference;
     
     private Long recordedByUserId;
+    
+    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
+    private String notes;
 }

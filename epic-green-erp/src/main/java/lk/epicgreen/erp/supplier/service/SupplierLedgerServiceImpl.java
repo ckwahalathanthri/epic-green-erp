@@ -8,11 +8,11 @@ import lk.epicgreen.erp.supplier.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 /**
  * SupplierLedger Service Implementation
- * Implementation of supplier ledger service operations
  * 
  * @author Epic Green Development Team
  * @version 1.0
@@ -31,572 +30,410 @@ import java.util.stream.Collectors;
 @Transactional
 public class SupplierLedgerServiceImpl implements SupplierLedgerService {
     
-    private final SupplierLedgerRepository ledgerRepository;
+    private final SupplierLedgerRepository supplierLedgerRepository;
     private final SupplierRepository supplierRepository;
     
     @Override
     public SupplierLedger createLedgerEntry(SupplierLedgerRequest request) {
-        log.info("Creating ledger entry for supplier: {}", request.getSupplierId());
+        log.info("Creating supplier ledger entry for supplier: {}", request.getSupplierId());
         
-        // Validate reference number
-        if (request.getReferenceNumber() != null && 
-            ledgerRepository.existsByReferenceNumber(request.getReferenceNumber())) {
-            throw new RuntimeException("Reference number already exists: " + request.getReferenceNumber());
-        }
-        
-        // Get supplier
+        // Get supplier to update balance
         Supplier supplier = supplierRepository.findById(request.getSupplierId())
             .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + request.getSupplierId()));
         
-        // Calculate balance before transaction
-        Double currentBalance = getBalanceBySupplierId(request.getSupplierId());
-        
         SupplierLedger ledger = new SupplierLedger();
         ledger.setSupplierId(request.getSupplierId());
-        ledger.setSupplierName(supplier.getSupplierName());
+        ledger.setSupplierName(request.getSupplierName() != null ? 
+            request.getSupplierName() : supplier.getName());
+        
+        ledger.setTransactionDate(request.getTransactionDate());
         ledger.setTransactionType(request.getTransactionType());
-        ledger.setTransactionDate(request.getTransactionDate() != null ? 
-            request.getTransactionDate() : LocalDate.now());
-        ledger.setReferenceNumber(request.getReferenceNumber());
         ledger.setReferenceType(request.getReferenceType());
         ledger.setReferenceId(request.getReferenceId());
-        ledger.setDebitAmount(request.getDebitAmount() != null ? request.getDebitAmount() : 0.0);
-        ledger.setCreditAmount(request.getCreditAmount() != null ? request.getCreditAmount() : 0.0);
-        ledger.setPaymentMethod(request.getPaymentMethod());
-        ledger.setChequeNumber(request.getChequeNumber());
-        ledger.setChequeDate(request.getChequeDate());
-        ledger.setBankName(request.getBankName());
+        ledger.setReferenceNumber(request.getReferenceNumber());
         ledger.setDescription(request.getDescription());
+        
+        // Convert amounts to BigDecimal
+        BigDecimal debitAmount = request.getDebitAmount() != null ? 
+            BigDecimal.valueOf(request.getDebitAmount()) : BigDecimal.ZERO;
+        BigDecimal creditAmount = request.getCreditAmount() != null ? 
+            BigDecimal.valueOf(request.getCreditAmount()) : BigDecimal.ZERO;
+        
+        ledger.setDebitAmount(debitAmount);
+        ledger.setCreditAmount(creditAmount);
+        
+        // Payment details
+        ledger.setPaymentType(request.getPaymentType());
+        ledger.setChequeNo(request.getChequeNo());
+        ledger.setChequeDate(request.getChequeDate());
+        ledger.setBank(request.getBank());
+        ledger.setBankAccount(request.getBankAccount());
+        ledger.setTransactionReference(request.getTransactionReference());
+        ledger.setRecordedBy(request.getRecordedByUserId() != null ? 
+            String.valueOf(request.getRecordedByUserId()) : null);
         ledger.setNotes(request.getNotes());
-        ledger.setRecordedByUserId(request.getRecordedByUserId());
         
-        // Calculate balance after transaction
-        Double balanceAfter = currentBalance + ledger.getDebitAmount() - ledger.getCreditAmount();
-        ledger.setBalanceAfter(balanceAfter);
-        
-        SupplierLedger saved = ledgerRepository.save(ledger);
+        // Calculate new balance
+        BigDecimal currentBalance = supplier.getOutstandingBalance() != null ? 
+            supplier.getOutstandingBalance() : BigDecimal.ZERO;
+        BigDecimal newBalance = currentBalance.add(debitAmount).subtract(creditAmount);
+        ledger.setBalanceAmount(newBalance);
         
         // Update supplier balance
-        supplier.setCurrentBalance(balanceAfter);
-        supplier.setLastTransactionDate(LocalDateTime.now());
+        supplier.setOutstandingBalance(newBalance);
+        supplier.setLastTransactionAt(LocalDateTime.now());
         supplierRepository.save(supplier);
         
-        return saved;
+        return supplierLedgerRepository.save(ledger);
     }
     
     @Override
     public SupplierLedger updateLedgerEntry(Long id, SupplierLedgerRequest request) {
-        log.info("Updating ledger entry: {}", id);
+        log.info("Updating supplier ledger entry: {}", id);
         SupplierLedger existing = getLedgerEntryById(id);
         
-        // Validate reference number if changed
-        if (request.getReferenceNumber() != null && 
-            !request.getReferenceNumber().equals(existing.getReferenceNumber()) &&
-            ledgerRepository.existsByReferenceNumber(request.getReferenceNumber())) {
-            throw new RuntimeException("Reference number already exists: " + request.getReferenceNumber());
-        }
+        // Store old amounts for balance recalculation
+        BigDecimal oldDebit = existing.getDebitAmount() != null ? 
+            existing.getDebitAmount() : BigDecimal.ZERO;
+        BigDecimal oldCredit = existing.getCreditAmount() != null ? 
+            existing.getCreditAmount() : BigDecimal.ZERO;
         
-        existing.setTransactionType(request.getTransactionType());
         existing.setTransactionDate(request.getTransactionDate());
-        existing.setReferenceNumber(request.getReferenceNumber());
+        existing.setTransactionType(request.getTransactionType());
         existing.setReferenceType(request.getReferenceType());
         existing.setReferenceId(request.getReferenceId());
-        existing.setDebitAmount(request.getDebitAmount());
-        existing.setCreditAmount(request.getCreditAmount());
-        existing.setPaymentMethod(request.getPaymentMethod());
-        existing.setChequeNumber(request.getChequeNumber());
-        existing.setChequeDate(request.getChequeDate());
-        existing.setBankName(request.getBankName());
+        existing.setReferenceNumber(request.getReferenceNumber());
         existing.setDescription(request.getDescription());
-        existing.setNotes(request.getNotes());
-        existing.setUpdatedAt(LocalDateTime.now());
         
-        return ledgerRepository.save(existing);
+        // Convert new amounts to BigDecimal
+        BigDecimal newDebit = request.getDebitAmount() != null ? 
+            BigDecimal.valueOf(request.getDebitAmount()) : BigDecimal.ZERO;
+        BigDecimal newCredit = request.getCreditAmount() != null ? 
+            BigDecimal.valueOf(request.getCreditAmount()) : BigDecimal.ZERO;
+        
+        existing.setDebitAmount(newDebit);
+        existing.setCreditAmount(newCredit);
+        existing.setPaymentType(request.getPaymentType());
+        existing.setChequeNo(request.getChequeNo());
+        existing.setChequeDate(request.getChequeDate());
+        existing.setBank(request.getBank());
+        existing.setBankAccount(request.getBankAccount());
+        existing.setTransactionReference(request.getTransactionReference());
+        existing.setNotes(request.getNotes());
+        
+        // Recalculate balance
+        Supplier supplier = supplierRepository.findById(existing.getSupplierId())
+            .orElseThrow(() -> new RuntimeException("Supplier not found"));
+        
+        BigDecimal currentBalance = supplier.getOutstandingBalance() != null ? 
+            supplier.getOutstandingBalance() : BigDecimal.ZERO;
+        
+        // Remove old transaction effect and add new transaction effect
+        BigDecimal adjustedBalance = currentBalance
+            .subtract(oldDebit)
+            .add(oldCredit)
+            .add(newDebit)
+            .subtract(newCredit);
+        
+        existing.setBalanceAmount(adjustedBalance);
+        supplier.setOutstandingBalance(adjustedBalance);
+        supplierRepository.save(supplier);
+        
+        return supplierLedgerRepository.save(existing);
     }
     
     @Override
     public void deleteLedgerEntry(Long id) {
-        log.info("Deleting ledger entry: {}", id);
+        log.info("Deleting supplier ledger entry: {}", id);
         SupplierLedger ledger = getLedgerEntryById(id);
         
-        if (!canDeleteLedgerEntry(id)) {
-            throw new RuntimeException("Cannot delete ledger entry");
-        }
+        // Update supplier balance by reversing this transaction
+        Supplier supplier = supplierRepository.findById(ledger.getSupplierId())
+            .orElseThrow(() -> new RuntimeException("Supplier not found"));
         
-        ledgerRepository.deleteById(id);
+        BigDecimal currentBalance = supplier.getOutstandingBalance() != null ? 
+            supplier.getOutstandingBalance() : BigDecimal.ZERO;
+        BigDecimal debit = ledger.getDebitAmount() != null ? 
+            ledger.getDebitAmount() : BigDecimal.ZERO;
+        BigDecimal credit = ledger.getCreditAmount() != null ? 
+            ledger.getCreditAmount() : BigDecimal.ZERO;
+        
+        BigDecimal newBalance = currentBalance.subtract(debit).add(credit);
+        supplier.setOutstandingBalance(newBalance);
+        supplierRepository.save(supplier);
+        
+        supplierLedgerRepository.deleteById(id);
     }
     
     @Override
     @Transactional(readOnly = true)
     public SupplierLedger getLedgerEntryById(Long id) {
-        return ledgerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Ledger entry not found with id: " + id));
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public SupplierLedger getLedgerEntryByReferenceNumber(String referenceNumber) {
-        return ledgerRepository.findByReferenceNumber(referenceNumber)
-            .orElseThrow(() -> new RuntimeException("Ledger entry not found with reference: " + referenceNumber));
+        return supplierLedgerRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Supplier ledger entry not found with id: " + id));
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<SupplierLedger> getAllLedgerEntries() {
-        return ledgerRepository.findAll();
+        return supplierLedgerRepository.findAll();
     }
     
     @Override
     @Transactional(readOnly = true)
     public Page<SupplierLedger> getAllLedgerEntries(Pageable pageable) {
-        return ledgerRepository.findAll(pageable);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Page<SupplierLedger> searchLedgerEntries(String keyword, Pageable pageable) {
-        return ledgerRepository.searchLedgerEntries(keyword, pageable);
-    }
-    
-    @Override
-    public SupplierLedger recordPurchase(Long supplierId, Double amount, String referenceType, 
-                                        Long referenceId, String description, LocalDate transactionDate) {
-        log.info("Recording purchase for supplier: {}, amount: {}", supplierId, amount);
-        
-        SupplierLedgerRequest request = new SupplierLedgerRequest();
-        request.setSupplierId(supplierId);
-        request.setTransactionType("PURCHASE");
-        request.setTransactionDate(transactionDate);
-        request.setReferenceType(referenceType);
-        request.setReferenceId(referenceId);
-        request.setDebitAmount(amount);
-        request.setCreditAmount(0.0);
-        request.setDescription(description);
-        
-        return createLedgerEntry(request);
-    }
-    
-    @Override
-    public SupplierLedger recordPayment(Long supplierId, Double amount, String paymentMethod, 
-                                       String referenceNumber, String description, LocalDate transactionDate) {
-        log.info("Recording payment for supplier: {}, amount: {}", supplierId, amount);
-        
-        SupplierLedgerRequest request = new SupplierLedgerRequest();
-        request.setSupplierId(supplierId);
-        request.setTransactionType("PAYMENT");
-        request.setTransactionDate(transactionDate);
-        request.setPaymentMethod(paymentMethod);
-        request.setReferenceNumber(referenceNumber);
-        request.setDebitAmount(0.0);
-        request.setCreditAmount(amount);
-        request.setDescription(description);
-        
-        return createLedgerEntry(request);
-    }
-    
-    @Override
-    public SupplierLedger recordReturn(Long supplierId, Double amount, String referenceType, 
-                                      Long referenceId, String description, LocalDate transactionDate) {
-        log.info("Recording return for supplier: {}, amount: {}", supplierId, amount);
-        
-        SupplierLedgerRequest request = new SupplierLedgerRequest();
-        request.setSupplierId(supplierId);
-        request.setTransactionType("RETURN");
-        request.setTransactionDate(transactionDate);
-        request.setReferenceType(referenceType);
-        request.setReferenceId(referenceId);
-        request.setDebitAmount(0.0);
-        request.setCreditAmount(amount);
-        request.setDescription(description);
-        
-        return createLedgerEntry(request);
-    }
-    
-    @Override
-    public SupplierLedger recordAdjustment(Long supplierId, Double debitAmount, Double creditAmount, 
-                                          String description, String notes, LocalDate transactionDate) {
-        log.info("Recording adjustment for supplier: {}", supplierId);
-        
-        SupplierLedgerRequest request = new SupplierLedgerRequest();
-        request.setSupplierId(supplierId);
-        request.setTransactionType("ADJUSTMENT");
-        request.setTransactionDate(transactionDate);
-        request.setDebitAmount(debitAmount);
-        request.setCreditAmount(creditAmount);
-        request.setDescription(description);
-        request.setNotes(notes);
-        
-        return createLedgerEntry(request);
+        return supplierLedgerRepository.findAll(pageable);
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<SupplierLedger> getLedgerEntriesBySupplier(Long supplierId) {
-        return ledgerRepository.findBySupplierId(supplierId);
+        return supplierLedgerRepository.findBySupplierId(supplierId);
     }
     
     @Override
     @Transactional(readOnly = true)
     public Page<SupplierLedger> getLedgerEntriesBySupplier(Long supplierId, Pageable pageable) {
-        return ledgerRepository.findBySupplierId(supplierId, pageable);
+        return supplierLedgerRepository.findBySupplierId(supplierId, pageable);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<SupplierLedger> getLedgerEntriesBySupplierAndDateRange(Long supplierId, LocalDate startDate, LocalDate endDate) {
-        return ledgerRepository.findBySupplierIdAndTransactionDateBetween(supplierId, startDate, endDate);
+    public List<SupplierLedger> getLedgerEntriesByDateRange(Long supplierId, LocalDate startDate, LocalDate endDate) {
+        if (supplierId != null) {
+            return supplierLedgerRepository.findBySupplierIdAndTransactionDateBetween(
+                supplierId, startDate, endDate);
+        } else {
+            return supplierLedgerRepository.findByTransactionDateBetween(startDate, endDate);
+        }
     }
     
     @Override
     @Transactional(readOnly = true)
-    public Page<SupplierLedger> getLedgerEntriesBySupplierAndDateRange(Long supplierId, LocalDate startDate, 
-                                                                       LocalDate endDate, Pageable pageable) {
-        return ledgerRepository.findBySupplierIdAndTransactionDateBetween(supplierId, startDate, endDate, pageable);
+    public List<SupplierLedger> getLedgerEntriesByType(Long supplierId, String transactionType) {
+        if (supplierId != null) {
+            return supplierLedgerRepository.findBySupplierIdAndTransactionType(supplierId, transactionType);
+        } else {
+            return supplierLedgerRepository.findByTransactionType(transactionType);
+        }
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<SupplierLedger> getDebitEntriesBySupplier(Long supplierId) {
-        return ledgerRepository.findDebitEntriesBySupplierId(supplierId);
+    public BigDecimal getTotalDebits(Long supplierId, LocalDate startDate, LocalDate endDate) {
+        List<SupplierLedger> entries = getLedgerEntriesByDateRange(supplierId, startDate, endDate);
+        return entries.stream()
+            .map(SupplierLedger::getDebitAmount)
+            .filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<SupplierLedger> getCreditEntriesBySupplier(Long supplierId) {
-        return ledgerRepository.findCreditEntriesBySupplierId(supplierId);
+    public BigDecimal getTotalCredits(Long supplierId, LocalDate startDate, LocalDate endDate) {
+        List<SupplierLedger> entries = getLedgerEntriesByDateRange(supplierId, startDate, endDate);
+        return entries.stream()
+            .map(SupplierLedger::getCreditAmount)
+            .filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<SupplierLedger> getPurchaseEntries() {
-        return ledgerRepository.findPurchaseEntries();
+    public BigDecimal getSupplierBalance(Long supplierId) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+            .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
+        return supplier.getOutstandingBalance() != null ? 
+            supplier.getOutstandingBalance() : BigDecimal.ZERO;
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<SupplierLedger> getPaymentEntries() {
-        return ledgerRepository.findPaymentEntries();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getReturnEntries() {
-        return ledgerRepository.findReturnEntries();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getAdjustmentEntries() {
-        return ledgerRepository.findAdjustmentEntries();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getCashPayments() {
-        return ledgerRepository.findCashPayments();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getChequePayments() {
-        return ledgerRepository.findChequePayments();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getBankTransferPayments() {
-        return ledgerRepository.findBankTransferPayments();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getCreditPurchases() {
-        return ledgerRepository.findCreditPurchases();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getRecentEntriesBySupplier(Long supplierId, int limit) {
-        return ledgerRepository.findRecentEntriesBySupplierId(supplierId, PageRequest.of(0, limit));
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getTodaysEntries() {
-        return ledgerRepository.findTodaysEntries(LocalDate.now());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getThisMonthEntries() {
-        LocalDate now = LocalDate.now();
-        return ledgerRepository.findThisMonthEntries(now.getYear(), now.getMonthValue());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getLargeTransactions(Double threshold) {
-        return ledgerRepository.findLargeTransactions(threshold);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupplierLedger> getSupplierStatement(Long supplierId, LocalDate startDate, LocalDate endDate) {
-        return ledgerRepository.getSupplierStatement(supplierId, startDate, endDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Map<String, Object> getSupplierStatementSummary(Long supplierId, LocalDate startDate, LocalDate endDate) {
+    public Map<String, Object> getSupplierLedgerSummary(Long supplierId, LocalDate startDate, LocalDate endDate) {
         Map<String, Object> summary = new HashMap<>();
         
-        Double openingBalance = getOpeningBalance(supplierId, startDate);
-        Double totalDebit = getTotalDebitBySupplierIdAndDateRange(supplierId, startDate, endDate);
-        Double totalCredit = getTotalCreditBySupplierIdAndDateRange(supplierId, startDate, endDate);
-        Double closingBalance = openingBalance + totalDebit - totalCredit;
+        BigDecimal totalDebits = getTotalDebits(supplierId, startDate, endDate);
+        BigDecimal totalCredits = getTotalCredits(supplierId, startDate, endDate);
+        BigDecimal currentBalance = getSupplierBalance(supplierId);
         
         summary.put("supplierId", supplierId);
         summary.put("startDate", startDate);
         summary.put("endDate", endDate);
-        summary.put("openingBalance", openingBalance);
-        summary.put("totalDebit", totalDebit);
-        summary.put("totalCredit", totalCredit);
-        summary.put("closingBalance", closingBalance);
-        summary.put("entries", getSupplierStatement(supplierId, startDate, endDate));
+        summary.put("totalDebits", totalDebits.doubleValue());
+        summary.put("totalCredits", totalCredits.doubleValue());
+        summary.put("currentBalance", currentBalance.doubleValue());
+        summary.put("netChange", totalDebits.subtract(totalCredits).doubleValue());
         
         return summary;
     }
     
     @Override
     @Transactional(readOnly = true)
-    public Double getOpeningBalance(Long supplierId, LocalDate startDate) {
-        List<Double> results = ledgerRepository.getOpeningBalance(supplierId, startDate, PageRequest.of(0, 1));
-        return results.isEmpty() ? 0.0 : results.get(0);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalDebitBySupplierId(Long supplierId) {
-        Double total = ledgerRepository.getTotalDebitAmountBySupplierId(supplierId);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalCreditBySupplierId(Long supplierId) {
-        Double total = ledgerRepository.getTotalCreditAmountBySupplierId(supplierId);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getBalanceBySupplierId(Long supplierId) {
-        Double balance = ledgerRepository.getBalanceBySupplierId(supplierId);
-        return balance != null ? balance : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalDebitBySupplierIdAndDateRange(Long supplierId, LocalDate startDate, LocalDate endDate) {
-        Double total = ledgerRepository.getTotalDebitAmountBySupplierIdAndDateRange(supplierId, startDate, endDate);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalCreditBySupplierIdAndDateRange(Long supplierId, LocalDate startDate, LocalDate endDate) {
-        Double total = ledgerRepository.getTotalCreditAmountBySupplierIdAndDateRange(supplierId, startDate, endDate);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalPurchasesBySupplierId(Long supplierId) {
-        Double total = ledgerRepository.getTotalPurchasesBySupplierId(supplierId);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalPaymentsBySupplierId(Long supplierId) {
-        Double total = ledgerRepository.getTotalPaymentsBySupplierId(supplierId);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalReturnsBySupplierId(Long supplierId) {
-        Double total = ledgerRepository.getTotalReturnsBySupplierId(supplierId);
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public boolean validateLedgerEntry(SupplierLedger ledgerEntry) {
-        return ledgerEntry.getSupplierId() != null &&
-               ledgerEntry.getTransactionType() != null &&
-               ledgerEntry.getTransactionDate() != null &&
-               (ledgerEntry.getDebitAmount() > 0 || ledgerEntry.getCreditAmount() > 0);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isReferenceNumberAvailable(String referenceNumber) {
-        return !ledgerRepository.existsByReferenceNumber(referenceNumber);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public boolean canDeleteLedgerEntry(Long ledgerEntryId) {
-        // Can delete if not referenced by other transactions
-        return true;
-    }
-    
-    @Override
-    public List<SupplierLedger> createBulkLedgerEntries(List<SupplierLedgerRequest> requests) {
-        return requests.stream()
-            .map(this::createLedgerEntry)
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    public int deleteBulkLedgerEntries(List<Long> ledgerEntryIds) {
-        int count = 0;
-        for (Long id : ledgerEntryIds) {
-            try {
-                deleteLedgerEntry(id);
-                count++;
-            } catch (Exception e) {
-                log.error("Error deleting ledger entry: {}", id, e);
-            }
+    public List<SupplierLedger> getUnreconciledEntries(Long supplierId) {
+        if (supplierId != null) {
+            return supplierLedgerRepository.findAll().stream()
+                .filter(entry -> entry.getSupplierId().equals(supplierId))
+                .filter(entry -> !Boolean.TRUE.equals(entry.getIsReconciled()))
+                .collect(Collectors.toList());
+        } else {
+            return supplierLedgerRepository.findAll().stream()
+                .filter(entry -> !Boolean.TRUE.equals(entry.getIsReconciled()))
+                .collect(Collectors.toList());
         }
-        return count;
     }
     
     @Override
-    @Transactional(readOnly = true)
-    public Map<String, Object> getLedgerStatistics() {
-        Map<String, Object> stats = new HashMap<>();
+    public void reconcileLedgerEntry(Long id) {
+        log.info("Reconciling ledger entry: {}", id);
+        SupplierLedger ledger = getLedgerEntryById(id);
+        ledger.setIsReconciled(true);
+        ledger.setReconciledDate(LocalDate.now());
+        supplierLedgerRepository.save(ledger);
+    }
+    
+    @Override
+    public void unreconcileLedgerEntry(Long id) {
+        log.info("Unreconciling ledger entry: {}", id);
+        SupplierLedger ledger = getLedgerEntryById(id);
+        ledger.setIsReconciled(false);
+        ledger.setReconciledDate(null);
+        supplierLedgerRepository.save(ledger);
+    }
+    
+    @Override
+    public SupplierLedger recordPurchase(Long supplierId, Long purchaseOrderId, String poNumber, 
+                                        Double amount, String description) {
+        SupplierLedgerRequest request = SupplierLedgerRequest.builder()
+            .supplierId(supplierId)
+            .transactionDate(LocalDate.now())
+            .transactionType("PURCHASE")
+            .referenceType("PURCHASE_ORDER")
+            .referenceId(purchaseOrderId)
+            .referenceNumber(poNumber)
+            .description(description != null ? description : "Purchase from supplier")
+            .debitAmount(amount)
+            .creditAmount(0.0)
+            .build();
         
-        stats.put("totalEntries", ledgerRepository.count());
-        stats.put("totalDebitAmount", getTotalDebitAmount());
-        stats.put("totalCreditAmount", getTotalCreditAmount());
-        stats.put("averageTransactionAmount", getAverageTransactionAmount());
+        return createLedgerEntry(request);
+    }
+    
+    @Override
+    public SupplierLedger recordPayment(Long supplierId, String paymentType, Double amount, 
+                                       String chequeNo, LocalDate chequeDate, String bank, 
+                                       String description) {
+        SupplierLedgerRequest request = SupplierLedgerRequest.builder()
+            .supplierId(supplierId)
+            .transactionDate(LocalDate.now())
+            .transactionType("PAYMENT")
+            .referenceType("PAYMENT")
+            .description(description != null ? description : "Payment to supplier")
+            .debitAmount(0.0)
+            .creditAmount(amount)
+            .paymentType(paymentType)
+            .chequeNo(chequeNo)
+            .chequeDate(chequeDate)
+            .bank(bank)
+            .build();
         
-        return stats;
+        return createLedgerEntry(request);
+    }
+    
+    @Override
+    public SupplierLedger recordCreditNote(Long supplierId, String creditNoteNumber, 
+                                          Double amount, String description) {
+        SupplierLedgerRequest request = SupplierLedgerRequest.builder()
+            .supplierId(supplierId)
+            .transactionDate(LocalDate.now())
+            .transactionType("CREDIT_NOTE")
+            .referenceType("ADJUSTMENT")
+            .referenceNumber(creditNoteNumber)
+            .description(description != null ? description : "Credit note from supplier")
+            .debitAmount(0.0)
+            .creditAmount(amount)
+            .build();
+        
+        return createLedgerEntry(request);
+    }
+    
+    @Override
+    public SupplierLedger recordDebitNote(Long supplierId, String debitNoteNumber, 
+                                         Double amount, String description) {
+        SupplierLedgerRequest request = SupplierLedgerRequest.builder()
+            .supplierId(supplierId)
+            .transactionDate(LocalDate.now())
+            .transactionType("DEBIT_NOTE")
+            .referenceType("ADJUSTMENT")
+            .referenceNumber(debitNoteNumber)
+            .description(description != null ? description : "Debit note to supplier")
+            .debitAmount(amount)
+            .creditAmount(0.0)
+            .build();
+        
+        return createLedgerEntry(request);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> getTransactionTypeDistribution() {
-        List<Object[]> results = ledgerRepository.getTransactionTypeDistribution();
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("transactionType", result[0]);
-                map.put("entryCount", result[1]);
-                map.put("totalDebit", result[2]);
-                map.put("totalCredit", result[3]);
-                return map;
+    public List<Map<String, Object>> getAgingSummary() {
+        List<Supplier> suppliers = supplierRepository.findAll();
+        return suppliers.stream()
+            .filter(supplier -> {
+                BigDecimal balance = supplier.getOutstandingBalance();
+                return balance != null && balance.compareTo(BigDecimal.ZERO) > 0;
             })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getPaymentMethodDistribution() {
-        List<Object[]> results = ledgerRepository.getPaymentMethodDistribution();
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("paymentMethod", result[0]);
-                map.put("entryCount", result[1]);
-                map.put("totalAmount", result[2]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getDailyTransactionSummary(LocalDate startDate, LocalDate endDate) {
-        List<Object[]> results = ledgerRepository.getDailyTransactionSummary(startDate, endDate);
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("transactionDate", result[0]);
-                map.put("entryCount", result[1]);
-                map.put("totalDebit", result[2]);
-                map.put("totalCredit", result[3]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getMonthlyTransactionSummary() {
-        List<Object[]> results = ledgerRepository.getMonthlyTransactionSummary();
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("year", result[0]);
-                map.put("month", result[1]);
-                map.put("entryCount", result[2]);
-                map.put("totalDebit", result[3]);
-                map.put("totalCredit", result[4]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalDebitAmount() {
-        Double total = ledgerRepository.getTotalDebitAmount();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getTotalCreditAmount() {
-        Double total = ledgerRepository.getTotalCreditAmount();
-        return total != null ? total : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Double getAverageTransactionAmount() {
-        Double average = ledgerRepository.getAverageTransactionAmount();
-        return average != null ? average : 0.0;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getSuppliersWithHighestDebit(int limit) {
-        List<Object[]> results = ledgerRepository.getSuppliersWithHighestDebit(PageRequest.of(0, limit));
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("supplierId", result[0]);
-                map.put("supplierName", result[1]);
-                map.put("totalDebit", result[2]);
-                return map;
-            })
-            .collect(Collectors.toList());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getSuppliersWithHighestCredit(int limit) {
-        List<Object[]> results = ledgerRepository.getSuppliersWithHighestCredit(PageRequest.of(0, limit));
-        return results.stream()
-            .map(result -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("supplierId", result[0]);
-                map.put("supplierName", result[1]);
-                map.put("totalCredit", result[2]);
-                return map;
+            .map(supplier -> {
+                Map<String, Object> aging = new HashMap<>();
+                aging.put("supplierId", supplier.getId());
+                aging.put("supplierName", supplier.getName());
+                
+                BigDecimal balance = supplier.getOutstandingBalance();
+                aging.put("totalOutstanding", balance != null ? balance.doubleValue() : 0.0);
+                
+                // Calculate aging buckets
+                List<SupplierLedger> unpaidEntries = supplierLedgerRepository.findBySupplierId(supplier.getId())
+                    .stream()
+                    .filter(ledgerEntry -> {
+                        BigDecimal debit = ledgerEntry.getDebitAmount();
+                        BigDecimal credit = ledgerEntry.getCreditAmount();
+                        return debit != null && credit != null && 
+                               debit.compareTo(BigDecimal.ZERO) > 0 && 
+                               credit.compareTo(BigDecimal.ZERO) > 0;
+                    })
+                    .collect(Collectors.toList());
+                
+                LocalDate today = LocalDate.now();
+                BigDecimal current = BigDecimal.ZERO;
+                BigDecimal days30 = BigDecimal.ZERO;
+                BigDecimal days60 = BigDecimal.ZERO;
+                BigDecimal days90 = BigDecimal.ZERO;
+                BigDecimal over90 = BigDecimal.ZERO;
+                
+                for (SupplierLedger entry : unpaidEntries) {
+                    long daysPast = java.time.temporal.ChronoUnit.DAYS.between(
+                        entry.getTransactionDate(), today);
+                    BigDecimal entryBalance = entry.getDebitAmount()
+                        .subtract(entry.getCreditAmount());
+                    
+                    if (daysPast <= 30) {
+                        current = current.add(entryBalance);
+                    } else if (daysPast <= 60) {
+                        days30 = days30.add(entryBalance);
+                    } else if (daysPast <= 90) {
+                        days60 = days60.add(entryBalance);
+                    } else if (daysPast <= 120) {
+                        days90 = days90.add(entryBalance);
+                    } else {
+                        over90 = over90.add(entryBalance);
+                    }
+                }
+                
+                aging.put("current", current.doubleValue());
+                aging.put("days30", days30.doubleValue());
+                aging.put("days60", days60.doubleValue());
+                aging.put("days90", days90.doubleValue());
+                aging.put("over90", over90.doubleValue());
+                
+                return aging;
             })
             .collect(Collectors.toList());
     }
@@ -604,16 +441,39 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getDashboardStatistics() {
-        Map<String, Object> dashboard = new HashMap<>();
+        Map<String, Object> stats = new HashMap<>();
         
-        dashboard.put("statistics", getLedgerStatistics());
-        dashboard.put("transactionTypeDistribution", getTransactionTypeDistribution());
-        dashboard.put("paymentMethodDistribution", getPaymentMethodDistribution());
-        dashboard.put("monthlyTransactionSummary", getMonthlyTransactionSummary());
-        dashboard.put("suppliersWithHighestDebit", getSuppliersWithHighestDebit(10));
-        dashboard.put("suppliersWithHighestCredit", getSuppliersWithHighestCredit(10));
-        dashboard.put("todaysEntries", getTodaysEntries());
+        List<Supplier> allSuppliers = supplierRepository.findAll();
         
-        return dashboard;
+        // Total outstanding
+        BigDecimal totalOutstanding = allSuppliers.stream()
+            .map(Supplier::getOutstandingBalance)
+            .filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        stats.put("totalOutstanding", totalOutstanding.doubleValue());
+        
+        // Suppliers with outstanding balance
+        long suppliersWithBalance = allSuppliers.stream()
+            .filter(s -> {
+                BigDecimal balance = s.getOutstandingBalance();
+                return balance != null && balance.compareTo(BigDecimal.ZERO) > 0;
+            })
+            .count();
+        
+        stats.put("suppliersWithOutstanding", suppliersWithBalance);
+        
+        // Current month statistics
+        LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDate endOfMonth = LocalDate.now();
+        
+        BigDecimal monthlyPurchases = getTotalDebits(null, startOfMonth, endOfMonth);
+        BigDecimal monthlyPayments = getTotalCredits(null, startOfMonth, endOfMonth);
+        
+        stats.put("monthlyPurchases", monthlyPurchases.doubleValue());
+        stats.put("monthlyPayments", monthlyPayments.doubleValue());
+        stats.put("monthlyNet", monthlyPurchases.subtract(monthlyPayments).doubleValue());
+        
+        return stats;
     }
 }
