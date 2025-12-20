@@ -4,6 +4,7 @@ import lk.epicgreen.erp.sales.dto.SalesOrderRequest;
 import lk.epicgreen.erp.sales.entity.SalesOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -38,6 +39,18 @@ public interface SalesOrderService {
     SalesOrder confirmSalesOrder(Long id);
     SalesOrder processSalesOrder(Long id);
     SalesOrder completeSalesOrder(Long id);
+
+    void recordPayment(Long salesOrderId, Double paidAmount);
+
+    @Transactional(readOnly = true)
+    Double calculateSubtotal(SalesOrder order);
+
+    @Transactional(readOnly = true)
+    Double calculateTotalTax(SalesOrder order);
+
+    @Transactional(readOnly = true)
+    Double calculateTotalDiscount(SalesOrder order);
+
     SalesOrder cancelSalesOrder(Long id, String cancellationReason);
     SalesOrder approveSalesOrder(Long id, Long approvedByUserId, String approvalNotes);
     SalesOrder rejectSalesOrder(Long id, String rejectionReason);
@@ -54,6 +67,13 @@ public interface SalesOrderService {
     // ===================================================================
     
     SalesOrder markAsInvoiced(Long id, Long invoiceId);
+
+    SalesOrder dispatchSalesOrder(Long id, Long dispatchNoteId);
+
+    SalesOrder markAsDelivered(Long id);
+
+    SalesOrder generateInvoice(Long id, Long invoiceId);
+
     SalesOrder updatePaymentStatus(Long id, String paymentStatus);
     SalesOrder markAsPaid(Long id);
     

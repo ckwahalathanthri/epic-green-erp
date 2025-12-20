@@ -1,104 +1,70 @@
 package lk.epicgreen.erp.sales.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * SalesOrder Request DTO
- * DTO for sales order operations
  * 
  * @author Epic Green Development Team
  * @version 1.0
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SalesOrderRequest {
-    
-    @NotBlank(message = "Order number is required")
-    private String orderNumber;
-    
-    @NotNull(message = "Order date is required")
-    private LocalDate orderDate;
     
     @NotNull(message = "Customer ID is required")
     private Long customerId;
     
     private String customerName;
     
-    private String orderType; // DIRECT_SALE, QUOTATION, CONTRACT, RECURRING
+    @NotNull(message = "Order date is required")
+    private LocalDate orderDate;
     
-    private String priority; // LOW, MEDIUM, HIGH, URGENT
+    private LocalDate deliveryDate;
     
-    @NotNull(message = "Expected delivery date is required")
-    private LocalDate expectedDeliveryDate;
+    private LocalDate requiredDate;
     
-    private LocalDate requestedDeliveryDate;
+    @NotBlank(message = "Order type is required")
+    private String orderType;
     
-    private String shippingAddress;
+    private String priority;
     
-    private String shippingCity;
-    
-    private String shippingState;
-    
-    private String shippingCountry;
-    
-    private String shippingPostalCode;
-    
-    private String billingAddress;
-    
-    private String billingCity;
-    
-    private String billingState;
-    
-    private String billingCountry;
-    
-    private String billingPostalCode;
-    
-    private Long warehouseId;
-    
-    private String warehouseName;
-    
-    private String paymentTerms;
-    
-    private Integer creditDays;
-    
-    private String currency;
-    
-    private Double exchangeRate;
-    
-    private String shippingMethod; // SELF_PICKUP, COURIER, COMPANY_DELIVERY, THIRD_PARTY
-    
-    private Double shippingCost;
-    
-    private String salesRepUserId;
+    private Long salesRepId;
     
     private String salesRepName;
     
-    private String termsAndConditions;
+    // Amount fields - use Double in DTO for JSON compatibility
+    @NotNull(message = "Subtotal amount is required")
+    @DecimalMin(value = "0.0", message = "Subtotal amount must be positive")
+    private Double subtotalAmount;
     
-    private String description;
+    @DecimalMin(value = "0.0", message = "Tax amount must be positive")
+    private Double taxAmount;
     
+    @DecimalMin(value = "0.0", message = "Discount amount must be positive")
+    private Double discountAmount;
+    
+    @DecimalMin(value = "0.0", message = "Shipping amount must be positive")
+    private Double shippingAmount;
+    
+    @NotNull(message = "Total amount is required")
+    @DecimalMin(value = "0.0", message = "Total amount must be positive")
+    private Double totalAmount;
+    
+    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;
     
-    private String status; // DRAFT, SUBMITTED, CONFIRMED, PROCESSING, COMPLETED, CANCELLED
+    @Size(max = 500, message = "Shipping address cannot exceed 500 characters")
+    private String shippingAddress;
     
-    private String approvalStatus; // PENDING, APPROVED, REJECTED
-    
-    private Long createdByUserId;
-    
-    private Long approvedByUserId;
-    
-    private LocalDate approvedDate;
-    
-    private String approvalNotes;
-    
-    @NotNull(message = "Sales order items are required")
-    private List<SalesOrderItemRequest> items;
+    @Size(max = 500, message = "Billing address cannot exceed 500 characters")
+    private String billingAddress;
 }
