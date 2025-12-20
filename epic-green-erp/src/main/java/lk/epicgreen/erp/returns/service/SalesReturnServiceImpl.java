@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.returns.service;
 
+import lk.epicgreen.erp.customer.entity.Customer;
 import lk.epicgreen.erp.customer.repository.CustomerRepository;
 import lk.epicgreen.erp.returns.dto.SalesReturnRequest;
 import lk.epicgreen.erp.returns.entity.CreditNote;
@@ -7,8 +8,11 @@ import lk.epicgreen.erp.returns.entity.SalesReturn;
 import lk.epicgreen.erp.returns.entity.SalesReturnLine;
 import lk.epicgreen.erp.returns.repository.CreditNoteRepository;
 import lk.epicgreen.erp.returns.repository.SalesReturnRepository;
+import lk.epicgreen.erp.sales.entity.Invoice;
+import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.repository.InvoiceRepository;
 import lk.epicgreen.erp.sales.repository.SalesOrderRepository;
+import lk.epicgreen.erp.warehouse.entity.Warehouse;
 import lk.epicgreen.erp.warehouse.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,23 +58,39 @@ public class SalesReturnServiceImpl implements SalesReturnService {
     public SalesReturn createSalesReturn(SalesReturnRequest request) {
         log.info("Creating sales return for customer: {}", request.getCustomerId());
 
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + request.getCustomerId()));
+
+
         SalesReturn salesReturn = new SalesReturn();
         salesReturn.setReturnNumber(generateReturnNumber());
 
-        // Set customer info - use denormalized fields
-        if (request.getCustomerId() != null) {
-            salesReturn.setCustomerId(request.getCustomerId());
-        }
-        if (request.getCustomerName() != null) {
-            salesReturn.setCustomerName(request.getCustomerName());
+        // Set customer - both relationship AND denormalized fields
+        salesReturn.setCustomer(customer);
+        salesReturn.setCustomerName(customer.getCustomerName()); // Denormalized
+
+        // Set sales order if provided
+        if (request.getSalesOrderId() != null) {
+            SalesOrder salesOrder = salesOrderRepository.findById(request.getSalesOrderId())
+                    .orElseThrow(() -> new RuntimeException("Sales order not found"));
+            salesReturn.setSalesOrder(salesOrder);
+            salesReturn.setSalesOrderNumber(salesOrder.getOrderNumber()); // Denormalized
         }
 
-        // Set sales order and invoice IDs (not object references)
-        if (request.getSalesOrderId() != null) {
-            salesReturn.setSalesOrderId(request.getSalesOrderId());
-        }
+        // Set invoice if provided
         if (request.getInvoiceId() != null) {
-            salesReturn.setInvoiceId(request.getInvoiceId());
+            Invoice invoice = invoiceRepository.findById(request.getInvoiceId())
+                    .orElseThrow(() -> new RuntimeException("Invoice not found"));
+            salesReturn.setInvoice(invoice);
+            salesReturn.setInvoiceNumber(invoice.getInvoiceNumber()); // Denormalized
+        }
+
+        // Set warehouse
+        if (request.getWarehouseId() != null) {
+            Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
+                    .orElseThrow(() -> new RuntimeException("Warehouse not found"));
+            salesReturn.setWarehouse(warehouse);
+            salesReturn.setWarehouseName(warehouse.getWarehouseName()); // Denormalized
         }
 
         // Set basic info
@@ -78,11 +98,6 @@ public class SalesReturnServiceImpl implements SalesReturnService {
         salesReturn.setReturnType(request.getReturnType());
         salesReturn.setReturnReason(request.getReturnReason());
         salesReturn.setReturnReasonDescription(request.getReasonDescription());
-
-        // Set warehouse ID
-        if (request.getWarehouseId() != null) {
-            salesReturn.setWarehouseId(request.getWarehouseId());
-        }
 
         // Set status flags - correct field names
         salesReturn.setStatus("PENDING");
@@ -127,7 +142,9 @@ public class SalesReturnServiceImpl implements SalesReturnService {
         existing.setReturnReasonDescription(request.getReasonDescription());
 
         if (request.getWarehouseId() != null) {
-            existing.setWarehouseId(request.getWarehouseId());
+            Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
+                    .orElseThrow(() -> new RuntimeException("Warehouse not found"));
+            existing.setWarehouse(warehouse);
         }
 
         // Update amounts
@@ -319,7 +336,7 @@ public class SalesReturnServiceImpl implements SalesReturnService {
     // ===================================================================
 
     @Override
-    public CreditNote generateCreditNote(Long salesReturnId) {
+    public SalesReturn generateCreditNote(Long salesReturnId) {
         log.info("Generating credit note for sales return: {}", salesReturnId);
 
         SalesReturn salesReturn = getSalesReturnById(salesReturnId);
@@ -335,8 +352,8 @@ public class SalesReturnServiceImpl implements SalesReturnService {
         // Create credit note
         CreditNote creditNote = new CreditNote();
         creditNote.setCreditNoteNumber(generateCreditNoteNumber());
-        creditNote.setSalesReturnId(salesReturnId);
-        creditNote.setCustomerId(salesReturn.getCustomerId());
+        creditNote.setSalesReturn(salesReturn);
+        creditNote.setCustomer(salesReturn.getCustomer());
         creditNote.setCreditNoteDate(LocalDate.now());
         creditNote.setCreditAmount(salesReturn.getTotalAmount());
         creditNote.setRemainingCreditAmount(salesReturn.getTotalAmount());
@@ -351,9 +368,8 @@ public class SalesReturnServiceImpl implements SalesReturnService {
         // Update sales return
         salesReturn.setCreditNoteGenerated(true);
         salesReturn.setCreditNoteId(savedCreditNote.getId());
-        salesReturnRepository.save(salesReturn);
 
-        return savedCreditNote;
+        return salesReturnRepository.save(salesReturn);
     }
 
     @Override
@@ -504,7 +520,7 @@ public class SalesReturnServiceImpl implements SalesReturnService {
     @Override
     @Transactional(readOnly = true)
     public boolean validateSalesReturn(SalesReturn salesReturn) {
-        return salesReturn.getCustomerId() != null &&
+        return salesReturn.getCustomer() != null &&
                 salesReturn.getReturnDate() != null &&
                 salesReturn.getTotalAmount() != null &&
                 salesReturn.getTotalAmount().compareTo(BigDecimal.ZERO) >= 0;
