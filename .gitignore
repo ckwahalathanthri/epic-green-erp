@@ -4,9 +4,8 @@
 # Package files
 *.jar
 
-# Maven
-epic-green-erp/target/
-epic-green-erp/dist/
+# Maven build output
+target/
 
 ### IntelliJ IDEA ###
 .idea
