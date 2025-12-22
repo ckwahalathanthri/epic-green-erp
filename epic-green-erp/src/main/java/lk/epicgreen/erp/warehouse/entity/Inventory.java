@@ -57,22 +57,22 @@ public class Inventory {
     private String warehouseName;
     
     // Quantity fields (Double for decimal quantities)
-    @Column(name = "quantity_on_hand", precision = 15, scale = 3)
+    @Column(name = "quantity_on_hand", precision = 15)
     private Double quantityOnHand;
     
-    @Column(name = "quantity_available", precision = 15, scale = 3)
+    @Column(name = "quantity_available", precision = 15)
     private Double quantityAvailable;
     
-    @Column(name = "quantity_reserved", precision = 15, scale = 3)
+    @Column(name = "quantity_reserved", precision = 15)
     private Double quantityReserved;
     
-    @Column(name = "quantity_allocated", precision = 15, scale = 3)
+    @Column(name = "quantity_allocated", precision = 15)
     private Double quantityAllocated;
     
-    @Column(name = "quantity_damaged", precision = 15, scale = 3)
+    @Column(name = "quantity_damaged", precision = 15)
     private Double quantityDamaged;
     
-    @Column(name = "quantity_expired", precision = 15, scale = 3)
+    @Column(name = "quantity_expired", precision = 15)
     private Double quantityExpired;
     
     // Stock level settings
@@ -89,16 +89,16 @@ public class Inventory {
     private Integer minStockLevel;
     
     // Cost fields (Double for monetary values)
-    @Column(name = "unit_cost", precision = 15, scale = 2)
+    @Column(name = "unit_cost", precision = 15)
     private Double unitCost;
     
-    @Column(name = "average_cost", precision = 15, scale = 2)
+    @Column(name = "average_cost", precision = 15)
     private Double averageCost;
     
-    @Column(name = "last_cost", precision = 15, scale = 2)
+    @Column(name = "last_cost", precision = 15)
     private Double lastCost;
     
-    @Column(name = "total_value", precision = 15, scale = 2)
+    @Column(name = "total_value", precision = 15)
     private Double totalValue;
     
     // Status fields
