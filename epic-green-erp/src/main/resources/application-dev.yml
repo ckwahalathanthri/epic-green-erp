@@ -1,0 +1,209 @@
+spring:
+  application:
+    name: epic-green-erp
+  
+  # Development Database Configuration
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3307/epic_green_db?useSSL=false&serverTimezone=UTC
+    username: epic_app
+    password: StrongPassword123!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        enable_lazy_load_no_trans: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+  
+  # Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080
+          jwk-set-uri: http://localhost:8080/.well-known/jwks.json
+  
+  # Cache Configuration
+  cache:
+    type: simple
+  
+  # Devtools
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  error:
+    include-message: always
+    include-stacktrace: always
+    include-exception: true
+  compression:
+    enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    lk.epicgreen.erp: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/epic-green-erp-dev.log
+    max-size: 10MB
+    max-history: 30
+
+# Application Specific Configuration
+app:
+  name: Epic Green ERP
+  version: 1.0.0
+  environment: development
+  
+  # JWT Configuration
+  jwt:
+    secret: epic-green-erp-dev-secret-key-change-in-production-2024
+    expiration: 86400000 # 24 hours
+    refresh-expiration: 604800000 # 7 days
+  
+  # CORS Configuration
+  cors:
+    allowed-origins:
+      - http://localhost:4200
+      - http://localhost:4201
+      - http://localhost:3000
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+  
+  # File Storage
+  file-storage:
+    upload-dir: ./uploads
+    max-file-size: 10485760 # 10MB
+    allowed-extensions:
+      - pdf
+      - jpg
+      - jpeg
+      - png
+      - xlsx
+      - docx
+  
+  # Email Configuration (Development - Console)
+  email:
+    enabled: false
+    host: smtp.gmail.com
+    port: 587
+    username: your-email@gmail.com
+    password: your-app-password
+    from: noreply@epicgreen.lk
+    
+  # SMS Configuration (Development - Disabled)
+  sms:
+    enabled: false
+    provider: twilio
+    account-sid: your-account-sid
+    auth-token: your-auth-token
+    from-number: +1234567890
+  
+  # Report Generation
+  reports:
+    output-dir: ./reports
+    logo-path: ./resources/static/images/logo.png
+    
+  # Business Configuration
+  business:
+    company-name: Epic Green Spices
+    tax-id: 123456789
+    currency: LKR
+    timezone: Asia/Colombo
+    date-format: yyyy-MM-dd
+    time-format: HH:mm:ss
+    
+  # Warehouse Configuration
+  warehouse:
+    default-warehouse-id: 1
+    enable-multi-warehouse: true
+    
+  # Production Configuration
+  production:
+    enable-batch-tracking: true
+    enable-quality-control: true
+    
+  # Inventory Configuration
+  inventory:
+    enable-negative-stock: false
+    auto-adjust-stock: true
+    low-stock-alert-enabled: true
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha

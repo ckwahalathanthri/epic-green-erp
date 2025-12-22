@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -44,20 +45,20 @@ public class SalesOrderRequest {
     // Amount fields - use Double in DTO for JSON compatibility
     @NotNull(message = "Subtotal amount is required")
     @DecimalMin(value = "0.0", message = "Subtotal amount must be positive")
-    private Double subtotalAmount;
+    private BigDecimal subtotalAmount;
     
     @DecimalMin(value = "0.0", message = "Tax amount must be positive")
-    private Double taxAmount;
+    private BigDecimal taxAmount;
     
     @DecimalMin(value = "0.0", message = "Discount amount must be positive")
-    private Double discountAmount;
+    private BigDecimal discountAmount;
     
     @DecimalMin(value = "0.0", message = "Shipping amount must be positive")
-    private Double shippingAmount;
+    private BigDecimal shippingAmount;
     
     @NotNull(message = "Total amount is required")
     @DecimalMin(value = "0.0", message = "Total amount must be positive")
-    private Double totalAmount;
+    private BigDecimal totalAmount;
     
     @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;

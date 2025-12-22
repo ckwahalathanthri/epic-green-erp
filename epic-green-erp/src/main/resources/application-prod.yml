@@ -1,0 +1,238 @@
+spring:
+  application:
+    name: epic-green-erp
+  
+  # Production Database Configuration
+  datasource:
+    url: ${DB_URL:jdbc:mysql://prod-db-server:3306/epic_green_erp?useSSL=true&requireSSL=true&serverTimezone=Asia/Colombo}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+        enable_lazy_load_no_trans: false
+        jdbc:
+          batch_size: 30
+        order_inserts: true
+        order_updates: true
+        query:
+          in_clause_parameter_padding: true
+  
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+  
+  # Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI}
+          jwk-set-uri: ${JWT_JWK_SET_URI}
+  
+  # Cache Configuration
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=3600s
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+  compression:
+    enabled: true
+    mime-types:
+      - application/json
+      - application/xml
+      - text/html
+      - text/xml
+      - text/plain
+  http2:
+    enabled: true
+  shutdown: graceful
+
+# Logging Configuration
+logging:
+  level:
+    root: WARN
+    lk.epicgreen.erp: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/epic-green-erp/epic-green-erp.log
+    max-size: 50MB
+    max-history: 90
+    total-size-cap: 5GB
+
+# Application Specific Configuration
+app:
+  name: Epic Green ERP
+  version: 1.0.0
+  environment: production
+  
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 28800000 # 8 hours
+    refresh-expiration: 604800000 # 7 days
+  
+  # CORS Configuration
+  cors:
+    allowed-origins:
+      - ${CORS_ALLOWED_ORIGIN_1:https://erp.epicgreen.lk}
+      - ${CORS_ALLOWED_ORIGIN_2:https://app.epicgreen.lk}
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+  
+  # File Storage
+  file-storage:
+    upload-dir: ${FILE_UPLOAD_DIR:/opt/epic-green-erp/uploads}
+    max-file-size: 10485760 # 10MB
+    allowed-extensions:
+      - pdf
+      - jpg
+      - jpeg
+      - png
+      - xlsx
+      - docx
+  
+  # Email Configuration (Production)
+  email:
+    enabled: true
+    host: ${EMAIL_HOST}
+    port: ${EMAIL_PORT:587}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    from: ${EMAIL_FROM:noreply@epicgreen.lk}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: ${EMAIL_HOST}
+    
+  # SMS Configuration (Production)
+  sms:
+    enabled: true
+    provider: ${SMS_PROVIDER:twilio}
+    account-sid: ${SMS_ACCOUNT_SID}
+    auth-token: ${SMS_AUTH_TOKEN}
+    from-number: ${SMS_FROM_NUMBER}
+  
+  # Report Generation
+  reports:
+    output-dir: ${REPORTS_DIR:/opt/epic-green-erp/reports}
+    logo-path: ${LOGO_PATH:/opt/epic-green-erp/resources/logo.png}
+    
+  # Business Configuration
+  business:
+    company-name: ${COMPANY_NAME:Epic Green Spices}
+    tax-id: ${TAX_ID}
+    currency: ${CURRENCY:LKR}
+    timezone: ${TIMEZONE:Asia/Colombo}
+    date-format: yyyy-MM-dd
+    time-format: HH:mm:ss
+    
+  # Warehouse Configuration
+  warehouse:
+    default-warehouse-id: ${DEFAULT_WAREHOUSE_ID:1}
+    enable-multi-warehouse: true
+    
+  # Production Configuration
+  production:
+    enable-batch-tracking: true
+    enable-quality-control: true
+    
+  # Inventory Configuration
+  inventory:
+    enable-negative-stock: false
+    auto-adjust-stock: true
+    low-stock-alert-enabled: true
+    
+  # Backup Configuration
+  backup:
+    enabled: true
+    schedule: "0 0 2 * * ?" # Daily at 2 AM
+    retention-days: 90
+    backup-dir: ${BACKUP_DIR:/opt/epic-green-erp/backups}
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# Springdoc OpenAPI Configuration (Disabled in Production)
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Spring Lifecycle
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s

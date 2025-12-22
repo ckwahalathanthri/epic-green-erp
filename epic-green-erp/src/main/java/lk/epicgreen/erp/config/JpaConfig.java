@@ -59,8 +59,8 @@ public class JpaConfig {
     /**
      * HikariCP DataSource configuration
      */
-    @Bean
-    @Primary
+//    @Bean
+//    @Primary
     public DataSource dataSource() {
         HikariConfig config = new HikariConfig();
         
@@ -108,6 +108,7 @@ public class JpaConfig {
         em.setPackagesToScan("lk.epicgreen.erp");
         
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setDatabasePlatform("org.hibernate.dialect.MySQLDialect");
         vendorAdapter.setShowSql(showSql);
         em.setJpaVendorAdapter(vendorAdapter);
         em.setJpaProperties(hibernateProperties());
@@ -152,10 +153,10 @@ public class JpaConfig {
         properties.setProperty("hibernate.jdbc.batch_versioned_data", "true");
         
         // Second-level cache (using Redis via Spring Cache)
-        properties.setProperty("hibernate.cache.use_second_level_cache", "true");
-        properties.setProperty("hibernate.cache.use_query_cache", "true");
-        properties.setProperty("hibernate.cache.region.factory_class",
-            "org.hibernate.cache.jcache.JCacheRegionFactory");
+//        properties.setProperty("hibernate.cache.use_second_level_cache", "true");
+//        properties.setProperty("hibernate.cache.use_query_cache", "true");
+//        properties.setProperty("hibernate.cache.region.factory_class",
+//            "org.hibernate.cache.jcache.JCacheRegionFactory");
         
         // Statistics (disable in production)
         properties.setProperty("hibernate.generate_statistics", "false");

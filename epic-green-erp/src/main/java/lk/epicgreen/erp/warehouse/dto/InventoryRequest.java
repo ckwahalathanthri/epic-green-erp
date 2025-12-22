@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * Inventory Request DTO
  * 
@@ -31,19 +33,19 @@ public class InventoryRequest {
     private String warehouseName;
     
     @DecimalMin(value = "0.0", message = "Quantity on hand must be positive")
-    private Double quantityOnHand;
+    private BigDecimal quantityOnHand;
     
     @DecimalMin(value = "0.0", message = "Quantity reserved must be positive")
-    private Double quantityReserved;
+    private BigDecimal quantityReserved;
     
     @DecimalMin(value = "0.0", message = "Quantity allocated must be positive")
-    private Double quantityAllocated;
+    private BigDecimal quantityAllocated;
     
     @DecimalMin(value = "0.0", message = "Quantity damaged must be positive")
-    private Double quantityDamaged;
+    private BigDecimal quantityDamaged;
     
     @DecimalMin(value = "0.0", message = "Quantity expired must be positive")
-    private Double quantityExpired;
+    private BigDecimal quantityExpired;
     
     @Min(value = 0, message = "Reorder level must be positive")
     private Integer reorderLevel;
@@ -58,13 +60,13 @@ public class InventoryRequest {
     private Integer minStockLevel;
     
     @DecimalMin(value = "0.0", message = "Unit cost must be positive")
-    private Double unitCost;
+    private BigDecimal unitCost;
     
     @DecimalMin(value = "0.0", message = "Average cost must be positive")
-    private Double averageCost;
+    private BigDecimal averageCost;
     
     @DecimalMin(value = "0.0", message = "Last cost must be positive")
-    private Double lastCost;
+    private BigDecimal lastCost;
     
     @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;

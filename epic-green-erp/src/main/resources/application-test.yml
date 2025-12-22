@@ -1,0 +1,204 @@
+spring:
+  application:
+    name: epic-green-erp
+  
+  # Test Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/epic_green_erp_test?createDatabaseIfNotExist=true&useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo
+    username: ${DB_USERNAME:erp_test_user}
+    password: ${DB_PASSWORD:erp_test_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+        enable_lazy_load_no_trans: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+  
+  # Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://test.epicgreen.lk}
+          jwk-set-uri: ${JWT_JWK_SET_URI:https://test.epicgreen.lk/.well-known/jwks.json}
+  
+  # Cache Configuration
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=600s
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  error:
+    include-message: always
+    include-stacktrace: on_param
+    include-exception: false
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    lk.epicgreen.erp: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/epic-green-erp/epic-green-erp-test.log
+    max-size: 10MB
+    max-history: 60
+
+# Application Specific Configuration
+app:
+  name: Epic Green ERP
+  version: 1.0.0
+  environment: test
+  
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET:epic-green-erp-test-secret-key-2024}
+    expiration: 86400000 # 24 hours
+    refresh-expiration: 604800000 # 7 days
+  
+  # CORS Configuration
+  cors:
+    allowed-origins:
+      - https://test.epicgreen.lk
+      - https://test-app.epicgreen.lk
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+  
+  # File Storage
+  file-storage:
+    upload-dir: /opt/epic-green-erp/uploads
+    max-file-size: 10485760 # 10MB
+    allowed-extensions:
+      - pdf
+      - jpg
+      - jpeg
+      - png
+      - xlsx
+      - docx
+  
+  # Email Configuration (Test - Real emails)
+  email:
+    enabled: true
+    host: ${EMAIL_HOST:smtp.gmail.com}
+    port: ${EMAIL_PORT:587}
+    username: ${EMAIL_USERNAME:test@epicgreen.lk}
+    password: ${EMAIL_PASSWORD}
+    from: test@epicgreen.lk
+    
+  # SMS Configuration (Test - Real SMS)
+  sms:
+    enabled: true
+    provider: ${SMS_PROVIDER:twilio}
+    account-sid: ${SMS_ACCOUNT_SID}
+    auth-token: ${SMS_AUTH_TOKEN}
+    from-number: ${SMS_FROM_NUMBER}
+  
+  # Report Generation
+  reports:
+    output-dir: /opt/epic-green-erp/reports
+    logo-path: /opt/epic-green-erp/resources/logo.png
+    
+  # Business Configuration
+  business:
+    company-name: Epic Green Spices
+    tax-id: 123456789
+    currency: LKR
+    timezone: Asia/Colombo
+    date-format: yyyy-MM-dd
+    time-format: HH:mm:ss
+    
+  # Warehouse Configuration
+  warehouse:
+    default-warehouse-id: 1
+    enable-multi-warehouse: true
+    
+  # Production Configuration
+  production:
+    enable-batch-tracking: true
+    enable-quality-control: true
+    
+  # Inventory Configuration
+  inventory:
+    enable-negative-stock: false
+    auto-adjust-stock: true
+    low-stock-alert-enabled: true
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha

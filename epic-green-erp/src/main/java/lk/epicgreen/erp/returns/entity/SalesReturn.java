@@ -62,7 +62,7 @@ public class SalesReturn extends AuditEntity {
     /**
      * Customer ID (denormalized for queries)
      */
-//    @Column(name = "customer_id", insertable = false, updatable = false)
+    @Column(name = "customer_id", insertable = false, updatable = false)
     private Long customerId;
 
     /**
@@ -74,7 +74,7 @@ public class SalesReturn extends AuditEntity {
     /**
      * Sales order ID (denormalized for queries)
      */
-//    @Column(name = "sales_order_id", insertable = false, updatable = false)
+    @Column(name = "sales_order_id", insertable = false, updatable = false)
     private Long salesOrderId;
 
     /**

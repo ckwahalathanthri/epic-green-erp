@@ -326,4 +326,62 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
      */
     @Query("DELETE FROM AuditLog a WHERE a.actionTimestamp < :beforeDate")
     void deleteOldAuditLogs(@Param("beforeDate") LocalDateTime beforeDate);
+
+    /**
+     * Counts audit logs by entity
+     *
+     * @param entityName Entity name
+     * @param entityId Entity ID
+     * @return Count
+     */
+    long countByEntityNameAndEntityId(String entityName, String entityId);
+
+    /**
+     * Counts audit logs by user in date range
+     *
+     * @param performedBy Username
+     * @param startDate Start date
+     * @param endDate End date
+     * @return Count
+     */
+    long countByPerformedByAndTimestampBetween(
+            String performedBy,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    );
+
+    /**
+     * Finds audit logs with search criteria
+     *
+     * @param entityName Entity name (optional)
+     * @param action Action (optional)
+     * @param performedBy User (optional)
+     * @param startDate Start date (optional)
+     * @param endDate End date (optional)
+     * @param pageable Pagination
+     * @return Page of audit logs
+     */
+    @Query("SELECT a FROM AuditLog a WHERE " +
+            "(:entityName IS NULL OR a.entityName = :entityName) AND " +
+            "(:action IS NULL OR a.action = :action) AND " +
+            "(:performedBy IS NULL OR a.performedBy = :performedBy) AND " +
+            "(:startDate IS NULL OR a.timestamp >= :startDate) AND " +
+            "(:endDate IS NULL OR a.timestamp <= :endDate) " +
+            "ORDER BY a.timestamp DESC")
+    Page<AuditLog> search(
+            @Param("entityName") String entityName,
+            @Param("action") String action,
+            @Param("performedBy") String performedBy,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
+
+    /**
+     * Deletes old audit logs
+     *
+     * @param beforeDate Date before which to delete
+     * @return Number of deleted records
+     */
+    long deleteByTimestampBefore(LocalDateTime beforeDate);
 }

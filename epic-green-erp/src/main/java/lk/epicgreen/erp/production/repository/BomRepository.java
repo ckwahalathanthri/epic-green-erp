@@ -1,6 +1,6 @@
 package lk.epicgreen.erp.production.repository;
 
-import lk.epicgreen.erp.production.entity.Bom;
+import lk.epicgreen.erp.production.entity.BillOfMaterials;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +21,7 @@ import java.util.Optional;
  * @version 1.0
  */
 @Repository
-public interface BomRepository extends JpaRepository<Bom, Long> {
+public interface BomRepository extends JpaRepository<BillOfMaterials, Long> {
     
     // ===================================================================
     // FIND BY UNIQUE FIELDS
@@ -30,7 +30,7 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
     /**
      * Find BOM by BOM code
      */
-    Optional<Bom> findByBomCode(String bomCode);
+    Optional<BillOfMaterials> findByBomCode(String bomCode);
     
     /**
      * Check if BOM exists by BOM code
@@ -44,67 +44,67 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
     /**
      * Find BOMs by product ID
      */
-    List<Bom> findByProductId(Long productId);
+    List<BillOfMaterials> findByProductId(Long productId);
     
     /**
      * Find BOMs by product ID with pagination
      */
-    Page<Bom> findByProductId(Long productId, Pageable pageable);
+    Page<BillOfMaterials> findByProductId(Long productId, Pageable pageable);
     
     /**
      * Find BOMs by BOM type
      */
-    List<Bom> findByBomType(String bomType);
+    List<BillOfMaterials> findByBomType(String bomType);
     
     /**
      * Find BOMs by BOM type with pagination
      */
-    Page<Bom> findByBomType(String bomType, Pageable pageable);
+    Page<BillOfMaterials> findByBomType(String bomType, Pageable pageable);
     
     /**
      * Find BOMs by status
      */
-    List<Bom> findByStatus(String status);
+    List<BillOfMaterials> findByStatus(String status);
     
     /**
      * Find BOMs by status with pagination
      */
-    Page<Bom> findByStatus(String status, Pageable pageable);
+    Page<BillOfMaterials> findByStatus(String status, Pageable pageable);
     
     /**
      * Find BOMs by version
      */
-    List<Bom> findByVersion(String version);
+    List<BillOfMaterials> findByVersion(String version);
     
     /**
      * Find BOMs by created by user
      */
-    List<Bom> findByCreatedByUserId(Long userId);
+    List<BillOfMaterials> findByCreatedByUserId(Long userId);
     
     /**
      * Find BOMs by approved by user
      */
-    List<Bom> findByApprovedByUserId(Long userId);
+    List<BillOfMaterials> findByApprovedByUserId(Long userId);
     
     /**
      * Find BOMs by is active
      */
-    List<Bom> findByIsActive(Boolean isActive);
+    List<BillOfMaterials> findByIsActive(Boolean isActive);
     
     /**
      * Find BOMs by is active with pagination
      */
-    Page<Bom> findByIsActive(Boolean isActive, Pageable pageable);
+    Page<BillOfMaterials> findByIsActive(Boolean isActive, Pageable pageable);
     
     /**
      * Find BOMs by is approved
      */
-    List<Bom> findByIsApproved(Boolean isApproved);
+    List<BillOfMaterials> findByIsApproved(Boolean isApproved);
     
     /**
      * Find BOMs by is default
      */
-    List<Bom> findByIsDefault(Boolean isDefault);
+    List<BillOfMaterials> findByIsDefault(Boolean isDefault);
     
     // ===================================================================
     // FIND BY DATE RANGE
@@ -113,17 +113,17 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
     /**
      * Find BOMs by effective date between dates
      */
-    List<Bom> findByEffectiveDateBetween(LocalDate startDate, LocalDate endDate);
+    List<BillOfMaterials> findByEffectiveDateBetween(LocalDate startDate, LocalDate endDate);
     
     /**
      * Find BOMs by expiry date between dates
      */
-    List<Bom> findByExpiryDateBetween(LocalDate startDate, LocalDate endDate);
+    List<BillOfMaterials> findByExpiryDateBetween(LocalDate startDate, LocalDate endDate);
     
     /**
      * Find BOMs by created at between dates
      */
-    List<Bom> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+    List<BillOfMaterials> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
     
     // ===================================================================
     // FIND BY MULTIPLE FIELDS
@@ -132,32 +132,32 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
     /**
      * Find BOMs by product ID and status
      */
-    List<Bom> findByProductIdAndStatus(Long productId, String status);
+    List<BillOfMaterials> findByProductIdAndStatus(Long productId, String status);
     
     /**
      * Find BOMs by product ID and is active
      */
-    List<Bom> findByProductIdAndIsActive(Long productId, Boolean isActive);
+    List<BillOfMaterials> findByProductIdAndIsActive(Long productId, Boolean isActive);
     
     /**
      * Find BOMs by product ID and is default
      */
-    Optional<Bom> findByProductIdAndIsDefault(Long productId, Boolean isDefault);
+    Optional<BillOfMaterials> findByProductIdAndIsDefault(Long productId, Boolean isDefault);
     
     /**
      * Find BOMs by BOM type and status
      */
-    List<Bom> findByBomTypeAndStatus(String bomType, String status);
+    List<BillOfMaterials> findByBomTypeAndStatus(String bomType, String status);
     
     /**
      * Find BOMs by status and is active
      */
-    List<Bom> findByStatusAndIsActive(String status, Boolean isActive);
+    List<BillOfMaterials> findByStatusAndIsActive(String status, Boolean isActive);
     
     /**
      * Find BOMs by is approved and status
      */
-    List<Bom> findByIsApprovedAndStatus(Boolean isApproved, String status);
+    List<BillOfMaterials> findByIsApprovedAndStatus(Boolean isApproved, String status);
     
     // ===================================================================
     // CUSTOM QUERIES
@@ -166,126 +166,126 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
     /**
      * Search BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE " +
            "LOWER(b.bomCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(b.bomName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(b.productName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(b.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<Bom> searchBoms(@Param("keyword") String keyword, Pageable pageable);
+    Page<BillOfMaterials> searchBoms(@Param("keyword") String keyword, Pageable pageable);
     
     /**
      * Find active BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.isActive = true AND b.status = 'ACTIVE' " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.isActive = true AND b.status = 'ACTIVE' " +
            "ORDER BY b.bomName ASC")
-    List<Bom> findActiveBoms();
+    List<BillOfMaterials> findActiveBoms();
     
     /**
      * Find active BOMs with pagination
      */
-    @Query("SELECT b FROM Bom b WHERE b.isActive = true AND b.status = 'ACTIVE' " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.isActive = true AND b.status = 'ACTIVE' " +
            "ORDER BY b.bomName ASC")
-    Page<Bom> findActiveBoms(Pageable pageable);
+    Page<BillOfMaterials> findActiveBoms(Pageable pageable);
     
     /**
      * Find draft BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.status = 'DRAFT' " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.status = 'DRAFT' " +
            "ORDER BY b.createdAt DESC")
-    List<Bom> findDraftBoms();
+    List<BillOfMaterials> findDraftBoms();
     
     /**
      * Find approved BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.status = 'APPROVED' AND b.isApproved = true " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.status = 'APPROVED' AND b.isApproved = true " +
            "ORDER BY b.bomName ASC")
-    List<Bom> findApprovedBoms();
+    List<BillOfMaterials> findApprovedBoms();
     
     /**
      * Find obsolete BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.status = 'OBSOLETE' " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.status = 'OBSOLETE' " +
            "ORDER BY b.bomName ASC")
-    List<Bom> findObsoleteBoms();
+    List<BillOfMaterials> findObsoleteBoms();
     
     /**
      * Find BOMs pending approval
      */
-    @Query("SELECT b FROM Bom b WHERE b.isApproved = false " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.isApproved = false " +
            "AND b.status NOT IN ('DRAFT', 'OBSOLETE') " +
            "ORDER BY b.createdAt ASC")
-    List<Bom> findBomsPendingApproval();
+    List<BillOfMaterials> findBomsPendingApproval();
     
     /**
      * Find active default BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.isDefault = true " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.isDefault = true " +
            "AND b.isActive = true " +
            "ORDER BY b.productName ASC")
-    List<Bom> findActiveDefaultBoms();
+    List<BillOfMaterials> findActiveDefaultBoms();
     
     /**
      * Find product active BOM
      */
-    @Query("SELECT b FROM Bom b WHERE b.productId = :productId " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.productId = :productId " +
            "AND b.isActive = true AND b.isDefault = true " +
            "ORDER BY b.version DESC")
-    Optional<Bom> findProductActiveBom(@Param("productId") Long productId);
+    Optional<BillOfMaterials> findProductActiveBom(@Param("productId") Long productId);
     
     /**
      * Find product BOMs by version
      */
-    @Query("SELECT b FROM Bom b WHERE b.productId = :productId " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.productId = :productId " +
            "ORDER BY b.version DESC")
-    List<Bom> findProductBomsByVersion(@Param("productId") Long productId);
+    List<BillOfMaterials> findProductBomsByVersion(@Param("productId") Long productId);
     
     /**
      * Find effective BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.effectiveDate <= :currentDate " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.effectiveDate <= :currentDate " +
            "AND (b.expiryDate IS NULL OR b.expiryDate >= :currentDate) " +
            "AND b.isActive = true " +
            "ORDER BY b.bomName ASC")
-    List<Bom> findEffectiveBoms(@Param("currentDate") LocalDate currentDate);
+    List<BillOfMaterials> findEffectiveBoms(@Param("currentDate") LocalDate currentDate);
     
     /**
      * Find expired BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.expiryDate < :currentDate " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.expiryDate < :currentDate " +
            "AND b.isActive = true " +
            "ORDER BY b.expiryDate ASC")
-    List<Bom> findExpiredBoms(@Param("currentDate") LocalDate currentDate);
+    List<BillOfMaterials> findExpiredBoms(@Param("currentDate") LocalDate currentDate);
     
     /**
      * Find expiring soon BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.expiryDate BETWEEN :startDate AND :endDate " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.expiryDate BETWEEN :startDate AND :endDate " +
            "AND b.isActive = true " +
            "ORDER BY b.expiryDate ASC")
-    List<Bom> findExpiringSoonBoms(@Param("startDate") LocalDate startDate,
+    List<BillOfMaterials> findExpiringSoonBoms(@Param("startDate") LocalDate startDate,
                                    @Param("endDate") LocalDate endDate);
     
     /**
      * Find recent BOMs
      */
-    @Query("SELECT b FROM Bom b ORDER BY b.createdAt DESC")
-    List<Bom> findRecentBoms(Pageable pageable);
+    @Query("SELECT b FROM BillOfMaterials b ORDER BY b.createdAt DESC")
+    List<BillOfMaterials> findRecentBoms(Pageable pageable);
     
     /**
      * Find product recent BOMs
      */
-    @Query("SELECT b FROM Bom b WHERE b.productId = :productId " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.productId = :productId " +
            "ORDER BY b.createdAt DESC")
-    List<Bom> findProductRecentBoms(@Param("productId") Long productId, Pageable pageable);
+    List<BillOfMaterials> findProductRecentBoms(@Param("productId") Long productId, Pageable pageable);
     
     /**
      * Find BOMs requiring action
      */
-    @Query("SELECT b FROM Bom b WHERE " +
+    @Query("SELECT b FROM BillOfMaterials b WHERE " +
            "(b.isApproved = false AND b.status = 'PENDING') OR " +
            "(b.expiryDate <= :thresholdDate AND b.isActive = true) " +
            "ORDER BY b.expiryDate ASC")
-    List<Bom> findBomsRequiringAction(@Param("thresholdDate") LocalDate thresholdDate);
+    List<BillOfMaterials> findBomsRequiringAction(@Param("thresholdDate") LocalDate thresholdDate);
     
     // ===================================================================
     // STATISTICS
@@ -294,52 +294,52 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
     /**
      * Count BOMs by product
      */
-    @Query("SELECT COUNT(b) FROM Bom b WHERE b.productId = :productId")
+    @Query("SELECT COUNT(b) FROM BillOfMaterials b WHERE b.productId = :productId")
     Long countByProductId(@Param("productId") Long productId);
     
     /**
      * Count BOMs by BOM type
      */
-    @Query("SELECT COUNT(b) FROM Bom b WHERE b.bomType = :bomType")
+    @Query("SELECT COUNT(b) FROM BillOfMaterials b WHERE b.bomType = :bomType")
     Long countByBomType(@Param("bomType") String bomType);
     
     /**
      * Count BOMs by status
      */
-    @Query("SELECT COUNT(b) FROM Bom b WHERE b.status = :status")
+    @Query("SELECT COUNT(b) FROM BillOfMaterials b WHERE b.status = :status")
     Long countByStatus(@Param("status") String status);
     
     /**
      * Count active BOMs
      */
-    @Query("SELECT COUNT(b) FROM Bom b WHERE b.isActive = true")
+    @Query("SELECT COUNT(b) FROM BillOfMaterials b WHERE b.isActive = true")
     Long countActiveBoms();
     
     /**
      * Count BOMs pending approval
      */
-    @Query("SELECT COUNT(b) FROM Bom b WHERE b.isApproved = false " +
+    @Query("SELECT COUNT(b) FROM BillOfMaterials b WHERE b.isApproved = false " +
            "AND b.status NOT IN ('DRAFT', 'OBSOLETE')")
     Long countBomsPendingApproval();
     
     /**
      * Count expired BOMs
      */
-    @Query("SELECT COUNT(b) FROM Bom b WHERE b.expiryDate < :currentDate " +
+    @Query("SELECT COUNT(b) FROM BillOfMaterials b WHERE b.expiryDate < :currentDate " +
            "AND b.isActive = true")
     Long countExpiredBoms(@Param("currentDate") LocalDate currentDate);
     
     /**
      * Get BOM type distribution
      */
-    @Query("SELECT b.bomType, COUNT(b) as bomCount FROM Bom b " +
+    @Query("SELECT b.bomType, COUNT(b) as bomCount FROM BillOfMaterials b " +
            "GROUP BY b.bomType ORDER BY bomCount DESC")
     List<Object[]> getBomTypeDistribution();
     
     /**
      * Get status distribution
      */
-    @Query("SELECT b.status, COUNT(b) as bomCount FROM Bom b " +
+    @Query("SELECT b.status, COUNT(b) as bomCount FROM BillOfMaterials b " +
            "GROUP BY b.status ORDER BY bomCount DESC")
     List<Object[]> getStatusDistribution();
     
@@ -347,7 +347,7 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
      * Get monthly BOM creation count
      */
     @Query("SELECT YEAR(b.createdAt) as year, MONTH(b.createdAt) as month, " +
-           "COUNT(b) as bomCount FROM Bom b " +
+           "COUNT(b) as bomCount FROM BillOfMaterials b " +
            "WHERE b.createdAt BETWEEN :startDate AND :endDate " +
            "GROUP BY YEAR(b.createdAt), MONTH(b.createdAt) " +
            "ORDER BY year, month")
@@ -357,13 +357,13 @@ public interface BomRepository extends JpaRepository<Bom, Long> {
     /**
      * Get products with BOMs
      */
-    @Query("SELECT b.productId, b.productName, COUNT(b) as bomCount FROM Bom b " +
+    @Query("SELECT b.productId, b.productName, COUNT(b) as bomCount FROM BillOfMaterials b " +
            "GROUP BY b.productId, b.productName ORDER BY bomCount DESC")
     List<Object[]> getProductsWithBoms();
     
     /**
      * Find BOMs by tags
      */
-    @Query("SELECT b FROM Bom b WHERE b.tags LIKE CONCAT('%', :tag, '%')")
-    List<Bom> findByTag(@Param("tag") String tag);
+    @Query("SELECT b FROM BillOfMaterials b WHERE b.tags LIKE CONCAT('%', :tag, '%')")
+    List<BillOfMaterials> findByTag(@Param("tag") String tag);
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -41,10 +42,10 @@ public class SupplierLedgerRequest {
     private String description;
     
     @DecimalMin(value = "0.0", message = "Debit amount must be positive")
-    private Double debitAmount;
+    private BigDecimal debitAmount;
     
     @DecimalMin(value = "0.0", message = "Credit amount must be positive")
-    private Double creditAmount;
+    private BigDecimal creditAmount;
     
     // Payment details
     private String paymentType; // CASH, CHEQUE, BANK_TRANSFER, CREDIT

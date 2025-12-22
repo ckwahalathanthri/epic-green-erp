@@ -70,7 +70,7 @@ public abstract class SupplierServiceImpl implements SupplierService {
         supplier.setIsApproved(false);
         supplier.setIsCreditAllowed(false);
         supplier.setCreditLimit(request.getCreditLimit() != null ? 
-            BigDecimal.valueOf(request.getCreditLimit()) : BigDecimal.ZERO);
+            request.getCreditLimit() : BigDecimal.ZERO);
         supplier.setCurrentBalance(BigDecimal.ZERO);
         supplier.setOutstandingBalance(BigDecimal.ZERO);
         supplier.setTotalOrders(0);
@@ -135,7 +135,7 @@ public abstract class SupplierServiceImpl implements SupplierService {
         
         // Credit settings
         if (request.getCreditLimit() != null) {
-            existing.setCreditLimit(BigDecimal.valueOf(request.getCreditLimit()));
+            existing.setCreditLimit(request.getCreditLimit());
         }
         if (request.getCreditDays() != null) {
             existing.setCreditDays(request.getCreditDays());

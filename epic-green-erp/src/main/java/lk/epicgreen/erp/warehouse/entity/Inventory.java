@@ -44,9 +44,13 @@ public class Inventory {
     
     @Column(name = "product_name", length = 200)
     private String productName;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "warehouse_id", nullable = false, foreignKey = @ForeignKey(name = "fk_warehouse_location_warehouse"))
+    private Warehouse warehouse;
     
     // Warehouse information (denormalized)
-    @Column(name = "warehouse_id", nullable = false)
+    @Column(name = "warehouse_id", insertable = false, updatable = false)
     private Long warehouseId;
     
     @Column(name = "warehouse_name", length = 200)

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -78,7 +79,7 @@ public class SupplierRequest {
     private Integer rating;
     
     @DecimalMin(value = "0.0", message = "Credit limit must be positive")
-    private Double creditLimit;
+    private BigDecimal creditLimit;
     
     @Min(value = 0, message = "Credit days must be positive")
     private Integer creditDays;

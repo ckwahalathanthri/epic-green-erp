@@ -55,9 +55,9 @@ public abstract class SupplierLedgerServiceImpl implements SupplierLedgerService
         
         // Convert amounts to BigDecimal
         BigDecimal debitAmount = request.getDebitAmount() != null ? 
-            BigDecimal.valueOf(request.getDebitAmount()) : BigDecimal.ZERO;
+            request.getDebitAmount() : BigDecimal.ZERO;
         BigDecimal creditAmount = request.getCreditAmount() != null ? 
-            BigDecimal.valueOf(request.getCreditAmount()) : BigDecimal.ZERO;
+            request.getCreditAmount() : BigDecimal.ZERO;
         
         ledger.setDebitAmount(debitAmount);
         ledger.setCreditAmount(creditAmount);
@@ -107,9 +107,9 @@ public abstract class SupplierLedgerServiceImpl implements SupplierLedgerService
         
         // Convert new amounts to BigDecimal
         BigDecimal newDebit = request.getDebitAmount() != null ? 
-            BigDecimal.valueOf(request.getDebitAmount()) : BigDecimal.ZERO;
+            request.getDebitAmount() : BigDecimal.ZERO;
         BigDecimal newCredit = request.getCreditAmount() != null ? 
-            BigDecimal.valueOf(request.getCreditAmount()) : BigDecimal.ZERO;
+            request.getCreditAmount() : BigDecimal.ZERO;
         
         existing.setDebitAmount(newDebit);
         existing.setCreditAmount(newCredit);
@@ -303,8 +303,8 @@ public abstract class SupplierLedgerServiceImpl implements SupplierLedgerService
             .referenceId(purchaseOrderId)
             .referenceNumber(poNumber)
             .description(description != null ? description : "Purchase from supplier")
-            .debitAmount(amount)
-            .creditAmount(0.0)
+            .debitAmount(BigDecimal.valueOf(amount))
+            .creditAmount(BigDecimal.valueOf(0.0))
             .build();
         
         return createLedgerEntry(request);
@@ -320,8 +320,8 @@ public abstract class SupplierLedgerServiceImpl implements SupplierLedgerService
             .transactionType("PAYMENT")
             .referenceType("PAYMENT")
             .description(description != null ? description : "Payment to supplier")
-            .debitAmount(0.0)
-            .creditAmount(amount)
+            .debitAmount(BigDecimal.valueOf(0.0))
+            .creditAmount(BigDecimal.valueOf(amount))
             .paymentType(paymentType)
             .chequeNo(chequeNo)
             .chequeDate(chequeDate)
@@ -341,8 +341,8 @@ public abstract class SupplierLedgerServiceImpl implements SupplierLedgerService
             .referenceType("ADJUSTMENT")
             .referenceNumber(creditNoteNumber)
             .description(description != null ? description : "Credit note from supplier")
-            .debitAmount(0.0)
-            .creditAmount(amount)
+            .debitAmount(BigDecimal.valueOf(0.0))
+            .creditAmount(BigDecimal.valueOf(amount))
             .build();
         
         return createLedgerEntry(request);
@@ -358,8 +358,8 @@ public abstract class SupplierLedgerServiceImpl implements SupplierLedgerService
             .referenceType("ADJUSTMENT")
             .referenceNumber(debitNoteNumber)
             .description(description != null ? description : "Debit note to supplier")
-            .debitAmount(amount)
-            .creditAmount(0.0)
+            .debitAmount(BigDecimal.valueOf(amount))
+            .creditAmount(BigDecimal.valueOf(0.0))
             .build();
         
         return createLedgerEntry(request);

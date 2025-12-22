@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -140,25 +141,25 @@ public class ChartOfAccounts extends AuditEntity {
      * Opening balance debit
      */
     @Column(name = "opening_balance_debit", precision = 15, scale = 2)
-    private java.math.BigDecimal openingBalanceDebit;
+    private BigDecimal openingBalanceDebit;
     
     /**
      * Opening balance credit
      */
     @Column(name = "opening_balance_credit", precision = 15, scale = 2)
-    private java.math.BigDecimal openingBalanceCredit;
+    private BigDecimal openingBalanceCredit;
     
     /**
      * Current balance debit
      */
     @Column(name = "current_balance_debit", precision = 15, scale = 2)
-    private java.math.BigDecimal currentBalanceDebit;
+    private BigDecimal currentBalanceDebit;
     
     /**
      * Current balance credit
      */
     @Column(name = "current_balance_credit", precision = 15, scale = 2)
-    private java.math.BigDecimal currentBalanceCredit;
+    private BigDecimal currentBalanceCredit;
     
     /**
      * Debit balance (Double for backward compatibility)

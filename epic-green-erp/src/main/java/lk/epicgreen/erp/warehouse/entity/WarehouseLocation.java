@@ -158,9 +158,9 @@ public class WarehouseLocation extends AuditEntity {
     /**
      * Inventory items at this location
      */
-    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL)
-    @Builder.Default
-    private Set<Inventory> inventoryItems = new HashSet<>();
+//    @OneToMany(mappedBy = "inventory_id", cascade = CascadeType.ALL)
+//    @Builder.Default
+//    private Set<Inventory> inventoryItems = new HashSet<>();
     
     /**
      * Gets full location path

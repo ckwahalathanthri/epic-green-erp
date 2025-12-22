@@ -59,13 +59,13 @@ public abstract class SalesOrderServiceImpl implements SalesOrderService {
         
         // Calculate amounts - proper BigDecimal handling
         BigDecimal subtotal = request.getSubtotalAmount() != null ? 
-            BigDecimal.valueOf(request.getSubtotalAmount()) : BigDecimal.ZERO;
+            request.getSubtotalAmount() : BigDecimal.ZERO;
         BigDecimal tax = request.getTaxAmount() != null ? 
-            BigDecimal.valueOf(request.getTaxAmount()) : BigDecimal.ZERO;
+            request.getTaxAmount() : BigDecimal.ZERO;
         BigDecimal discount = request.getDiscountAmount() != null ? 
-            BigDecimal.valueOf(request.getDiscountAmount()) : BigDecimal.ZERO;
+            request.getDiscountAmount() : BigDecimal.ZERO;
         BigDecimal shipping = request.getShippingAmount() != null ? 
-            BigDecimal.valueOf(request.getShippingAmount()) : BigDecimal.ZERO;
+            request.getShippingAmount() : BigDecimal.ZERO;
         
         order.setSubtotalAmount(subtotal);
         order.setTaxAmount(tax);
@@ -101,13 +101,13 @@ public abstract class SalesOrderServiceImpl implements SalesOrderService {
         
         // Update amounts
         BigDecimal subtotal = request.getSubtotalAmount() != null ? 
-            BigDecimal.valueOf(request.getSubtotalAmount()) : BigDecimal.ZERO;
+            request.getSubtotalAmount() : BigDecimal.ZERO;
         BigDecimal tax = request.getTaxAmount() != null ? 
-            BigDecimal.valueOf(request.getTaxAmount()) : BigDecimal.ZERO;
+            request.getTaxAmount() : BigDecimal.ZERO;
         BigDecimal discount = request.getDiscountAmount() != null ? 
-            BigDecimal.valueOf(request.getDiscountAmount()) : BigDecimal.ZERO;
+            request.getDiscountAmount() : BigDecimal.ZERO;
         BigDecimal shipping = request.getShippingAmount() != null ? 
-            BigDecimal.valueOf(request.getShippingAmount()) : BigDecimal.ZERO;
+            request.getShippingAmount() : BigDecimal.ZERO;
         
         existing.setSubtotalAmount(subtotal);
         existing.setTaxAmount(tax);
@@ -557,13 +557,13 @@ public abstract class SalesOrderServiceImpl implements SalesOrderService {
     
     private BigDecimal calculateTotal(SalesOrderRequest request) {
         BigDecimal subtotal = request.getSubtotalAmount() != null ? 
-            BigDecimal.valueOf(request.getSubtotalAmount()) : BigDecimal.ZERO;
+            request.getSubtotalAmount() : BigDecimal.ZERO;
         BigDecimal tax = request.getTaxAmount() != null ? 
-            BigDecimal.valueOf(request.getTaxAmount()) : BigDecimal.ZERO;
+            request.getTaxAmount() : BigDecimal.ZERO;
         BigDecimal discount = request.getDiscountAmount() != null ? 
-            BigDecimal.valueOf(request.getDiscountAmount()) : BigDecimal.ZERO;
+            request.getDiscountAmount() : BigDecimal.ZERO;
         BigDecimal shipping = request.getShippingAmount() != null ? 
-            BigDecimal.valueOf(request.getShippingAmount()) : BigDecimal.ZERO;
+            request.getShippingAmount() : BigDecimal.ZERO;
         
         return subtotal.add(tax).subtract(discount).add(shipping);
     }

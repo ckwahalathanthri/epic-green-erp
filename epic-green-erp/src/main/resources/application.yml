@@ -13,9 +13,9 @@ spring:
   # DATABASE CONFIGURATION
   # ===================================================
   datasource:
-    url: jdbc:mysql://localhost:3306/epic_green_db?useSSL=true&serverTimezone=Asia/Colombo&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:password}
+    url: jdbc:mysql://127.0.0.1:3307/epic_green_db?useSSL=false&serverTimezone=UTC
+    username: epic_app
+    password: StrongPassword123!
     driver-class-name: com.mysql.cj.jdbc.Driver
     
     # HikariCP Connection Pool
@@ -34,14 +34,14 @@ spring:
   # ===================================================
   jpa:
     hibernate:
-      ddl-auto: validate  # Use Flyway for schema management
+      ddl-auto: update  # Use Flyway for schema management
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
         use_sql_comments: true
         jdbc:
@@ -57,7 +57,10 @@ spring:
   # FLYWAY CONFIGURATION
   # ===================================================
   flyway:
-    enabled: true
+    enabled: false
+    url: jdbc:mysql://127.0.0.1:3307/epic_green_db?useSSL=false&serverTimezone=UTC
+    user: epic_app
+    password: StrongPassword123!
     baseline-on-migrate: true
     locations: classpath:db/migration
     validate-on-migrate: true

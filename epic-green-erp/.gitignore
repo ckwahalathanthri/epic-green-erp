@@ -1,15 +1,238 @@
+### Epic Green ERP - Git Ignore File ###
+
+# Compiled class files
+*.class
+
 # Log files
 *.log
+logs/
+*.log.*
 
-# Package files
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
 *.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
 
-# Maven
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+### Maven ###
 target/
-dist/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### Gradle ###
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+*.code-workspace
+
+### Mac OS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Windows ###
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+### Linux ###
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+### Application Specific ###
+
+# Uploads
+uploads/
+!uploads/.gitkeep
+
+# Reports
+reports/
+!reports/.gitkeep
+
+# Backups
+backups/
+*.sql
+*.dump
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Application logs
+application*.log
+spring*.log
+
+# Security
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+*.truststore
+secrets/
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+h2/
+
+# Test coverage
+coverage/
+.coverage
+*.lcov
+
+# Node modules (for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Angular (if frontend in same repo)
+/dist
+/tmp
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# Flutter (if mobile in same repo)
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.lock
+
+# IDEs and editors
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.code-workspace
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Production files
+application-prod.yml.backup
+*.prod.bak
+
+# Documentation build
+docs/_build/
+site/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Kubernetes
+*.kubeconfig
+
+# CI/CD
+.gitlab-ci-local/
+.jenkins/
+
+# Keep these directories but ignore contents
+uploads/*
+!uploads/.gitkeep
+reports/*
+!reports/.gitkeep
+backups/*
+!backups/.gitkeep
+logs/*
+!logs/.gitkeep
