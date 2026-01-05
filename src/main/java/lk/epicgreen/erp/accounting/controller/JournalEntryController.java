@@ -1,10 +1,12 @@
 package lk.epicgreen.erp.accounting.controller;
 
+import lk.epicgreen.erp.accounting.dto.response.JournalEntryResponse;
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.accounting.dto.JournalEntryRequest;
+import lk.epicgreen.erp.accounting.dto.request.JournalEntryRequest;
 import lk.epicgreen.erp.accounting.entity.JournalEntry;
 import lk.epicgreen.erp.accounting.entity.JournalEntryLine;
 import lk.epicgreen.erp.accounting.service.JournalEntryService;
+import lk.epicgreen.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,17 +40,17 @@ public class JournalEntryController {
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<JournalEntry>> createJournalEntry(@Valid @RequestBody JournalEntryRequest request) {
+    public ResponseEntity<ApiResponse<JournalEntryResponse>> createJournalEntry(@Valid @RequestBody JournalEntryRequest request) {
         log.info("Creating journal entry");
-        JournalEntry created = journalEntryService.createJournalEntry(request);
+        JournalEntryResponse created = journalEntryService.createJournalEntry(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Journal entry created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<JournalEntry>> updateJournalEntry(@PathVariable Long id, @Valid @RequestBody JournalEntryRequest request) {
+    public ResponseEntity<ApiResponse<JournalEntryResponse>> updateJournalEntry(@PathVariable Long id, @Valid @RequestBody JournalEntryRequest request) {
         log.info("Updating journal entry: {}", id);
-        JournalEntry updated = journalEntryService.updateJournalEntry(id, request);
+        JournalEntryResponse updated = journalEntryService.updateJournalEntry(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Journal entry updated successfully"));
     }
     
@@ -62,22 +64,22 @@ public class JournalEntryController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<JournalEntry>> getJournalEntryById(@PathVariable Long id) {
-        JournalEntry entry = journalEntryService.getJournalEntryById(id);
+    public ResponseEntity<ApiResponse<JournalEntryResponse>> getJournalEntryById(@PathVariable Long id) {
+        JournalEntryResponse entry = journalEntryService.getJournalEntryById(id);
         return ResponseEntity.ok(ApiResponse.success(entry, "Journal entry retrieved successfully"));
     }
     
     @GetMapping("/number/{entryNumber}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<JournalEntry>> getJournalEntryByNumber(@PathVariable String entryNumber) {
-        JournalEntry entry = journalEntryService.getJournalEntryByNumber(entryNumber);
+    public ResponseEntity<ApiResponse<JournalEntryResponse>> getJournalEntryByNumber(@PathVariable String entryNumber) {
+        JournalEntryResponse entry = journalEntryService.getJournalEntryByNumber(entryNumber);
         return ResponseEntity.ok(ApiResponse.success(entry, "Journal entry retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<JournalEntry>>> getAllJournalEntries(Pageable pageable) {
-        Page<JournalEntry> entries = journalEntryService.getAllJournalEntries(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<JournalEntryResponse>>> getAllJournalEntries(Pageable pageable) {
+        PageResponse<JournalEntryResponse> entries = journalEntryService.getAllJournalEntries(pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Journal entries retrieved successfully"));
     }
     

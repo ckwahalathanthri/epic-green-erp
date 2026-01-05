@@ -1,228 +1,129 @@
 package lk.epicgreen.erp.admin.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.admin.dto.UnitOfMeasureRequest;
-import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
+import lk.epicgreen.erp.admin.dto.request.UnitOfMeasureRequest;
+import lk.epicgreen.erp.admin.dto.response.UnitOfMeasureResponse;
 import lk.epicgreen.erp.admin.service.UnitOfMeasureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Unit of Measure Controller
- * REST controller for UOM operations
+ * REST controller for unit of measure management
  * 
  * @author Epic Green Development Team
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/admin/uom")
+@RequestMapping("/api/admin/units-of-measure")
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UnitOfMeasureController {
     
-    private final UnitOfMeasureService uomService;
+    private final UnitOfMeasureService unitOfMeasureService;
     
-    // ===================================================================
-    // CRUD OPERATIONS
-    // ===================================================================
-    
+    // Create Unit of Measure
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<UnitOfMeasure>> createUnitOfMeasure(@Valid @RequestBody UnitOfMeasureRequest request) {
+    public ResponseEntity<ApiResponse<UnitOfMeasureResponse>> createUnitOfMeasure(
+        @Valid @RequestBody UnitOfMeasureRequest request
+    ) {
         log.info("Creating unit of measure: {}", request.getUomCode());
-        UnitOfMeasure created = uomService.createUnitOfMeasure(request);
-        return ResponseEntity.ok(ApiResponse.success(created, "Unit of measure created successfully"));
+        UnitOfMeasureResponse response = unitOfMeasureService.createUnitOfMeasure(request);
+        return ResponseEntity.ok(ApiResponse.success(response, "Unit of measure created successfully"));
     }
     
+    // Update Unit of Measure
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<UnitOfMeasure>> updateUnitOfMeasure(
+    public ResponseEntity<ApiResponse<UnitOfMeasureResponse>> updateUnitOfMeasure(
         @PathVariable Long id,
         @Valid @RequestBody UnitOfMeasureRequest request
     ) {
         log.info("Updating unit of measure: {}", id);
-        UnitOfMeasure updated = uomService.updateUnitOfMeasure(id, request);
-        return ResponseEntity.ok(ApiResponse.success(updated, "Unit of measure updated successfully"));
+        UnitOfMeasureResponse response = unitOfMeasureService.updateUnitOfMeasure(id, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "Unit of measure updated successfully"));
     }
     
+    // Activate Unit of Measure
+    @PutMapping("/{id}/activate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> activateUnitOfMeasure(@PathVariable Long id) {
+        log.info("Activating unit of measure: {}", id);
+        unitOfMeasureService.activateUnitOfMeasure(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Unit of measure activated successfully"));
+    }
+    
+    // Deactivate Unit of Measure
+    @PutMapping("/{id}/deactivate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> deactivateUnitOfMeasure(@PathVariable Long id) {
+        log.info("Deactivating unit of measure: {}", id);
+        unitOfMeasureService.deactivateUnitOfMeasure(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Unit of measure deactivated successfully"));
+    }
+    
+    // Delete Unit of Measure
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteUnitOfMeasure(@PathVariable Long id) {
         log.info("Deleting unit of measure: {}", id);
-        uomService.deleteUnitOfMeasure(id);
+        unitOfMeasureService.deleteUnitOfMeasure(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Unit of measure deleted successfully"));
     }
     
+    // Get Unit of Measure by ID
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<UnitOfMeasure>> getUnitOfMeasureById(@PathVariable Long id) {
-        UnitOfMeasure uom = uomService.getUnitOfMeasureById(id);
-        return ResponseEntity.ok(ApiResponse.success(uom, "Unit of measure retrieved successfully"));
+    public ResponseEntity<ApiResponse<UnitOfMeasureResponse>> getUnitOfMeasureById(@PathVariable Long id) {
+        UnitOfMeasureResponse response = unitOfMeasureService.getUnitOfMeasureById(id);
+        return ResponseEntity.ok(ApiResponse.success(response, "Unit of measure retrieved successfully"));
     }
     
+    // Get Unit of Measure by Code
     @GetMapping("/code/{uomCode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<UnitOfMeasure>> getUnitOfMeasureByCode(@PathVariable String uomCode) {
-        UnitOfMeasure uom = uomService.getUnitOfMeasureByCode(uomCode);
-        return ResponseEntity.ok(ApiResponse.success(uom, "Unit of measure retrieved successfully"));
+    public ResponseEntity<ApiResponse<UnitOfMeasureResponse>> getUnitOfMeasureByCode(@PathVariable String uomCode) {
+        UnitOfMeasureResponse response = unitOfMeasureService.getUnitOfMeasureByCode(uomCode);
+        return ResponseEntity.ok(ApiResponse.success(response, "Unit of measure retrieved successfully"));
     }
     
+    // Get All Units of Measure
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<UnitOfMeasure>>> getAllUnitsOfMeasure(Pageable pageable) {
-        Page<UnitOfMeasure> uoms = uomService.getAllUnitsOfMeasure(pageable);
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Units of measure retrieved successfully"));
+    public ResponseEntity<ApiResponse<List<UnitOfMeasureResponse>>> getAllUnitsOfMeasure() {
+        List<UnitOfMeasureResponse> response = unitOfMeasureService.getAllUnitsOfMeasure();
+        return ResponseEntity.ok(ApiResponse.success(response, "Units of measure retrieved successfully"));
     }
     
-    @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasure>>> getAllUnitsOfMeasureList() {
-        List<UnitOfMeasure> uoms = uomService.getAllUnitsOfMeasure();
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Units of measure list retrieved successfully"));
-    }
-    
-    @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<UnitOfMeasure>>> searchUnitsOfMeasure(
-        @RequestParam String keyword,
-        Pageable pageable
-    ) {
-        Page<UnitOfMeasure> uoms = uomService.searchUnitsOfMeasure(keyword, pageable);
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Search results retrieved successfully"));
-    }
-    
-    // ===================================================================
-    // STATUS OPERATIONS
-    // ===================================================================
-    
-    @PutMapping("/{id}/activate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<UnitOfMeasure>> activateUnitOfMeasure(@PathVariable Long id) {
-        log.info("Activating unit of measure: {}", id);
-        UnitOfMeasure activated = uomService.activateUnitOfMeasure(id);
-        return ResponseEntity.ok(ApiResponse.success(activated, "Unit of measure activated successfully"));
-    }
-    
-    @PutMapping("/{id}/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<UnitOfMeasure>> deactivateUnitOfMeasure(@PathVariable Long id) {
-        log.info("Deactivating unit of measure: {}", id);
-        UnitOfMeasure deactivated = uomService.deactivateUnitOfMeasure(id);
-        return ResponseEntity.ok(ApiResponse.success(deactivated, "Unit of measure deactivated successfully"));
-    }
-    
-    // ===================================================================
-    // QUERY OPERATIONS
-    // ===================================================================
-    
+    // Get All Active Units of Measure
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasure>>> getActiveUnitsOfMeasure() {
-        List<UnitOfMeasure> uoms = uomService.getActiveUnitsOfMeasure();
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Active units of measure retrieved successfully"));
+    public ResponseEntity<ApiResponse<List<UnitOfMeasureResponse>>> getAllActiveUnitsOfMeasure() {
+        List<UnitOfMeasureResponse> response = unitOfMeasureService.getAllActiveUnitsOfMeasure();
+        return ResponseEntity.ok(ApiResponse.success(response, "Active units of measure retrieved successfully"));
     }
     
-    @GetMapping("/inactive")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasure>>> getInactiveUnitsOfMeasure() {
-        List<UnitOfMeasure> uoms = uomService.getInactiveUnitsOfMeasure();
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Inactive units of measure retrieved successfully"));
-    }
-    
+    // Get Units of Measure by Type
     @GetMapping("/type/{uomType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasure>>> getUnitsByType(@PathVariable String uomType) {
-        List<UnitOfMeasure> uoms = uomService.getUnitsByType(uomType);
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Units by type retrieved successfully"));
+    public ResponseEntity<ApiResponse<List<UnitOfMeasureResponse>>> getUnitsByType(@PathVariable String uomType) {
+        List<UnitOfMeasureResponse> response = unitOfMeasureService.getUnitsByType(uomType);
+        return ResponseEntity.ok(ApiResponse.success(response, "Units of measure retrieved successfully"));
     }
     
+    // Get Base Units
     @GetMapping("/base")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasure>>> getBaseUnits() {
-        List<UnitOfMeasure> uoms = uomService.getBaseUnits();
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Base units retrieved successfully"));
-    }
-    
-    @GetMapping("/derived")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasure>>> getDerivedUnits() {
-        List<UnitOfMeasure> uoms = uomService.getDerivedUnits();
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Derived units retrieved successfully"));
-    }
-    
-    @GetMapping("/{baseUomId}/derived")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasure>>> getDerivedUnitsFromBase(@PathVariable Long baseUomId) {
-        List<UnitOfMeasure> uoms = uomService.getDerivedUnitsFromBase(baseUomId);
-        return ResponseEntity.ok(ApiResponse.success(uoms, "Derived units from base retrieved successfully"));
-    }
-    
-    // ===================================================================
-    // CONVERSION OPERATIONS
-    // ===================================================================
-    
-    @GetMapping("/convert")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<BigDecimal>> convertQuantity(
-        @RequestParam Long fromUomId,
-        @RequestParam Long toUomId,
-        @RequestParam BigDecimal quantity
-    ) {
-        BigDecimal converted = uomService.convertQuantity(fromUomId, toUomId, quantity);
-        return ResponseEntity.ok(ApiResponse.success(converted, "Quantity converted successfully"));
-    }
-    
-    @GetMapping("/factor/{uomId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<BigDecimal>> getConversionFactor(@PathVariable Long uomId) {
-        BigDecimal factor = uomService.getConversionFactor(uomId);
-        return ResponseEntity.ok(ApiResponse.success(factor, "Conversion factor retrieved successfully"));
-    }
-    
-    // ===================================================================
-    // STATISTICS
-    // ===================================================================
-    
-    @GetMapping("/statistics")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getUnitOfMeasureStatistics() {
-        Map<String, Object> statistics = uomService.getUnitOfMeasureStatistics();
-        return ResponseEntity.ok(ApiResponse.success(statistics, "Unit of measure statistics retrieved successfully"));
-    }
-    
-    @GetMapping("/distribution/type")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTypeDistribution() {
-        List<Map<String, Object>> distribution = uomService.getTypeDistribution();
-        return ResponseEntity.ok(ApiResponse.success(distribution, "Type distribution retrieved successfully"));
-    }
-    
-    // ===================================================================
-    // VALIDATION
-    // ===================================================================
-    
-    @GetMapping("/validate/code/{uomCode}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Boolean>> isUomCodeAvailable(@PathVariable String uomCode) {
-        boolean available = uomService.isUomCodeAvailable(uomCode);
-        return ResponseEntity.ok(ApiResponse.success(available, "UOM code availability checked"));
-    }
-    
-    @GetMapping("/{id}/can-delete")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Boolean>> canDelete(@PathVariable Long id) {
-        boolean canDelete = uomService.canDelete(id);
-        return ResponseEntity.ok(ApiResponse.success(canDelete, "Delete check completed"));
+    public ResponseEntity<ApiResponse<List<UnitOfMeasureResponse>>> getBaseUnits() {
+        List<UnitOfMeasureResponse> response = unitOfMeasureService.getBaseUnits();
+        return ResponseEntity.ok(ApiResponse.success(response, "Base units retrieved successfully"));
     }
 }

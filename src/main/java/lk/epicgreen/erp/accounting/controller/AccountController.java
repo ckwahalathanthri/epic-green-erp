@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.accounting.controller;
 
+import lk.epicgreen.erp.accounting.service.ChartOfAccountsService;
 import lk.epicgreen.erp.common.dto.ApiResponse;
 import lk.epicgreen.erp.accounting.entity.ChartOfAccounts;
 import lk.epicgreen.erp.accounting.entity.GeneralLedger;
@@ -14,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +36,9 @@ import java.util.Map;
 public class AccountController {
     
     private final AccountingService accountingService;
-    
+
+    private final ChartOfAccountsService chartOfAccountsService;
+
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
@@ -247,8 +252,8 @@ public class AccountController {
     @GetMapping("/{id}/balance")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER')")
     public ResponseEntity<ApiResponse<Double>> getAccountBalance(@PathVariable Long id) {
-        Double balance = accountingService.getAccountBalance(id);
-        return ResponseEntity.ok(ApiResponse.success(balance, "Account balance retrieved successfully"));
+        BigDecimal balance = accountingService.getAccountBalance(id);
+        return ResponseEntity.ok(ApiResponse.success(balance.doubleValue(), "Account balance retrieved successfully"));
     }
     
     @GetMapping("/{id}/balance/period")

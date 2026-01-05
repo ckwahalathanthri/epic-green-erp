@@ -1,10 +1,10 @@
 package lk.epicgreen.erp.admin.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.admin.dto.LoginRequest;
-import lk.epicgreen.erp.admin.dto.ChangePasswordRequest;
-import lk.epicgreen.erp.admin.dto.ResetPasswordRequest;
-import lk.epicgreen.erp.admin.dto.AuthenticationResponse;
+import lk.epicgreen.erp.admin.dto.request.LoginRequest;
+import lk.epicgreen.erp.admin.dto.request.ChangePasswordRequest;
+import lk.epicgreen.erp.admin.dto.request.ResetPasswordRequest;
+import lk.epicgreen.erp.admin.dto.response.AuthenticationResponse;
 import lk.epicgreen.erp.admin.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.admin.mapper;
 
 import lk.epicgreen.erp.admin.dto.request.RoleCreateRequest;
+import lk.epicgreen.erp.admin.dto.request.RoleUpdateRequest;
 import lk.epicgreen.erp.admin.dto.response.RoleResponse;
 import lk.epicgreen.erp.admin.entity.Role;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,9 @@ import java.util.stream.Collectors;
 
 /**
  * Mapper for Role entity and DTOs
+ * 
+ * @author Epic Green Development Team
+ * @version 1.0
  */
 @Component
 public class RoleMapper {
@@ -30,6 +34,19 @@ public class RoleMapper {
             .description(request.getDescription())
             .isSystemRole(request.getIsSystemRole() != null ? request.getIsSystemRole() : false)
             .build();
+    }
+
+    public void updateEntityFromRequest(RoleUpdateRequest request, Role role) {
+        if (request == null || role == null) {
+            return;
+        }
+
+        if (request.getDescription() != null) {
+            role.setDescription(request.getDescription());
+        }
+        
+        // Note: roleName and roleCode updates are handled in service layer
+        // to ensure proper validation before updating
     }
 
     public RoleResponse toResponse(Role role) {

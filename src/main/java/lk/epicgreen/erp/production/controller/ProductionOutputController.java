@@ -2,9 +2,9 @@ package lk.epicgreen.erp.production.controller;
 
 import jakarta.validation.Valid;
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.production.dto.ProductionOutputRequest;
+import lk.epicgreen.erp.production.dto.request.ProductionOutputRequest;
 import lk.epicgreen.erp.production.entity.ProductionOutput;
-import lk.epicgreen.erp.production.service.ProductionService;
+import lk.epicgreen.erp.production.service.ProductionOutputService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,7 +32,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ProductionOutputController {
     
-    private final ProductionService productionService;
+    private final ProductionOutputService productionService;
     
     // CRUD Operations
     @PostMapping

@@ -266,4 +266,10 @@ public interface ChartOfAccountsRepository extends JpaRepository<ChartOfAccounts
     @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccountId = :parentAccountId " +
            "AND coa.isActive = true ORDER BY coa.accountCode")
     List<ChartOfAccounts> getAccountHierarchy(@Param("parentAccountId") Long parentAccountId);
+
+    BigDecimal getAccountBalance(Long accountId);
+
+    List<ChartOfAccounts> findByParentAccountIsNull();
+
+    List<ChartOfAccounts> findByIsActive(boolean b);
 }
