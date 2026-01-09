@@ -1,0 +1,109 @@
+package lk.epicgreen.erp.admin.service;
+
+import lk.epicgreen.erp.admin.config.JwtService;
+import lk.epicgreen.erp.admin.dto.request.ChangePasswordRequest;
+import lk.epicgreen.erp.admin.dto.request.LoginRequest;
+import lk.epicgreen.erp.admin.dto.request.ResetPasswordRequest;
+import lk.epicgreen.erp.admin.dto.response.AuthenticationResponse;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class AuthenticationService {
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final UserDetailService userService;
+
+    public AuthenticationResponse login(LoginRequest request) {
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+        
+        var user = userService.loadUserByUsername(request.getUsername());
+        
+        var jwtToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+
+        return AuthenticationResponse.builder()
+            .accessToken(jwtToken)
+            .refreshToken(refreshToken)
+            .build();
+    }
+
+    public void logout(String token) {
+        // TODO: Implement logout logic
+    }
+
+    public AuthenticationResponse refreshToken(String refreshToken) {
+        // TODO: Implement refresh token logic
+        return null;
+    }
+
+    public boolean validateToken(String token) {
+        // TODO: Implement token validation logic
+        return false;
+    }
+
+    public Map<String, Object> getCurrentUser() {
+        // TODO: Implement get current user logic
+        return Collections.emptyMap();
+    }
+
+    public void changePassword(ChangePasswordRequest request) {
+        // TODO: Implement change password logic
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        // TODO: Implement reset password logic
+    }
+
+    public void forgotPassword(String email) {
+        // TODO: Implement forgot password logic
+    }
+
+    public void resetPasswordWithToken(String token, String newPassword) {
+        // TODO: Implement reset password with token logic
+    }
+
+    public boolean hasPermission(String permissionName) {
+        // TODO: Implement permission check
+        return false;
+    }
+
+    public boolean hasRole(String roleName) {
+        // TODO: Implement role check
+        return false;
+    }
+
+    public List<String> getCurrentUserRoles() {
+        // TODO: Implement get user roles
+        return Collections.emptyList();
+    }
+
+    public List<String> getCurrentUserPermissions() {
+        // TODO: Implement get user permissions
+        return Collections.emptyList();
+    }
+
+    public List<Map<String, Object>> getActiveSessions() {
+        // TODO: Implement get active sessions
+        return Collections.emptyList();
+    }
+
+    public void invalidateSession(String sessionId) {
+        // TODO: Implement session invalidation
+    }
+
+    public void invalidateAllOtherSessions() {
+        // TODO: Implement invalidate all other sessions
+    }
+}

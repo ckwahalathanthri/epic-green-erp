@@ -1,12 +1,14 @@
-package lk.epicgreen.erp.reports.service.impl;
+package lk.epicgreen.erp.report.service.impl;
 
-import lk.epicgreen.erp.reports.dto.request.SavedReportRequest;
-import lk.epicgreen.erp.reports.dto.response.SavedReportResponse;
-import lk.epicgreen.erp.reports.entity.SavedReport;
-import lk.epicgreen.erp.reports.mapper.SavedReportMapper;
-import lk.epicgreen.erp.reports.repository.SavedReportRepository;
-import lk.epicgreen.erp.reports.service.SavedReportService;
-import lk.epicgreen.erp.reports.service.ReportExecutionHistoryService;
+import lk.epicgreen.erp.report.dto.request.SavedReportRequest;
+import lk.epicgreen.erp.report.dto.response.SavedReportResponse;
+import lk.epicgreen.erp.report.entity.SavedReport;
+import lk.epicgreen.erp.report.mapper.SavedReportMapper;
+import lk.epicgreen.erp.report.repository.SavedReportRepository;
+import lk.epicgreen.erp.report.service.SavedReportService;
+import lk.epicgreen.erp.report.service.ReportExecutionHistoryService;
+import lk.epicgreen.erp.admin.entity.User;
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lk.epicgreen.erp.common.dto.PageResponse;
@@ -36,6 +38,7 @@ public class SavedReportServiceImpl implements SavedReportService {
     private final SavedReportRepository reportRepository;
     private final SavedReportMapper reportMapper;
     private final ReportExecutionHistoryService executionHistoryService;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -44,8 +47,11 @@ public class SavedReportServiceImpl implements SavedReportService {
 
         validateUniqueReportCode(request.getReportCode(), null);
 
+        User user = userRepository.findById(createdBy)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + createdBy));
+
         SavedReport report = reportMapper.toEntity(request);
-        report.setCreatedBy(createdBy);
+        report.setCreatedBy(user);
 
         SavedReport savedReport = reportRepository.save(report);
         log.info("Saved report created successfully: {}", savedReport.getReportCode());
@@ -121,7 +127,7 @@ public class SavedReportServiceImpl implements SavedReportService {
 
     @Override
     public List<SavedReportResponse> getReportsByCreator(Long createdBy) {
-        List<SavedReport> reports = reportRepository.findByCreatedBy(createdBy);
+        List<SavedReport> reports = reportRepository.findByCreatedById(createdBy);
         return reports.stream()
             .map(reportMapper::toResponse)
             .collect(Collectors.toList());
@@ -210,7 +216,7 @@ public class SavedReportServiceImpl implements SavedReportService {
 
     @Override
     public PageResponse<SavedReportResponse> searchReports(String keyword, Pageable pageable) {
-        Page<SavedReport> reportPage = reportRepository.searchReports(keyword, pageable);
+        Page<SavedReport> reportPage = reportRepository.findByReportNameContainingIgnoreCase(keyword, pageable);
         return createPageResponse(reportPage);
     }
 

@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.production.repository;
 
 import lk.epicgreen.erp.production.entity.ProductionOutput;
+import lk.epicgreen.erp.production.dto.response.ProductionOutputResponse; // Kept if custom queries return this, but repo extends Entity
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for ProductionOutput entity
@@ -36,12 +38,12 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
     /**
      * Find all outputs for a work order
      */
-    List<ProductionOutput> findByWoId(Long woId);
+    List<ProductionOutput> findByWorkOrderId(Long woId);
     
     /**
      * Find all outputs for a work order with pagination
      */
-    Page<ProductionOutput> findByWoId(Long woId, Pageable pageable);
+    Page<ProductionOutput> findByWorkOrderId(Long woId, Pageable pageable);
     
     /**
      * Find all outputs for a finished product
@@ -81,7 +83,7 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
     /**
      * Find outputs by quality checked by user
      */
-    List<ProductionOutput> findByQualityCheckedBy(Long qualityCheckedBy);
+    List<ProductionOutput> findByQualityCheckedById(Long qualityCheckedBy);
     
     /**
      * Find outputs by output date
@@ -113,7 +115,7 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
     /**
      * Count outputs for a work order
      */
-    long countByWoId(Long woId);
+    long countByWorkOrderId(Long woId);
     
     /**
      * Count outputs for a finished product
@@ -180,6 +182,7 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
     @Query("SELECT po FROM ProductionOutput po WHERE po.expiryDate < CURRENT_DATE " +
            "ORDER BY po.expiryDate")
     List<ProductionOutput> findExpiredOutputs();
+
     
     /**
      * Get total quantity produced for a finished product
@@ -253,7 +256,7 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
      */
     @Query("SELECT po FROM ProductionOutput po WHERE po.outputDate = CURRENT_DATE " +
            "ORDER BY po.createdAt DESC")
-    List<ProductionOutput> findTodayOutputs();
+    List<ProductionOutputResponse> findTodayOutputs();
     
     /**
      * Get top produced products
@@ -278,7 +281,7 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
      */
     @Query("SELECT po FROM ProductionOutput po WHERE po.qualityCheckedAt BETWEEN :startTime AND :endTime " +
            "ORDER BY po.qualityCheckedAt DESC")
-    List<ProductionOutput> findOutputsQualityCheckedBetween(
+    List<ProductionOutputResponse> findOutputsQualityCheckedBetween(
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
     
@@ -286,10 +289,24 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
      * Find all outputs ordered by work order
      */
     @Query("SELECT po FROM ProductionOutput po ORDER BY po.woId, po.outputDate DESC")
-    List<ProductionOutput> findAllOrderedByWorkOrder();
+    List<ProductionOutputResponse> findAllOrderedByWorkOrder();
     
     /**
      * Find outputs by batch and product
      */
-    List<ProductionOutput> findByBatchNumberAndFinishedProductId(String batchNumber, Long finishedProductId);
+    List<ProductionOutputResponse> findByBatchNumberAndFinishedProductId(String batchNumber, Long finishedProductId);
+
+    List<ProductionOutput> findByWoId(Long woId);
+
+    List<ProductionOutput> findExpiredOutput(LocalDate now);
+
+    List<ProductionOutput> findOutputExpiringSoon(LocalDate now, LocalDate expiryDate);
+
+    Optional<BigDecimal> sumQuantityProducedByWo(Long woId);
+
+	Optional<BigDecimal> sumQuantityAcceptedByWo(Long woId);
+
+	Page<ProductionOutput> searchOutputs(String keyword, Pageable pageable);
+
+       Integer countByWoId(Long id);
 }

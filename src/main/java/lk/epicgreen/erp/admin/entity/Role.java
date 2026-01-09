@@ -8,6 +8,7 @@ import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Role entity
@@ -58,6 +59,51 @@ public class Role extends AuditEntity {
      */
     @Column(name = "is_system_role")
     private Boolean isSystemRole;
+
+     @Transient
+    public Set<Permission> getPermissions() {
+        if (rolePermissions == null) {
+            return new HashSet<>();
+        }
+        return rolePermissions.stream()
+                .map(RolePermission::getPermission)
+                .collect(Collectors.toSet());
+    }
+
+    public void setPermissions(Set<Permission> newPermissions) {
+        if (newPermissions == null) {
+            if (this.rolePermissions != null) {
+                this.rolePermissions.clear();
+            }
+            return;
+        }
+
+        // Initialize set if null
+        if (this.rolePermissions == null) {
+            this.rolePermissions = new HashSet<>();
+        }
+
+        // 1. Remove permissions that are NOT in the new set
+        // This triggers the orphanRemoval=true to delete from DB
+        this.rolePermissions.removeIf(rp -> !newPermissions.contains(rp.getPermission()));
+
+        // 2. Add permissions that are in the new set but NOT in current list
+        Set<Long> currentPermissionIds = this.rolePermissions.stream()
+                .map(rp -> rp.getPermission().getId())
+                .collect(Collectors.toSet());
+
+        for (Permission permission : newPermissions) {
+            if (!currentPermissionIds.contains(permission.getId())) {
+                RolePermission rolePermission = RolePermission.builder()
+                        .role(this)
+                        .permission(permission)
+                        .build();
+                this.rolePermissions.add(rolePermission);
+            }
+        }
+    }
+
+
     
     /**
      * Role permissions (many-to-many)

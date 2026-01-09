@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.production.repository;
 
+import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.production.entity.MaterialConsumption;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for MaterialConsumption entity
@@ -205,4 +207,13 @@ public interface MaterialConsumptionRepository extends JpaRepository<MaterialCon
     List<Object[]> getMonthlyConsumptionTrend(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT mc FROM MaterialConsumption mc WHERE mc.rawMaterial.productCode LIKE %:keyword% OR mc.batchNumber LIKE %:keyword%")
+    Page<MaterialConsumption> searchConsumptions(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT SUM(mc.quantityConsumed) FROM MaterialConsumption mc WHERE mc.workOrder.id = :woId AND mc.rawMaterial.id = :rawMaterialId")
+    Optional<BigDecimal> sumQuantityByWoAndMaterial(@Param("woId") Long woId, @Param("rawMaterialId") Long rawMaterialId);
+
+    @Query("SELECT SUM(mc.totalCost) FROM MaterialConsumption mc WHERE mc.workOrder.id = :woId")
+    Optional<BigDecimal> sumTotalCostByWo(@Param("woId") Long woId);
 }

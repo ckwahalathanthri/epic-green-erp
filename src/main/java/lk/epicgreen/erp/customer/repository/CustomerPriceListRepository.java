@@ -291,4 +291,12 @@ public interface CustomerPriceListRepository extends JpaRepository<CustomerPrice
     @Query("SELECT DISTINCT cpl.customerId FROM CustomerPriceList cpl " +
            "WHERE cpl.productId = :productId AND cpl.isActive = true")
     List<Long> findCustomersWithSpecialPricing(@Param("productId") Long productId);
+
+    List<CustomerPriceList> findValidPricesByCustomerAndDate(Long customerId, LocalDate date);
+
+    Optional<CustomerPriceList> findValidPriceByCustomerProductAndDate(Long customerId, Long productId, LocalDate date);
+
+    boolean existsByCustomerIdAndProductIdAndIsActiveTrueAndIdNot(Long customerId, Long productId, Long excludeId);
+
+    Optional<CustomerPriceList> findByIdAndDeletedAtIsNull(Long id);
 }

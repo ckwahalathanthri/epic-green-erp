@@ -55,6 +55,12 @@ public class UnitOfMeasure extends AuditEntity {
     @NotBlank(message = "UOM type is required")
     @Column(name = "uom_type", nullable = false, length = 20)
     private String uomType;
+
+    /**
+     * Description
+     */
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
     
     /**
      * Is base unit (e.g., KG for weight, L for volume)
@@ -147,4 +153,6 @@ public class UnitOfMeasure extends AuditEntity {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+
 }

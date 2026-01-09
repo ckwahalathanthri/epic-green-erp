@@ -58,6 +58,8 @@ public class WorkOrderRequest {
 
     private LocalDate actualCompletionDate;
 
+    private Long productId;
+
     @Pattern(regexp = "^(DRAFT|RELEASED|IN_PROGRESS|COMPLETED|CANCELLED)$", 
              message = "Status must be one of: DRAFT, RELEASED, IN_PROGRESS, COMPLETED, CANCELLED")
     private String status;

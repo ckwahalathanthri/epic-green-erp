@@ -32,7 +32,6 @@ public class MaterialConsumptionMapper {
             .quantityConsumed(request.getQuantityConsumed())
             .unitCost(request.getUnitCost())
             .totalCost(totalCost)
-            .consumedBy(request.getConsumedBy())
             .remarks(request.getRemarks())
             .build();
     }
@@ -66,7 +65,7 @@ public class MaterialConsumptionMapper {
             .warehouseId(consumption.getWarehouse() != null ? consumption.getWarehouse().getId() : null)
             .warehouseCode(consumption.getWarehouse() != null ? consumption.getWarehouse().getWarehouseCode() : null)
             .warehouseName(consumption.getWarehouse() != null ? consumption.getWarehouse().getWarehouseName() : null)
-            .consumedBy(consumption.getConsumedBy())
+            .consumedBy(consumption.getConsumedBy() != null ? consumption.getConsumedBy().getId() : null)
             .remarks(consumption.getRemarks())
             .createdAt(consumption.getCreatedAt())
             .build();

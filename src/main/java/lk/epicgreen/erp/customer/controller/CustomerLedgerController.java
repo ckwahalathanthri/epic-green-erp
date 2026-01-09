@@ -1,7 +1,8 @@
 package lk.epicgreen.erp.customer.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.customer.dto.CustomerLedgerRequest;
+import lk.epicgreen.erp.customer.dto.request.CustomerLedgerRequest;
+import lk.epicgreen.erp.customer.dto.response.CustomerLedgerResponse;
 import lk.epicgreen.erp.customer.entity.CustomerLedger;
 import lk.epicgreen.erp.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -39,20 +42,20 @@ public class CustomerLedgerController {
     
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<CustomerLedger>> createLedgerEntry(@Valid @RequestBody CustomerLedgerRequest request) {
+    public ResponseEntity<ApiResponse<CustomerLedgerResponse>> createLedgerEntry(@Valid @RequestBody CustomerLedgerRequest request) {
         log.info("Creating ledger entry for customer: {}", request.getCustomerId());
-        CustomerLedger created = customerService.createLedgerEntry(request);
+        CustomerLedgerResponse created = customerService.createLedgerEntry(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Ledger entry created successfully"));
     }
     
     @PutMapping("/{id}/reverse")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<CustomerLedger>> reverseLedgerEntry(
+    public ResponseEntity<ApiResponse<CustomerLedgerResponse>> reverseLedgerEntry(
         @PathVariable Long id,
         @RequestParam String reversalReason
     ) {
         log.info("Reversing ledger entry: {}", id);
-        CustomerLedger reversed = customerService.reverseLedgerEntry(id, reversalReason);
+        CustomerLedgerResponse reversed = customerService.reverseLedgerEntry(id, reversalReason);
         return ResponseEntity.ok(ApiResponse.success(reversed, "Ledger entry reversed successfully"));
     }
     
@@ -66,36 +69,36 @@ public class CustomerLedgerController {
     
     @GetMapping("/customer/{customerId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<Page<CustomerLedger>>> getCustomerLedgerEntries(
+    public ResponseEntity<ApiResponse<Page<CustomerLedgerResponse>>> getCustomerLedgerEntries(
         @PathVariable Long customerId,
         Pageable pageable
     ) {
-        Page<CustomerLedger> entries = customerService.getCustomerLedgerEntries(customerId, pageable);
+        Page<CustomerLedgerResponse> entries = customerService.getCustomerLedgerEntries(customerId, pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
     }
     
     @GetMapping("/customer/{customerId}/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<CustomerLedger>>> getCustomerLedgerEntriesList(@PathVariable Long customerId) {
-        List<CustomerLedger> entries = customerService.getCustomerLedgerEntries(customerId);
+    public ResponseEntity<ApiResponse<List<CustomerLedgerResponse>>> getCustomerLedgerEntriesList(@PathVariable Long customerId) {
+        List<CustomerLedgerResponse> entries = customerService.getCustomerLedgerEntries(customerId);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries list retrieved successfully"));
     }
     
     @GetMapping("/customer/{customerId}/statement")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<CustomerLedger>>> getCustomerLedgerStatement(
+    public ResponseEntity<ApiResponse<List<CustomerLedgerResponse>>> getCustomerLedgerStatement(
         @PathVariable Long customerId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<CustomerLedger> statement = customerService.getCustomerLedgerStatement(customerId, startDate, endDate);
+        List<CustomerLedgerResponse> statement = customerService.getCustomerLedgerStatement(customerId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(statement, "Ledger statement retrieved successfully"));
     }
     
     @GetMapping("/customer/{customerId}/balance")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<Double>> getCustomerBalance(@PathVariable Long customerId) {
-        Double balance = customerService.getCustomerBalance(customerId);
+    public ResponseEntity<ApiResponse<BigDecimal>> getCustomerBalance(@PathVariable Long customerId) {
+        BigDecimal balance = customerService.getCustomerBalance(customerId);
         return ResponseEntity.ok(ApiResponse.success(balance, "Customer balance retrieved successfully"));
     }
     

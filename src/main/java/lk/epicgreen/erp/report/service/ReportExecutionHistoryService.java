@@ -1,7 +1,9 @@
-package lk.epicgreen.erp.reports.service;
+package lk.epicgreen.erp.report.service;
 
-import lk.epicgreen.erp.reports.dto.request.ReportExecutionHistoryRequest;
-import lk.epicgreen.erp.reports.dto.response.ReportExecutionHistoryResponse;
+// import lk.epicgreen.erp.reports.dto.request.ReportExecutionHistoryRequest;
+// import lk.epicgreen.erp.reports.dto.response.ReportExecutionHistoryResponse;
+import lk.epicgreen.erp.report.dto.request.ReportExecutionHistoryRequest;
+import lk.epicgreen.erp.report.dto.response.ReportExecutionHistoryResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 

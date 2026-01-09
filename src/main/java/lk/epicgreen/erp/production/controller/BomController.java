@@ -1,9 +1,9 @@
 package lk.epicgreen.erp.production.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.production.dto.BomRequest;
-import lk.epicgreen.erp.production.entity.BillOfMaterials;
-import lk.epicgreen.erp.production.service.BomService;
+import lk.epicgreen.erp.production.dto.request.BillOfMaterialsRequest;
+import lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse;
+import lk.epicgreen.erp.production.service.BillOfMaterialsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,22 +32,22 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class BomController {
     
-    private final BomService bomService;
+    private final BillOfMaterialsService bomService;
     
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> createBom(@Valid @RequestBody BomRequest request) {
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> createBom(@Valid @RequestBody BillOfMaterialsRequest request) {
         log.info("Creating BOM for product: {}", request.getFinishedProductId());
-        BillOfMaterials created = bomService.createBom(request);
+        BillOfMaterialsResponse created = bomService.createBom(request);
         return ResponseEntity.ok(ApiResponse.success(created, "BOM created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> updateBom(@PathVariable Long id, @Valid @RequestBody BomRequest request) {
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> updateBom(@PathVariable Long id, @Valid @RequestBody BillOfMaterialsRequest request) {
         log.info("Updating BOM: {}", id);
-        BillOfMaterials updated = bomService.updateBom(id, request);
+        BillOfMaterialsResponse updated = bomService.updateBom(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "BOM updated successfully"));
     }
     
@@ -61,203 +61,203 @@ public class BomController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> getBomById(@PathVariable Long id) {
-        BillOfMaterials bom = bomService.getBomById(id);
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> getBomById(@PathVariable Long id) {
+        BillOfMaterialsResponse bom = bomService.getBomById(id);
         return ResponseEntity.ok(ApiResponse.success(bom, "BOM retrieved successfully"));
     }
     
     @GetMapping("/code/{bomCode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> getBomByCode(@PathVariable String bomCode) {
-        BillOfMaterials bom = bomService.getBomByCode(bomCode);
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> getBomByCode(@PathVariable String bomCode) {
+        BillOfMaterialsResponse bom = bomService.getBomByCode(bomCode);
         return ResponseEntity.ok(ApiResponse.success(bom, "BOM retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<BillOfMaterials>>> getAllBoms(Pageable pageable) {
-        Page<BillOfMaterials> boms = bomService.getAllBoms(pageable);
+    public ResponseEntity<ApiResponse<Page<BillOfMaterialsResponse>>> getAllBoms(Pageable pageable) {
+        Page<BillOfMaterialsResponse> boms = bomService.getAllBoms(pageable);
         return ResponseEntity.ok(ApiResponse.success(boms, "BOMs retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getAllBomsList() {
-        List<BillOfMaterials> boms = bomService.getAllBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getAllBomsList() {
+        List<BillOfMaterialsResponse> boms = bomService.getAllBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "BOMs list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<BillOfMaterials>>> searchBoms(@RequestParam String keyword, Pageable pageable) {
-        Page<BillOfMaterials> boms = bomService.searchBoms(keyword, pageable);
+    public ResponseEntity<ApiResponse<Page<BillOfMaterialsResponse>>> searchBoms(@RequestParam String keyword, Pageable pageable) {
+        Page<BillOfMaterialsResponse> boms = bomService.searchBoms(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(boms, "Search results retrieved successfully"));
     }
     
     // Status Operations
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> approveBom(
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> approveBom(
         @PathVariable Long id,
         @RequestParam Long approvedByUserId,
         @RequestParam(required = false) String approvalNotes
     ) {
         log.info("Approving BOM: {}", id);
-        BillOfMaterials approved = bomService.approveBom(id, approvedByUserId, approvalNotes);
+        BillOfMaterialsResponse approved = bomService.approveBom(id, approvedByUserId, approvalNotes);
         return ResponseEntity.ok(ApiResponse.success(approved, "BOM approved successfully"));
     }
     
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> activateBom(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> activateBom(@PathVariable Long id) {
         log.info("Activating BOM: {}", id);
-        BillOfMaterials activated = bomService.activateBom(id);
+        BillOfMaterialsResponse activated = bomService.activateBom(id);
         return ResponseEntity.ok(ApiResponse.success(activated, "BOM activated successfully"));
     }
     
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> deactivateBom(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> deactivateBom(@PathVariable Long id) {
         log.info("Deactivating BOM: {}", id);
-        BillOfMaterials deactivated = bomService.deactivateBom(id);
+        BillOfMaterialsResponse deactivated = bomService.deactivateBom(id);
         return ResponseEntity.ok(ApiResponse.success(deactivated, "BOM deactivated successfully"));
     }
     
     @PutMapping("/{id}/obsolete")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> markAsObsolete(@PathVariable Long id, @RequestParam String obsoleteReason) {
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> markAsObsolete(@PathVariable Long id, @RequestParam String obsoleteReason) {
         log.info("Marking BOM as obsolete: {}", id);
-        BillOfMaterials obsolete = bomService.markAsObsolete(id, obsoleteReason);
+        BillOfMaterialsResponse obsolete = bomService.markAsObsolete(id, obsoleteReason);
         return ResponseEntity.ok(ApiResponse.success(obsolete, "BOM marked as obsolete"));
     }
     
     @PutMapping("/product/{productId}/set-default/{bomId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> setAsDefault(@PathVariable Long productId, @PathVariable Long bomId) {
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> setAsDefault(@PathVariable Long productId, @PathVariable Long bomId) {
         log.info("Setting BOM {} as default for product {}", bomId, productId);
-        BillOfMaterials defaultBom = bomService.setAsDefault(productId, bomId);
+        BillOfMaterialsResponse defaultBom = bomService.setAsDefault(productId, bomId);
         return ResponseEntity.ok(ApiResponse.success(defaultBom, "BOM set as default successfully"));
     }
     
     // Version Operations
     @PostMapping("/{bomId}/create-version")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> createNewVersion(@PathVariable Long bomId, @RequestParam String newVersion) {
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> createNewVersion(@PathVariable Long bomId, @RequestParam String newVersion) {
         log.info("Creating new version {} for BOM {}", newVersion, bomId);
-        BillOfMaterials newBom = bomService.createNewVersion(bomId, newVersion);
+        BillOfMaterialsResponse newBom = bomService.createNewVersion(bomId, newVersion);
         return ResponseEntity.ok(ApiResponse.success(newBom, "New BOM version created successfully"));
     }
     
     @GetMapping("/product/{productId}/versions")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getBomVersions(@PathVariable Long productId) {
-        List<BillOfMaterials> versions = bomService.getBomVersions(productId);
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getBomVersions(@PathVariable Long productId) {
+        List<BillOfMaterialsResponse> versions = bomService.getBomVersions(productId);
         return ResponseEntity.ok(ApiResponse.success(versions, "BOM versions retrieved successfully"));
     }
     
     @GetMapping("/product/{productId}/latest-version")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> getLatestBomVersion(@PathVariable Long productId) {
-        BillOfMaterials latest = bomService.getLatestBomVersion(productId);
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> getLatestBomVersion(@PathVariable Long productId) {
+        BillOfMaterialsResponse latest = bomService.getLatestBomVersion(productId);
         return ResponseEntity.ok(ApiResponse.success(latest, "Latest BOM version retrieved successfully"));
     }
     
     // Query Operations
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getActiveBoms() {
-        List<BillOfMaterials> boms = bomService.getActiveBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getActiveBoms() {
+        List<BillOfMaterialsResponse> boms = bomService.getActiveBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "Active BOMs retrieved successfully"));
     }
     
     @GetMapping("/draft")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getDraftBoms() {
-        List<BillOfMaterials> boms = bomService.getDraftBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getDraftBoms() {
+        List<BillOfMaterialsResponse> boms = bomService.getDraftBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "Draft BOMs retrieved successfully"));
     }
     
     @GetMapping("/approved")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getApprovedBoms() {
-        List<BillOfMaterials> boms = bomService.getApprovedBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getApprovedBoms() {
+        List<BillOfMaterialsResponse> boms = bomService.getApprovedBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "Approved BOMs retrieved successfully"));
     }
     
     @GetMapping("/obsolete")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getObsoleteBoms() {
-        List<BillOfMaterials> boms = bomService.getObsoleteBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getObsoleteBoms() {
+        List<BillOfMaterialsResponse> boms = bomService.getObsoleteBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "Obsolete BOMs retrieved successfully"));
     }
     
     @GetMapping("/pending-approval")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getBomsPendingApproval() {
-        List<BillOfMaterials> boms = bomService.getBomsPendingApproval();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getBomsPendingApproval() {
+        List<BillOfMaterialsResponse> boms = bomService.getBomsPendingApproval();
         return ResponseEntity.ok(ApiResponse.success(boms, "BOMs pending approval retrieved successfully"));
     }
     
     @GetMapping("/default")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getActiveDefaultBoms() {
-        List<BillOfMaterials> boms = bomService.getActiveDefaultBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getActiveDefaultBoms() {
+        List<BillOfMaterialsResponse> boms = bomService.getActiveDefaultBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "Active default BOMs retrieved successfully"));
     }
     
     @GetMapping("/product/{productId}/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<BillOfMaterials>> getProductActiveBom(@PathVariable Long productId) {
-        BillOfMaterials bom = bomService.getProductActiveBom(productId);
+    public ResponseEntity<ApiResponse<BillOfMaterialsResponse>> getProductActiveBom(@PathVariable Long productId) {
+        BillOfMaterialsResponse bom = bomService.getProductActiveBom(productId);
         return ResponseEntity.ok(ApiResponse.success(bom, "Product active BOM retrieved successfully"));
     }
     
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getProductBoms(@PathVariable Long productId) {
-        List<BillOfMaterials> boms = bomService.getProductBoms(productId);
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getProductBoms(@PathVariable Long productId) {
+        List<BillOfMaterialsResponse> boms = bomService.getProductBoms(productId);
         return ResponseEntity.ok(ApiResponse.success(boms, "Product BOMs retrieved successfully"));
     }
     
     @GetMapping("/effective")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getEffectiveBoms() {
-        List<BillOfMaterials> boms = bomService.getEffectiveBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getEffectiveBoms() {
+        List<BillOfMaterialsResponse> boms = bomService.getEffectiveBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "Effective BOMs retrieved successfully"));
     }
     
     @GetMapping("/expired")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getExpiredBoms() {
-        List<BillOfMaterials> boms = bomService.getExpiredBoms();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getExpiredBoms() {
+        List<BillOfMaterialsResponse> boms = bomService.getExpiredBoms();
         return ResponseEntity.ok(ApiResponse.success(boms, "Expired BOMs retrieved successfully"));
     }
     
     @GetMapping("/expiring-soon")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getExpiringSoonBoms(@RequestParam(defaultValue = "30") int days) {
-        List<BillOfMaterials> boms = bomService.getExpiringSoonBoms(days);
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getExpiringSoonBoms(@RequestParam(defaultValue = "30") int days) {
+        List<BillOfMaterialsResponse> boms = bomService.getExpiringSoonBoms(days);
         return ResponseEntity.ok(ApiResponse.success(boms, "Expiring soon BOMs retrieved successfully"));
     }
     
     @GetMapping("/requiring-action")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getBomsRequiringAction() {
-        List<BillOfMaterials> boms = bomService.getBomsRequiringAction();
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getBomsRequiringAction() {
+        List<BillOfMaterialsResponse> boms = bomService.getBomsRequiringAction();
         return ResponseEntity.ok(ApiResponse.success(boms, "BOMs requiring action retrieved successfully"));
     }
     
     @GetMapping("/type/{bomType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'USER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getBomsByType(@PathVariable String bomType) {
-        List<BillOfMaterials> boms = bomService.getBomsByType(bomType);
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getBomsByType(@PathVariable String bomType) {
+        List<BillOfMaterialsResponse> boms = bomService.getBomsByType(bomType);
         return ResponseEntity.ok(ApiResponse.success(boms, "BOMs by type retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'USER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> getRecentBoms(@RequestParam(defaultValue = "10") int limit) {
-        List<BillOfMaterials> boms = bomService.getRecentBoms(limit);
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> getRecentBoms(@RequestParam(defaultValue = "10") int limit) {
+        List<BillOfMaterialsResponse> boms = bomService.getRecentBoms(limit);
         return ResponseEntity.ok(ApiResponse.success(boms, "Recent BOMs retrieved successfully"));
     }
     
@@ -293,9 +293,9 @@ public class BomController {
     // Batch Operations
     @PostMapping("/bulk")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<BillOfMaterials>>> createBulkBoms(@Valid @RequestBody List<BomRequest> requests) {
+    public ResponseEntity<ApiResponse<List<BillOfMaterialsResponse>>> createBulkBoms(@Valid @RequestBody List<BillOfMaterialsRequest> requests) {
         log.info("Creating {} BOMs in bulk", requests.size());
-        List<BillOfMaterials> boms = bomService.createBulkBoms(requests);
+        List<BillOfMaterialsResponse> boms = bomService.createBulkBoms(requests);
         return ResponseEntity.ok(ApiResponse.success(boms, boms.size() + " BOMs created successfully"));
     }
     

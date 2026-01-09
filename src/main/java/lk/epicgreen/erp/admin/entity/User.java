@@ -10,7 +10,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * User entity
@@ -91,6 +93,11 @@ public class User extends AuditEntity {
     @Size(max = 20)
     @Column(name = "employee_code", unique = true, length = 20)
     private String employeeCode;
+
+    /*
+    role of the user
+     */
+    
     
     /**
      * User status (ACTIVE, INACTIVE, SUSPENDED)
@@ -128,6 +135,49 @@ public class User extends AuditEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<UserRole> userRoles = new HashSet<>();
+
+    /**
+     * Helper to get flat roles
+     */
+    @Transient
+    public Set<Role> getRoles() {
+        if (userRoles == null) {
+            return new HashSet<>();
+        }
+        return userRoles.stream()
+                .map(UserRole::getRole)
+                .collect(Collectors.toSet());
+    }
+
+    public void setRoles(Set<Role> newRoles){
+        if(newRoles == null){
+            if (this.userRoles != null) {
+                this.userRoles.clear();
+            }
+            return;  
+        }
+
+        if (this.userRoles == null) {
+            this.userRoles = new HashSet<>();
+        }
+
+        this.userRoles.removeIf(ur -> !newRoles.contains(ur.getRole()));
+
+        Set<Long> currentRoleIds = this.userRoles.stream()
+                .map(ur -> ur.getRole().getId())
+                .collect(Collectors.toSet());
+
+        for (Role role : newRoles) {
+            if (!currentRoleIds.contains(role.getId())) {
+                UserRole newUserRole = UserRole.builder()
+                        .user(this) 
+                        .role(role)
+                        .assignedAt(LocalDateTime.now()) 
+                        .build();
+                this.userRoles.add(newUserRole);
+            }
+        }
+    }
     
     /**
      * Get full name

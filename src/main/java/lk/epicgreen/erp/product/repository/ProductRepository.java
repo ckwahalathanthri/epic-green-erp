@@ -1,6 +1,9 @@
 package lk.epicgreen.erp.product.repository;
 
+import lk.epicgreen.erp.customer.entity.CustomerPriceList;
 import lk.epicgreen.erp.product.entity.Product;
+import lk.epicgreen.erp.product.entity.ProductCategory;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -354,6 +358,38 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT p FROM Product p WHERE p.updatedAt >= :date")
     List<Product> findRecentlyUpdatedProducts(@Param("date") java.time.LocalDateTime date);
 
-    @Query("SELECT p FROM Product p WHERE p.id = :id AND p.deletedAt IS NULL")
-    Product findByIdAndDeletedAtIsNull(Long id);
+    Optional<Product> findByIdAndDeletedAtIsNull(Long id);
+
+    Optional<Product> findByProductCodeAndDeletedAtIsNull(String productCode);
+
+    Optional<Product> findByBarcodeAndDeletedAtIsNull(String barcode);
+
+    Optional<Product> findBySkuAndDeletedAtIsNull(String sku);
+
+    Page<Product> findByDeletedAtIsNull(Pageable pageable);
+
+	List<Product> findByIsActiveTrueAndDeletedAtIsNull();
+
+    Page<Product> findByProductTypeAndDeletedAtIsNull(String productType, Pageable pageable);
+
+    Page<Product> findByCategoryIdAndDeletedAtIsNull(Long categoryId, Pageable pageable);
+
+    List<Product> findByProductTypeAndIsActiveTrueAndDeletedAtIsNull(String string);
+
+    Page<Product> searchProducts(String keyword, Pageable pageable);
+
+    List<Product> findProductsBelowMinimumStock();
+
+    Double findAverageMarginPercentage();
+
+    List<Product> findByBrandAndIsActiveTrueAndDeletedAtIsNull(String brand);
+
+    int activateProductsByIds(List<Long> productIds);
+
+    List<Map<String, Object>> findProductCountsByBrand();
+
+    int updateCategoryForProducts(List<Long> productIds, ProductCategory category);
+
+
+    
 }

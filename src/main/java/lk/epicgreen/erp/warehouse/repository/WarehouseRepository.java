@@ -243,4 +243,6 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long>, Jpa
      * Find warehouses by type and city
      */
     List<Warehouse> findByWarehouseTypeAndCityAndIsActiveTrue(String warehouseType, String city);
+
+    Page<Warehouse> searchWarehouses(String keyword, Pageable pageable);
 }

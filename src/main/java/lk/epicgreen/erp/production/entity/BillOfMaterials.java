@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.product.entity.Product;
+import lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -254,8 +255,8 @@ public class BillOfMaterials extends AuditEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BillOfMaterials)) return false;
-        BillOfMaterials that = (BillOfMaterials) o;
+        if (!(o instanceof BillOfMaterialsResponse)) return false;
+        BillOfMaterialsResponse that = (BillOfMaterialsResponse) o;
         return id != null && id.equals(that.getId());
     }
     

@@ -196,4 +196,6 @@ public interface PermissionRepository extends JpaRepository<Permission, Long>, J
      * Find all permissions ordered by module and code
      */
     List<Permission> findAllByOrderByModuleAscPermissionCodeAsc();
+
+    List<String> findDistinctModules();
 }

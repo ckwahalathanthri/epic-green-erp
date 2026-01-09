@@ -66,6 +66,12 @@ public class ProductCategory extends AuditEntity {
      */
     @Column(name = "is_active")
     private Boolean isActive;
+
+    /**
+     * Transient field for children categories (not persisted)
+     */
+    @Transient
+    private List<ProductCategory> children;
     
     /**
      * Child categories

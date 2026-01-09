@@ -34,6 +34,9 @@ public class ProductionOutputRequest {
     @Size(max = 50, message = "Batch number must not exceed 50 characters")
     private String batchNumber;
 
+    @NotNull(message = "Work order ID is required")
+    private Long workOrderId;
+
     @NotNull(message = "Quantity produced is required")
     @DecimalMin(value = "0.001", message = "Quantity produced must be > 0")
     private BigDecimal quantityProduced;

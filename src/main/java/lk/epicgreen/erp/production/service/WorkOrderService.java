@@ -5,8 +5,10 @@ import lk.epicgreen.erp.production.dto.response.WorkOrderResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 
+
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for WorkOrder entity business logic
@@ -151,4 +153,82 @@ public interface WorkOrderService {
      * Calculate production efficiency (actual_quantity / planned_quantity * 100)
      */
     Double calculateProductionEfficiency(Long id);
+
+    List<WorkOrderResponse> getAllWorkOrders();
+
+    WorkOrderResponse approveWorkOrder(Long id, Long approvedByUserId, String approvalNotes);
+
+    WorkOrderResponse startWorkOrder(Long id, LocalDate actualStartDate);
+
+    WorkOrderResponse completeWorkOrder(Long id, LocalDate actualEndDate, Double actualQuantity);
+
+    WorkOrderResponse rejectWorkOrder(Long id, String rejectionReason);
+
+    void updateActualQuantity(Long workOrderId, Double quantity);
+
+    void recordMaterialConsumption(Long workOrderId, Long materialId, Double quantity);
+
+    void recordLabourHours(Long workOrderId, Double hours);
+
+    List<WorkOrderResponse> getDraftWorkOrders();
+
+    List<WorkOrderResponse> getPendingWorkOrders();
+
+    List<WorkOrderResponse> getApprovedWorkOrders();
+
+    List<WorkOrderResponse> getCompletedWorkOrders();
+
+    List<WorkOrderResponse> getCancelledWorkOrders();
+
+    List<WorkOrderResponse> getWorkOrdersPendingApproval();
+
+    List<WorkOrderResponse> getHighPriorityWorkOrders();
+
+    List<WorkOrderResponse> getTodaysWorkOrders();
+
+    List<WorkOrderResponse> getWorkOrdersRequiringAction();
+
+    List<WorkOrderResponse> getWorkOrdersByProduct(Long productId);
+
+    List<WorkOrderResponse> getWorkOrdersByProductionLine(Long productionLineId);
+
+    List<WorkOrderResponse> getRecentWorkOrders(int limit);
+
+    boolean canApproveWorkOrder(Long id);
+
+    boolean canStartWorkOrder(Long id);
+
+    boolean canCompleteWorkOrder(Long id);
+
+    boolean canCancelWorkOrder(Long id);
+
+    Double calculateCompletionPercentage(Long id);
+
+    Double calculateVariance(Long id);
+
+    Map<String, Object> calculateWorkOrderMetrics(Long id);
+
+	List<WorkOrderResponse> createBulkWorkOrders(List<WorkOrderRequest> requests);
+
+	int approveBulkWorkOrders(List<Long> workOrderIds, Long approvedByUserId);
+
+	int deleteBulkWorkOrders(List<Long> workOrderIds);
+
+	Map<String, Object> getWorkOrderStatistics();
+
+	List<Map<String, Object>> getWorkOrderTypeDistribution();
+
+	List<Map<String, Object>> getStatusDistribution();
+
+	List<Map<String, Object>> getPriorityDistribution();
+
+	List<Map<String, Object>> getMonthlyWorkOrderCount(LocalDate startDate, LocalDate endDate);
+
+	List<Map<String, Object>> getProductionLinePerformance();
+
+	Double getProductionEfficiency();
+
+	Double getOnTimeCompletionRate();
+
+	Map<String, Object> getDashboardStatistics();
 }

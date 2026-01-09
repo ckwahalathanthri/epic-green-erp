@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.PositiveOrZero;
+
 /**
  * DTO for product response
  * 
@@ -43,4 +46,5 @@ public class ProductResponse {
     private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Double discountAmount;
 }

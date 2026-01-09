@@ -1,4 +1,4 @@
-package lk.epicgreen.erp.reports.dto.response;
+package lk.epicgreen.erp.report.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,4 +33,5 @@ public class SavedReportResponse {
     private String createdByName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String format;
 }

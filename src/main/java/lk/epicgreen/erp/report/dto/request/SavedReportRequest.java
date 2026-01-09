@@ -1,4 +1,4 @@
-package lk.epicgreen.erp.reports.dto.request;
+package lk.epicgreen.erp.report.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

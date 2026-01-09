@@ -2,6 +2,7 @@ package lk.epicgreen.erp.production.service.impl;
 
 import lk.epicgreen.erp.production.dto.request.ProductionOutputRequest;
 import lk.epicgreen.erp.production.dto.response.ProductionOutputResponse;
+import lk.epicgreen.erp.production.dto.response.WorkOrderResponse; // Keep this if used for response mapping, but usually service uses entities
 import lk.epicgreen.erp.production.entity.ProductionOutput;
 import lk.epicgreen.erp.production.entity.WorkOrder;
 import lk.epicgreen.erp.production.mapper.ProductionOutputMapper;
@@ -29,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -370,5 +372,281 @@ public class ProductionOutputServiceImpl implements ProductionOutputService {
             .first(outputPage.isFirst())
             .empty(outputPage.isEmpty())
             .build();
+    }
+
+    @Override
+    public ProductionOutputResponse createProductionOutput(ProductionOutputRequest request) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createProductionOutput'");
+    }
+
+    @Override
+    public ProductionOutputResponse updateProductionOutput(Long id, ProductionOutputRequest request) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateProductionOutput'");
+    }
+
+    @Override
+    public void deleteProductionOutput(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteProductionOutput'");
+    }
+
+    @Override
+    public ProductionOutputResponse getProductionOutputByNumber(String outputNumber) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionOutputByNumber'");
+    }
+
+    @Override
+    public Page<ProductionOutputResponse> getAllProductionOutputs(Pageable pageable) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getAllProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllProductionOutputs'");
+    }
+
+    @Override
+    public Page<ProductionOutputResponse> searchProductionOutputs(String keyword, Pageable pageable) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchProductionOutputs'");
+    }
+
+    @Override
+    public ProductionOutputResponse verifyProductionOutput(Long id, Long verifiedByUserId, String verificationNotes) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'verifyProductionOutput'");
+    }
+
+    @Override
+    public ProductionOutputResponse postToInventory(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'postToInventory'");
+    }
+
+    @Override
+    public ProductionOutputResponse rejectProductionOutput(Long id, String rejectionReason) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'rejectProductionOutput'");
+    }
+
+    @Override
+    public void recordQualityCheck(Long id, String qualityStatus) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'recordQualityCheck'");
+    }
+
+    @Override
+    public void updateOutputQuantities(Long id, Double goodQuantity, Double rejectedQuantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateOutputQuantities'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getPendingProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPendingProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getVerifiedProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getVerifiedProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getPostedProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPostedProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getRejectedProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRejectedProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getUnverifiedProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUnverifiedProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getUnpostedProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUnpostedProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getTodaysProductionOutputs() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTodaysProductionOutputs'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getProductionOutputsByWorkOrder(Long workOrderId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionOutputsByWorkOrder'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getProductionOutputsByProduct(Long productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionOutputsByProduct'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getProductionOutputsByProductionLine(Long productionLineId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionOutputsByProductionLine'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getProductionOutputsBySupervisor(Long supervisorId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionOutputsBySupervisor'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getProductionOutputsByDateRange(LocalDate startDate, LocalDate endDate) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionOutputsByDateRange'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> getRecentProductionOutputs(int limit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRecentProductionOutputs'");
+    }
+
+    @Override
+    public Double getTotalGoodQuantityByWorkOrder(Long workOrderId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTotalGoodQuantityByWorkOrder'");
+    }
+
+    @Override
+    public Double getTotalRejectedQuantityByWorkOrder(Long workOrderId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTotalRejectedQuantityByWorkOrder'");
+    }
+
+    @Override
+    public boolean canVerifyProductionOutput(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canVerifyProductionOutput'");
+    }
+
+    @Override
+    public boolean canPostToInventory(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canPostToInventory'");
+    }
+
+    @Override
+    public boolean canRejectProductionOutput(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canRejectProductionOutput'");
+    }
+
+    @Override
+    public Double calculateQualityRate(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculateQualityRate'");
+    }
+
+    @Override
+    public Double calculateRejectionRate(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculateRejectionRate'");
+    }
+
+    @Override
+    public Map<String, Object> calculateProductionMetrics(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculateProductionMetrics'");
+    }
+
+    @Override
+    public List<ProductionOutputResponse> createBulkProductionOutputs(List<ProductionOutputRequest> requests) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createBulkProductionOutputs'");
+    }
+
+    @Override
+    public int verifyBulkProductionOutputs(List<Long> outputIds, Long verifiedByUserId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'verifyBulkProductionOutputs'");
+    }
+
+    @Override
+    public int postBulkToInventory(List<Long> outputIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'postBulkToInventory'");
+    }
+
+    @Override
+    public int deleteBulkProductionOutputs(List<Long> outputIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteBulkProductionOutputs'");
+    }
+
+    @Override
+    public Map<String, Object> getProductionOutputStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionOutputStatistics'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getOutputTypeDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getOutputTypeDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getStatusDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getStatusDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getMonthlyProductionOutput(LocalDate startDate, LocalDate endDate) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getMonthlyProductionOutput'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductionByProduct() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionByProduct'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductionByProductionLine() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionByProductionLine'");
+    }
+
+    @Override
+    public Double getQualityRate() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getQualityRate'");
+    }
+
+    @Override
+    public Double getRejectionRate() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRejectionRate'");
+    }
+
+    @Override
+    public Map<String, Object> getDashboardStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDashboardStatistics'");
     }
 }

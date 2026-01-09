@@ -17,6 +17,8 @@ import lk.epicgreen.erp.warehouse.service.StockAdjustmentService;
 import lk.epicgreen.erp.warehouse.service.StockMovementService;
 import lk.epicgreen.erp.product.entity.Product;
 import lk.epicgreen.erp.product.repository.ProductRepository;
+import lk.epicgreen.erp.admin.entity.User;
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lk.epicgreen.erp.common.exception.InvalidOperationException;
@@ -28,7 +30,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
     private final WarehouseRepository warehouseRepository;
     private final ProductRepository productRepository;
     private final WarehouseLocationRepository warehouseLocationRepository;
+    private final UserRepository userRepository;
     private final StockMovementService stockMovementService;
     private final StockAdjustmentMapper stockAdjustmentMapper;
     private final StockAdjustmentItemMapper stockAdjustmentItemMapper;
@@ -166,9 +168,11 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
                 ". Only PENDING_APPROVAL adjustments can be approved.");
         }
 
+        User approver = findUserById(approvedBy);
+
         // Update status
         adjustment.setStatus("APPROVED");
-        adjustment.setApprovedBy(approvedBy);
+        adjustment.setApprovedBy(approver);
         adjustment.setApprovedAt(LocalDateTime.now());
 
         stockAdjustmentRepository.save(adjustment);
@@ -295,6 +299,11 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
     private WarehouseLocation findWarehouseLocationById(Long id) {
         return warehouseLocationRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Warehouse location not found: " + id));
+    }
+
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
     }
 
     private void validateUniqueAdjustmentNumber(String adjustmentNumber, Long excludeId) {
