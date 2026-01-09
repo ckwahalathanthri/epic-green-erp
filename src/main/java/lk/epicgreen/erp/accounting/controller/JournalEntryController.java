@@ -9,6 +9,7 @@ import lk.epicgreen.erp.accounting.service.JournalEntryService;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,6 +37,9 @@ import java.util.Map;
 public class JournalEntryController {
     
     private final JournalEntryService journalEntryService;
+
+    @Autowired
+    private JournalEntryMapper journalEntryMapper;
     
     // CRUD Operations
     @PostMapping
@@ -94,6 +98,9 @@ public class JournalEntryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<Page<JournalEntry>>> searchJournalEntries(@RequestParam String keyword, Pageable pageable) {
         Page<JournalEntry> entries = journalEntryService.searchJournalEntries(keyword, pageable);
+
+
+
         return ResponseEntity.ok(ApiResponse.success(entries, "Search results retrieved successfully"));
     }
     

@@ -58,8 +58,10 @@ public class UnitOfMeasureMapper {
             .description(unitOfMeasure.getDescription())
             .baseUnit(unitOfMeasure.getBaseUnit())
             .conversionFactor(unitOfMeasure.getConversionFactor())
-            .baseUnitId(unitOfMeasure.getBaseUnitReference() != null ? 
-                unitOfMeasure.getBaseUnitReference().getId() : null)
+            // .baseUnitId(unitOfMeasure.getBaseUnitReference() != null ? 
+            //     unitOfMeasure.getBaseUnitReference().getId() : null)
+            .baseUnitId(unitOfMeasure.getBaseUom() != null ? 
+                unitOfMeasure.getBaseUom().getId() : null)
             .isActive(unitOfMeasure.getIsActive())
             .createdAt(unitOfMeasure.getCreatedAt())
             .updatedAt(unitOfMeasure.getUpdatedAt())

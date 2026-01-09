@@ -1,7 +1,9 @@
 package lk.epicgreen.erp.product.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.product.dto.ProductRequest;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.product.dto.request.ProductRequest;
+import lk.epicgreen.erp.product.dto.response.ProductResponse;
 import lk.epicgreen.erp.product.entity.Product;
 import lk.epicgreen.erp.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -38,20 +42,20 @@ public class ProductController {
     
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<Product>> createProduct(@Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<ApiResponse<ProductResponse>> createProduct(@Valid @RequestBody ProductRequest request) {
         log.info("Creating product: {}", request.getProductName());
-        Product created = productService.createProduct(request);
+        ProductResponse created = productService.createProduct(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Product created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<Product>> updateProduct(
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
         @PathVariable Long id,
         @Valid @RequestBody ProductRequest request
     ) {
         log.info("Updating product: {}", id);
-        Product updated = productService.updateProduct(id, request);
+        ProductResponse updated = productService.updateProduct(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Product updated successfully"));
     }
     
@@ -65,53 +69,53 @@ public class ProductController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Product>> getProductById(@PathVariable Long id) {
-        Product product = productService.getProductById(id);
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long id) {
+        ProductResponse product = productService.getProductById(id);
         return ResponseEntity.ok(ApiResponse.success(product, "Product retrieved successfully"));
     }
     
     @GetMapping("/code/{productCode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Product>> getProductByCode(@PathVariable String productCode) {
-        Product product = productService.getProductByCode(productCode);
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductByCode(@PathVariable String productCode) {
+        ProductResponse product = productService.getProductByCode(productCode);
         return ResponseEntity.ok(ApiResponse.success(product, "Product retrieved successfully"));
     }
     
     @GetMapping("/sku/{sku}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Product>> getProductBySku(@PathVariable String sku) {
-        Product product = productService.getProductBySku(sku);
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductBySku(@PathVariable String sku) {
+        ProductResponse product = productService.getProductBySku(sku);
         return ResponseEntity.ok(ApiResponse.success(product, "Product retrieved successfully"));
     }
     
     @GetMapping("/barcode/{barcode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Product>> getProductByBarcode(@PathVariable String barcode) {
-        Product product = productService.getProductByBarcode(barcode);
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductByBarcode(@PathVariable String barcode) {
+        ProductResponse product = productService.getProductByBarcode(barcode);
         return ResponseEntity.ok(ApiResponse.success(product, "Product retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Product>>> getAllProducts(Pageable pageable) {
-        Page<Product> products = productService.getAllProducts(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getAllProducts(Pageable pageable) {
+        PageResponse<ProductResponse> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(ApiResponse.success(products, "Products retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getAllProductsList() {
-        List<Product> products = productService.getAllProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProductsList() {
+        List<ProductResponse> products = productService.getAllProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Products list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Product>>> searchProducts(
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> searchProducts(
         @RequestParam String keyword,
         Pageable pageable
     ) {
-        Page<Product> products = productService.searchProducts(keyword, pageable);
+        PageResponse<ProductResponse> products = productService.searchProducts(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(products, "Search results retrieved successfully"));
     }
     
@@ -121,44 +125,48 @@ public class ProductController {
     
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<Product>> activateProduct(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> activateProduct(@PathVariable Long id) {
         log.info("Activating product: {}", id);
-        Product activated = productService.activateProduct(id);
-        return ResponseEntity.ok(ApiResponse.success(activated, "Product activated successfully"));
+        // Product activated = productService.activateProduct(id);
+        // return ResponseEntity.ok(ApiResponse.success(activated, "Product activated successfully"));
+        productService.activateProduct(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Product activated successfully"));
     }
     
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<Product>> deactivateProduct(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deactivateProduct(@PathVariable Long id) {
         log.info("Deactivating product: {}", id);
-        Product deactivated = productService.deactivateProduct(id);
-        return ResponseEntity.ok(ApiResponse.success(deactivated, "Product deactivated successfully"));
+        // Product deactivated = productService.deactivateProduct(id);
+        // return ResponseEntity.ok(ApiResponse.success(deactivated, "Product deactivated successfully"));
+        productService.deactivateProduct(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Product deactivated successfully"));
     }
     
     @PutMapping("/{id}/discontinue")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<Product>> discontinueProduct(
+    public ResponseEntity<ApiResponse<ProductResponse>> discontinueProduct(
         @PathVariable Long id,
         @RequestParam String reason
     ) {
         log.info("Discontinuing product: {}", id);
-        Product discontinued = productService.discontinueProduct(id, reason);
+        ProductResponse discontinued = productService.discontinueProduct(id, reason);
         return ResponseEntity.ok(ApiResponse.success(discontinued, "Product discontinued successfully"));
     }
     
     @PutMapping("/{id}/feature")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<Product>> featureProduct(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ProductResponse>> featureProduct(@PathVariable Long id) {
         log.info("Featuring product: {}", id);
-        Product featured = productService.featureProduct(id);
+        ProductResponse featured = productService.featureProduct(id);
         return ResponseEntity.ok(ApiResponse.success(featured, "Product featured successfully"));
     }
     
     @PutMapping("/{id}/unfeature")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<Product>> unfeatureProduct(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ProductResponse>> unfeatureProduct(@PathVariable Long id) {
         log.info("Unfeaturing product: {}", id);
-        Product unfeatured = productService.unfeatureProduct(id);
+        ProductResponse unfeatured = productService.unfeatureProduct(id);
         return ResponseEntity.ok(ApiResponse.success(unfeatured, "Product unfeatured successfully"));
     }
     
@@ -168,192 +176,192 @@ public class ProductController {
     
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Product>>> getActiveProducts(Pageable pageable) {
-        Page<Product> products = productService.getActiveProducts(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getActiveProducts(Pageable pageable) {
+        PageResponse<ProductResponse> products = productService.getActiveProducts(pageable);
         return ResponseEntity.ok(ApiResponse.success(products, "Active products retrieved successfully"));
     }
     
     @GetMapping("/inactive")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getInactiveProducts() {
-        List<Product> products = productService.getInactiveProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getInactiveProducts() {
+        List<ProductResponse> products = productService.getInactiveProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Inactive products retrieved successfully"));
     }
     
     @GetMapping("/discontinued")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getDiscontinuedProducts() {
-        List<Product> products = productService.getDiscontinuedProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getDiscontinuedProducts() {
+        List<ProductResponse> products = productService.getDiscontinuedProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Discontinued products retrieved successfully"));
     }
     
     @GetMapping("/featured")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Product>>> getFeaturedProducts(Pageable pageable) {
-        Page<Product> products = productService.getFeaturedProducts(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getFeaturedProducts(Pageable pageable) {
+        PageResponse<ProductResponse> products = productService.getFeaturedProducts(pageable);
         return ResponseEntity.ok(ApiResponse.success(products, "Featured products retrieved successfully"));
     }
     
     @GetMapping("/sellable")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getSellableProducts() {
-        List<Product> products = productService.getSellableProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getSellableProducts() {
+        List<ProductResponse> products = productService.getSellableProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Sellable products retrieved successfully"));
     }
     
     @GetMapping("/purchasable")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getPurchasableProducts() {
-        List<Product> products = productService.getPurchasableProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getPurchasableProducts() {
+        List<ProductResponse> products = productService.getPurchasableProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Purchasable products retrieved successfully"));
     }
     
     @GetMapping("/taxable")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Product>>> getTaxableProducts() {
-        List<Product> products = productService.getTaxableProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getTaxableProducts() {
+        List<ProductResponse> products = productService.getTaxableProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Taxable products retrieved successfully"));
     }
     
     @GetMapping("/category/{categoryId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByCategory(@PathVariable Long categoryId) {
-        List<Product> products = productService.getProductsByCategory(categoryId);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByCategory(@PathVariable Long categoryId) {
+        List<ProductResponse> products = productService.getProductsByCategory(categoryId);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by category retrieved successfully"));
     }
     
     @GetMapping("/type/{productType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByType(@PathVariable String productType) {
-        List<Product> products = productService.getProductsByType(productType);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByType(@PathVariable String productType) {
+        List<ProductResponse> products = productService.getProductsByType(productType);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by type retrieved successfully"));
     }
     
     @GetMapping("/type/raw-material")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getRawMaterialProducts() {
-        List<Product> products = productService.getRawMaterialProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getRawMaterialProducts() {
+        List<ProductResponse> products = productService.getRawMaterialProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Raw material products retrieved successfully"));
     }
     
     @GetMapping("/type/finished-goods")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getFinishedGoodsProducts() {
-        List<Product> products = productService.getFinishedGoodsProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getFinishedGoodsProducts() {
+        List<ProductResponse> products = productService.getFinishedGoodsProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Finished goods retrieved successfully"));
     }
     
     @GetMapping("/type/semi-finished")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'PRODUCTION_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getSemiFinishedProducts() {
-        List<Product> products = productService.getSemiFinishedProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getSemiFinishedProducts() {
+        List<ProductResponse> products = productService.getSemiFinishedProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Semi-finished products retrieved successfully"));
     }
     
     @GetMapping("/brand/{brand}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByBrand(@PathVariable String brand) {
-        List<Product> products = productService.getProductsByBrand(brand);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByBrand(@PathVariable String brand) {
+        List<ProductResponse> products = productService.getProductsByBrand(brand);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by brand retrieved successfully"));
     }
     
     @GetMapping("/manufacturer/{manufacturer}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByManufacturer(@PathVariable String manufacturer) {
-        List<Product> products = productService.getProductsByManufacturer(manufacturer);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByManufacturer(@PathVariable String manufacturer) {
+        List<ProductResponse> products = productService.getProductsByManufacturer(manufacturer);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by manufacturer retrieved successfully"));
     }
     
     @GetMapping("/price-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByPriceRange(
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByPriceRange(
         @RequestParam Double minPrice,
         @RequestParam Double maxPrice
     ) {
-        List<Product> products = productService.getProductsByPriceRange(minPrice, maxPrice);
+        List<ProductResponse> products = productService.getProductsByPriceRange(minPrice, maxPrice);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by price range retrieved successfully"));
     }
     
     @GetMapping("/price/below")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsBelowPrice(@RequestParam Double maxPrice) {
-        List<Product> products = productService.getProductsBelowPrice(maxPrice);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsBelowPrice(@RequestParam Double maxPrice) {
+        List<ProductResponse> products = productService.getProductsBelowPrice(maxPrice);
         return ResponseEntity.ok(ApiResponse.success(products, "Products below price retrieved successfully"));
     }
     
     @GetMapping("/price/above")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsAbovePrice(@RequestParam Double minPrice) {
-        List<Product> products = productService.getProductsAbovePrice(minPrice);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsAbovePrice(@RequestParam Double minPrice) {
+        List<ProductResponse> products = productService.getProductsAbovePrice(minPrice);
         return ResponseEntity.ok(ApiResponse.success(products, "Products above price retrieved successfully"));
     }
     
     @GetMapping("/cost-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByCostRange(
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByCostRange(
         @RequestParam Double minCost,
         @RequestParam Double maxCost
     ) {
-        List<Product> products = productService.getProductsByCostRange(minCost, maxCost);
+        List<ProductResponse> products = productService.getProductsByCostRange(minCost, maxCost);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by cost range retrieved successfully"));
     }
     
     @GetMapping("/margin/high")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getHighMarginProducts(@RequestParam Double marginPercentage) {
-        List<Product> products = productService.getHighMarginProducts(marginPercentage);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getHighMarginProducts(@RequestParam Double marginPercentage) {
+        List<ProductResponse> products = productService.getHighMarginProducts(marginPercentage);
         return ResponseEntity.ok(ApiResponse.success(products, "High margin products retrieved successfully"));
     }
     
     @GetMapping("/margin/low")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getLowMarginProducts(@RequestParam Double marginPercentage) {
-        List<Product> products = productService.getLowMarginProducts(marginPercentage);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getLowMarginProducts(@RequestParam Double marginPercentage) {
+        List<ProductResponse> products = productService.getLowMarginProducts(marginPercentage);
         return ResponseEntity.ok(ApiResponse.success(products, "Low margin products retrieved successfully"));
     }
     
     @GetMapping("/weight-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByWeightRange(
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByWeightRange(
         @RequestParam Double minWeight,
         @RequestParam Double maxWeight
     ) {
-        List<Product> products = productService.getProductsByWeightRange(minWeight, maxWeight);
+        List<ProductResponse> products = productService.getProductsByWeightRange(minWeight, maxWeight);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by weight range retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getRecentProducts(@RequestParam(defaultValue = "10") int limit) {
-        List<Product> products = productService.getRecentProducts(limit);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getRecentProducts(@RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getRecentProducts(limit);
         return ResponseEntity.ok(ApiResponse.success(products, "Recent products retrieved successfully"));
     }
     
     @GetMapping("/recently-updated")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getRecentlyUpdatedProducts(@RequestParam(defaultValue = "10") int limit) {
-        List<Product> products = productService.getRecentlyUpdatedProducts(limit);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getRecentlyUpdatedProducts(@RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getRecentlyUpdatedProducts(limit);
         return ResponseEntity.ok(ApiResponse.success(products, "Recently updated products retrieved successfully"));
     }
     
     @GetMapping("/category-tree")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getProductsByCategoryTree(@RequestParam List<Long> categoryIds) {
-        List<Product> products = productService.getProductsByCategoryTree(categoryIds);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByCategoryTree(@RequestParam List<Long> categoryIds) {
+        List<ProductResponse> products = productService.getProductsByCategoryTree(categoryIds);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by category tree retrieved successfully"));
     }
     
     @GetMapping("/highest-priced")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getHighestPricedProducts(@RequestParam(defaultValue = "10") int limit) {
-        List<Product> products = productService.getHighestPricedProducts(limit);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getHighestPricedProducts(@RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getHighestPricedProducts(limit);
         return ResponseEntity.ok(ApiResponse.success(products, "Highest priced products retrieved successfully"));
     }
     
     @GetMapping("/lowest-priced")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> getLowestPricedProducts(@RequestParam(defaultValue = "10") int limit) {
-        List<Product> products = productService.getLowestPricedProducts(limit);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getLowestPricedProducts(@RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getLowestPricedProducts(limit);
         return ResponseEntity.ok(ApiResponse.success(products, "Lowest priced products retrieved successfully"));
     }
     
@@ -500,7 +508,7 @@ public class ProductController {
     @GetMapping("/{id}/margin")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
     public ResponseEntity<ApiResponse<Double>> calculateMargin(@PathVariable Long id) {
-        Product product = productService.getProductById(id);
+        ProductResponse product = productService.getProductById(id);
         Double margin = productService.calculateMargin(product);
         return ResponseEntity.ok(ApiResponse.success(margin, "Margin calculated successfully"));
     }
@@ -508,16 +516,16 @@ public class ProductController {
     @GetMapping("/{id}/margin-percentage")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
     public ResponseEntity<ApiResponse<Double>> calculateMarginPercentage(@PathVariable Long id) {
-        Product product = productService.getProductById(id);
+        ProductResponse product = productService.getProductById(id);
         Double marginPercentage = productService.calculateMarginPercentage(product);
         return ResponseEntity.ok(ApiResponse.success(marginPercentage, "Margin percentage calculated successfully"));
     }
     
     @GetMapping("/{id}/discounted-price")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Double>> calculateDiscountedPrice(@PathVariable Long id) {
-        Product product = productService.getProductById(id);
-        Double discountedPrice = productService.calculateDiscountedPrice(product);
+    public ResponseEntity<ApiResponse<BigDecimal>> calculateDiscountedPrice(@PathVariable Long id) {
+        ProductResponse product = productService.getProductById(id);
+        BigDecimal discountedPrice = productService.calculateDiscountedPrice(product);
         return ResponseEntity.ok(ApiResponse.success(discountedPrice, "Discounted price calculated successfully"));
     }
     
@@ -534,9 +542,9 @@ public class ProductController {
     
     @PostMapping("/bulk")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Product>>> createBulkProducts(@Valid @RequestBody List<ProductRequest> requests) {
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> createBulkProducts(@Valid @RequestBody List<ProductRequest> requests) {
         log.info("Creating {} products in bulk", requests.size());
-        List<Product> products = productService.createBulkProducts(requests);
+        List<ProductResponse> products = productService.createBulkProducts(requests);
         return ResponseEntity.ok(ApiResponse.success(products, products.size() + " products created successfully"));
     }
     

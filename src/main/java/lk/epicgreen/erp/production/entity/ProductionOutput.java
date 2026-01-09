@@ -329,4 +329,9 @@ public class ProductionOutput {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+    public void setQualityCheckedBy(Long qualityCheckedBy2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setQualityCheckedBy'");
+    }
 }

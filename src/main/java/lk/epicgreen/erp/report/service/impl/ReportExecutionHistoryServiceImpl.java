@@ -1,15 +1,19 @@
-package lk.epicgreen.erp.reports.service.impl;
+package lk.epicgreen.erp.report.service.impl;
 
-import lk.epicgreen.erp.reports.dto.request.ReportExecutionHistoryRequest;
-import lk.epicgreen.erp.reports.dto.response.ReportExecutionHistoryResponse;
-import lk.epicgreen.erp.reports.entity.ReportExecutionHistory;
-import lk.epicgreen.erp.reports.entity.SavedReport;
-import lk.epicgreen.erp.reports.mapper.ReportExecutionHistoryMapper;
-import lk.epicgreen.erp.reports.repository.ReportExecutionHistoryRepository;
-import lk.epicgreen.erp.reports.repository.SavedReportRepository;
-import lk.epicgreen.erp.reports.service.ReportExecutionHistoryService;
+import lk.epicgreen.erp.report.dto.request.ReportExecutionHistoryRequest;
+import lk.epicgreen.erp.report.dto.response.ReportExecutionHistoryResponse;
+import lk.epicgreen.erp.report.entity.ReportExecutionHistory;
+import lk.epicgreen.erp.report.entity.SavedReport;
+import lk.epicgreen.erp.report.mapper.ReportExecutionHistoryMapper;
+import lk.epicgreen.erp.report.repository.ReportExecutionHistoryRepository;
+import lk.epicgreen.erp.report.repository.SavedReportRepository;
+import lk.epicgreen.erp.report.service.ReportExecutionHistoryService;
+import lk.epicgreen.erp.admin.entity.User;
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.dto.PageResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +43,8 @@ public class ReportExecutionHistoryServiceImpl implements ReportExecutionHistory
     private final ReportExecutionHistoryRepository executionHistoryRepository;
     private final SavedReportRepository reportRepository;
     private final ReportExecutionHistoryMapper executionHistoryMapper;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -48,9 +54,12 @@ public class ReportExecutionHistoryServiceImpl implements ReportExecutionHistory
         SavedReport report = reportRepository.findById(request.getReportId())
             .orElseThrow(() -> new ResourceNotFoundException("Report not found: " + request.getReportId()));
 
+        User user = userRepository.findById(request.getExecutedBy())
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.getExecutedBy()));
+
         ReportExecutionHistory executionHistory = executionHistoryMapper.toEntity(request);
         executionHistory.setReport(report);
-        executionHistory.setExecutedBy(request.getExecutedBy());
+        executionHistory.setExecutedBy(user);
 
         ReportExecutionHistory savedHistory = executionHistoryRepository.save(executionHistory);
         log.info("Execution history created successfully with ID: {}", savedHistory.getId());
@@ -66,10 +75,21 @@ public class ReportExecutionHistoryServiceImpl implements ReportExecutionHistory
         SavedReport report = reportRepository.findById(reportId)
             .orElseThrow(() -> new ResourceNotFoundException("Report not found: " + reportId));
 
+        User user = userRepository.findById(executedBy)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + executedBy));
+
+        String parametersJson;
+        try {
+            parametersJson = objectMapper.writeValueAsString(parameters);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting parameters to JSON", e);
+            parametersJson = "{}";
+        }
+
         ReportExecutionHistory executionHistory = ReportExecutionHistory.builder()
             .report(report)
-            .executedBy(executedBy)
-            .parametersUsed(parameters)
+            .executedBy(user)
+            .parametersUsed(parametersJson)
             .status("RUNNING")
             .build();
 

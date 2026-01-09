@@ -62,7 +62,7 @@ public interface BillOfMaterialsRepository extends JpaRepository<BillOfMaterials
     /**
      * Find active BOMs for a finished product
      */
-    List<BillOfMaterials> findByFinishedProductIdAndIsActiveTrue(Long finishedProductId);
+    Optional<BillOfMaterials> findByFinishedProductIdAndIsActiveTrue(Long finishedProductId);
     
     /**
      * Find BOMs by version
@@ -210,4 +210,12 @@ public interface BillOfMaterialsRepository extends JpaRepository<BillOfMaterials
     @Query("SELECT bom FROM BillOfMaterials bom WHERE bom.finishedProductId = :finishedProductId " +
            "ORDER BY bom.bomVersion DESC, bom.effectiveFrom DESC")
     List<BillOfMaterials> findByProductOrderByVersion(@Param("finishedProductId") Long finishedProductId);
+
+    List<BillOfMaterials> findExpiringSoon(LocalDate now, LocalDate expiryDate);
+
+    List<BillOfMaterials> findValidBomsForDate(LocalDate date);
+
+    Optional<BillOfMaterials> findValidBomByProductAndDate(Long finishedProductId, LocalDate date);
+
+    Page<BillOfMaterials> searchBoms(String keyword, Pageable pageable);
 }

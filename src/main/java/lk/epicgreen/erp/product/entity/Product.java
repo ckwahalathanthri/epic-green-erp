@@ -103,6 +103,14 @@ public class Product extends AuditEntity {
     @Size(max = 20)
     @Column(name = "hsn_code", length = 20)
     private String hsnCode;
+
+    /**
+     * Is featured product
+     */
+    @Column(name = "is_featured")
+    private Boolean isFeatured;
+
+    
     
     /**
      * Reorder level (trigger for purchase)

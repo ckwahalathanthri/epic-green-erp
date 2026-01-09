@@ -3,11 +3,16 @@ package lk.epicgreen.erp.production.service;
 import lk.epicgreen.erp.production.dto.request.BillOfMaterialsRequest;
 import lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for BillOfMaterials entity business logic
@@ -106,4 +111,91 @@ public interface BillOfMaterialsService {
      * Get BOMs expiring soon (effective_to within specified days)
      */
     List<BillOfMaterialsResponse> getExpiringSoon(Integer daysBeforeExpiry);
+
+    BillOfMaterialsResponse createBom(BillOfMaterialsRequest request);
+
+    BillOfMaterialsResponse updateBom(Long id, BillOfMaterialsRequest request);
+
+	void deleteBom(Long id);
+
+	BillOfMaterialsResponse getBomById(Long id);
+
+	BillOfMaterialsResponse getBomByCode(String bomCode);
+
+	Page<BillOfMaterialsResponse> getAllBoms(Pageable pageable);
+
+	List<BillOfMaterialsResponse> getAllBoms();
+
+	Page<BillOfMaterialsResponse> searchBoms(String keyword, Pageable pageable);
+
+	BillOfMaterialsResponse approveBom(Long id, Long approvedByUserId, String approvalNotes);
+
+	BillOfMaterialsResponse activateBom(Long id);
+
+	BillOfMaterialsResponse deactivateBom(Long id);
+
+	BillOfMaterialsResponse markAsObsolete(Long id, String obsoleteReason);
+
+	BillOfMaterialsResponse setAsDefault(Long productId, Long bomId);
+
+	BillOfMaterialsResponse createNewVersion(Long bomId, String newVersion);
+
+	List<BillOfMaterialsResponse> getBomVersions(Long productId);
+
+	BillOfMaterialsResponse getLatestBomVersion(Long productId);
+
+	List<BillOfMaterialsResponse> getActiveBoms();
+
+	List<BillOfMaterialsResponse> getDraftBoms();
+
+	List<BillOfMaterialsResponse> getApprovedBoms();
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getObsoleteBoms();
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getBomsPendingApproval();
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getActiveDefaultBoms();
+
+	lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse getProductActiveBom(Long productId);
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getProductBoms(Long productId);
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getEffectiveBoms();
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getExpiredBoms();
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getExpiringSoonBoms(int days);
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getBomsRequiringAction();
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getBomsByType(String bomType);
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> getRecentBoms(int limit);
+
+	boolean canApproveBom(Long id);
+
+	boolean canActivateBom(Long id);
+
+	boolean canMarkAsObsolete(Long id);
+
+	boolean isBomCodeAvailable(String bomCode);
+
+	List<lk.epicgreen.erp.production.dto.response.BillOfMaterialsResponse> createBulkBoms(
+			List<BillOfMaterialsRequest> requests);
+
+	int approveBulkBoms(List<Long> bomIds, Long approvedByUserId);
+
+	int deleteBulkBoms(List<Long> bomIds);
+
+	Map<String, Object> getBomStatistics();
+
+	List<Map<String, Object>> getBomTypeDistribution();
+
+	List<Map<String, Object>> getStatusDistribution();
+
+	List<Map<String, Object>> getMonthlyBomCreationCount(LocalDateTime startDate, LocalDateTime endDate);
+
+	List<Map<String, Object>> getProductsWithBoms();
+
+	Map<String, Object> getDashboardStatistics();
 }

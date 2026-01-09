@@ -95,6 +95,8 @@ public class MaterialConsumption {
     @PositiveOrZero(message = "Unit cost must be positive or zero")
     @Column(name = "unit_cost", precision = 15, scale = 2)
     private BigDecimal unitCost;
+
+    
     
     /**
      * Total cost

@@ -347,4 +347,117 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
      * Find active customers ordered by name
      */
     List<Customer> findByIsActiveTrueOrderByCustomerNameAsc();
+
+    /*
+       * Find customer by customer code excluding deleted records
+     */
+    Optional<Customer> findByCustomerCodeAndDeletedAtIsNull(String customerCode);
+
+    /**
+     * Find customer by email excluding deleted records
+     */
+    Optional<Customer> findByEmailAndDeletedAtIsNull(String email);
+
+       /**
+        * Find customer by phone number excluding deleted records
+        */
+    Optional<Customer> findByPhoneNumberAndDeletedAtIsNull(String phoneNumber);
+
+       /**
+        * Find all customers excluding deleted records
+        */
+    Page<Customer> findByDeletedAtIsNull(Pageable pageable);
+
+    /**
+       * Find all active customers excluding deleted records
+     **/
+    List<Customer> findByIsActiveTrueAndDeletedAtIsNull();
+
+       /**
+        * Find customers by type excluding deleted records
+        */
+    Page<Customer> findByCustomerTypeAndDeletedAtIsNull(String customerType, Pageable pageable);
+
+    /**
+    * Find active customers by type excluding deleted records
+    */
+    List<Customer> findByCustomerTypeAndIsActiveTrueAndDeletedAtIsNull(String customerType);
+
+       /**
+        * Find customers by assigned sales rep excluding deleted records
+        */
+    List<Customer> findByAssignedSalesRepIdAndDeletedAtIsNull(Long salesRepId);
+
+       /**
+        * Find customers by region excluding deleted records
+        */
+    List<Customer> findByRegionAndDeletedAtIsNull(String region);
+
+       /**
+              * Find customers by route code excluding deleted records
+              */
+    List<Customer> findByRouteCodeAndDeletedAtIsNull(String routeCode);
+
+       /**
+        * Search customers by keyword excluding deleted records
+        */
+    Page<Customer> searchCustomers(String keyword, Pageable pageable);
+
+       /**
+        * Find customers exceeding their credit limit
+        */
+    List<Customer> findCustomersExceedingCreditLimit();
+
+    /**
+     * Find customer by ID excluding deleted records
+     */
+    Optional<Customer> findByIdAndDeletedAtIsNull(Long id);
+
+    long countByDeletedAtIsNull();
+
+    long countByIsActiveTrueAndDeletedAtIsNull();
+
+    long countByIsActiveFalseAndDeletedAtIsNull();
+
+    long countByIsBlacklistedTrueAndDeletedAtIsNull();
+
+    long countByHasCreditFacilityTrueAndDeletedAtIsNull();
+
+    List<Object[]> countCustomersByType();
+
+    List<Object[]> countCustomersByStatus();
+
+    List<Object[]> countCustomersByCreditStatus();
+
+    List<Object[]> countCustomersByPaymentTerms();
+
+    List<Object[]> countCustomersByRoute();
+
+    List<Object[]> countCustomersByCity();
+
+    List<Object[]> countCustomersByProvince();
+
+    List<Object[]> countMonthlyRegistrations();
+
+    List<Object[]> findCustomersBySalesRepWithTotals();
+
+    Double calculateTotalCustomerSales();
+
+    Double calculateTotalOutstandingBalance();
+
+    Double calculateTotalOverdueAmount();
+
+    Double calculateTotalCreditLimit();
+
+    Double calculateTotalAvailableCredit();
+
+    Double calculateAverageOrderValue();
+
+    Double calculateCreditUtilizationRate();
+
+    List<Customer> findByDeletedAtIsNull();
+
+    List<Customer> findCustomersWithOverdueBalance();
+
+
 }

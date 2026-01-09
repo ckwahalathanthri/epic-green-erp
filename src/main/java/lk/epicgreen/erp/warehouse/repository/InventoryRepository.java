@@ -276,4 +276,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
      */
     @Query("SELECT i FROM Inventory i ORDER BY i.warehouseId, i.productId")
     List<Inventory> findAllOrderedByWarehouseAndProduct();
+
+    boolean existsByWarehouseIdAndProductIdAndBatchNumberAndLocationIdAndIdNot(Long warehouseId, Long productId,
+            String batchNumber, Long locationId, Long excludeId);
 }

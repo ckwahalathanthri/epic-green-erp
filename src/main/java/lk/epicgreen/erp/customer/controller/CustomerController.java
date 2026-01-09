@@ -1,12 +1,12 @@
 package lk.epicgreen.erp.customer.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.customer.dto.CustomerRequest;
-import lk.epicgreen.erp.customer.entity.Customer;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.customer.dto.request.CustomerRequest;
+import lk.epicgreen.erp.customer.dto.response.CustomerResponse;
 import lk.epicgreen.erp.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,20 +39,20 @@ public class CustomerController {
     
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<Customer>> createCustomer(@Valid @RequestBody CustomerRequest request) {
+    public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(@Valid @RequestBody CustomerRequest request) {
         log.info("Creating customer: {}", request.getCustomerName());
-        Customer created = customerService.createCustomer(request);
+        CustomerResponse created = customerService.createCustomer(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Customer created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<Customer>> updateCustomer(
+    public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
         @PathVariable Long id,
         @Valid @RequestBody CustomerRequest request
     ) {
         log.info("Updating customer: {}", id);
-        Customer updated = customerService.updateCustomer(id, request);
+        CustomerResponse updated = customerService.updateCustomer(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Customer updated successfully"));
     }
     
@@ -66,53 +66,53 @@ public class CustomerController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Customer>> getCustomerById(@PathVariable Long id) {
-        Customer customer = customerService.getCustomerById(id);
+    public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable Long id) {
+        CustomerResponse customer = customerService.getCustomerById(id);
         return ResponseEntity.ok(ApiResponse.success(customer, "Customer retrieved successfully"));
     }
     
     @GetMapping("/code/{customerCode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Customer>> getCustomerByCode(@PathVariable String customerCode) {
-        Customer customer = customerService.getCustomerByCode(customerCode);
+    public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerByCode(@PathVariable String customerCode) {
+        CustomerResponse customer = customerService.getCustomerByCode(customerCode);
         return ResponseEntity.ok(ApiResponse.success(customer, "Customer retrieved successfully"));
     }
     
     @GetMapping("/email/{email}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<Customer>> getCustomerByEmail(@PathVariable String email) {
-        Customer customer = customerService.getCustomerByEmail(email);
+    public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerByEmail(@PathVariable String email) {
+        CustomerResponse customer = customerService.getCustomerByEmail(email);
         return ResponseEntity.ok(ApiResponse.success(customer, "Customer retrieved successfully"));
     }
     
     @GetMapping("/phone/{phone}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<Customer>> getCustomerByPhone(@PathVariable String phone) {
-        Customer customer = customerService.getCustomerByPhone(phone);
+    public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerByPhone(@PathVariable String phone) {
+        CustomerResponse customer = customerService.getCustomerByPhone(phone);
         return ResponseEntity.ok(ApiResponse.success(customer, "Customer retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Customer>>> getAllCustomers(Pageable pageable) {
-        Page<Customer> customers = customerService.getAllCustomers(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getAllCustomers(Pageable pageable) {
+        PageResponse<CustomerResponse> customers = customerService.getAllCustomers(pageable);
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getAllCustomersList() {
-        List<Customer> customers = customerService.getAllCustomers();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomersList() {
+        List<CustomerResponse> customers = customerService.getAllCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Customer>>> searchCustomers(
+    public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> searchCustomers(
         @RequestParam String keyword,
         Pageable pageable
     ) {
-        Page<Customer> customers = customerService.searchCustomers(keyword, pageable);
+        PageResponse<CustomerResponse> customers = customerService.searchCustomers(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(customers, "Search results retrieved successfully"));
     }
     
@@ -122,58 +122,58 @@ public class CustomerController {
     
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> activateCustomer(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> activateCustomer(@PathVariable Long id) {
         log.info("Activating customer: {}", id);
-        Customer activated = customerService.activateCustomer(id);
-        return ResponseEntity.ok(ApiResponse.success(activated, "Customer activated successfully"));
+        customerService.activateCustomer(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Customer activated successfully"));
     }
     
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> deactivateCustomer(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deactivateCustomer(@PathVariable Long id) {
         log.info("Deactivating customer: {}", id);
-        Customer deactivated = customerService.deactivateCustomer(id);
-        return ResponseEntity.ok(ApiResponse.success(deactivated, "Customer deactivated successfully"));
+        customerService.deactivateCustomer(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Customer deactivated successfully"));
     }
     
     @PutMapping("/{id}/suspend")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> suspendCustomer(
+    public ResponseEntity<ApiResponse<CustomerResponse>> suspendCustomer(
         @PathVariable Long id,
         @RequestParam String suspensionReason
     ) {
         log.info("Suspending customer: {}", id);
-        Customer suspended = customerService.suspendCustomer(id, suspensionReason);
+        CustomerResponse suspended = customerService.suspendCustomer(id, suspensionReason);
         return ResponseEntity.ok(ApiResponse.success(suspended, "Customer suspended successfully"));
     }
     
     @PutMapping("/{id}/verify")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> verifyCustomer(
+    public ResponseEntity<ApiResponse<CustomerResponse>> verifyCustomer(
         @PathVariable Long id,
         @RequestParam Long verifiedByUserId
     ) {
         log.info("Verifying customer: {}", id);
-        Customer verified = customerService.verifyCustomer(id, verifiedByUserId);
+        CustomerResponse verified = customerService.verifyCustomer(id, verifiedByUserId);
         return ResponseEntity.ok(ApiResponse.success(verified, "Customer verified successfully"));
     }
     
     @PutMapping("/{id}/blacklist")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> blacklistCustomer(
+    public ResponseEntity<ApiResponse<CustomerResponse>> blacklistCustomer(
         @PathVariable Long id,
         @RequestParam String blacklistReason
     ) {
         log.info("Blacklisting customer: {}", id);
-        Customer blacklisted = customerService.blacklistCustomer(id, blacklistReason);
+        CustomerResponse blacklisted = customerService.blacklistCustomer(id, blacklistReason);
         return ResponseEntity.ok(ApiResponse.success(blacklisted, "Customer blacklisted successfully"));
     }
     
     @PutMapping("/{id}/remove-blacklist")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> removeFromBlacklist(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CustomerResponse>> removeFromBlacklist(@PathVariable Long id) {
         log.info("Removing customer from blacklist: {}", id);
-        Customer removed = customerService.removeFromBlacklist(id);
+        CustomerResponse removed = customerService.removeFromBlacklist(id);
         return ResponseEntity.ok(ApiResponse.success(removed, "Customer removed from blacklist successfully"));
     }
     
@@ -183,40 +183,40 @@ public class CustomerController {
     
     @PutMapping("/{id}/credit/enable")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> enableCreditFacility(
+    public ResponseEntity<ApiResponse<CustomerResponse>> enableCreditFacility(
         @PathVariable Long id,
         @RequestParam Double creditLimit,
         @RequestParam String paymentTerms
     ) {
         log.info("Enabling credit facility for customer: {}", id);
-        Customer enabled = customerService.enableCreditFacility(id, creditLimit, paymentTerms);
+        CustomerResponse enabled = customerService.enableCreditFacility(id, creditLimit, paymentTerms);
         return ResponseEntity.ok(ApiResponse.success(enabled, "Credit facility enabled successfully"));
     }
     
     @PutMapping("/{id}/credit/limit")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> updateCreditLimit(
+    public ResponseEntity<ApiResponse<CustomerResponse>> updateCreditLimit(
         @PathVariable Long id,
         @RequestParam Double newCreditLimit
     ) {
         log.info("Updating credit limit for customer: {}", id);
-        Customer updated = customerService.updateCreditLimit(id, newCreditLimit);
+        CustomerResponse updated = customerService.updateCreditLimit(id, newCreditLimit);
         return ResponseEntity.ok(ApiResponse.success(updated, "Credit limit updated successfully"));
     }
     
     @PutMapping("/{id}/credit/disable")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Customer>> disableCreditFacility(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CustomerResponse>> disableCreditFacility(@PathVariable Long id) {
         log.info("Disabling credit facility for customer: {}", id);
-        Customer disabled = customerService.disableCreditFacility(id);
+        CustomerResponse disabled = customerService.disableCreditFacility(id);
         return ResponseEntity.ok(ApiResponse.success(disabled, "Credit facility disabled successfully"));
     }
     
     @PutMapping("/{id}/credit/update-status")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Customer>> updateCreditStatus(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CustomerResponse>> updateCreditStatus(@PathVariable Long id) {
         log.info("Updating credit status for customer: {}", id);
-        Customer updated = customerService.updateCreditStatus(id);
+        CustomerResponse updated = customerService.updateCreditStatus(id);
         return ResponseEntity.ok(ApiResponse.success(updated, "Credit status updated successfully"));
     }
     
@@ -234,137 +234,137 @@ public class CustomerController {
     
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getActiveCustomers() {
-        List<Customer> customers = customerService.getActiveCustomers();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getActiveCustomers() {
+        List<CustomerResponse> customers = customerService.getActiveCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Active customers retrieved successfully"));
     }
     
     @GetMapping("/inactive")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getInactiveCustomers() {
-        List<Customer> customers = customerService.getInactiveCustomers();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getInactiveCustomers() {
+         List<CustomerResponse> customers = customerService.getInactiveCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Inactive customers retrieved successfully"));
     }
     
     @GetMapping("/pending")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getPendingCustomers() {
-        List<Customer> customers = customerService.getPendingCustomers();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getPendingCustomers() {
+        List<CustomerResponse> customers = customerService.getPendingCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Pending customers retrieved successfully"));
     }
     
     @GetMapping("/suspended")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getSuspendedCustomers() {
-        List<Customer> customers = customerService.getSuspendedCustomers();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getSuspendedCustomers() {
+        List<CustomerResponse> customers = customerService.getSuspendedCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Suspended customers retrieved successfully"));
     }
     
     @GetMapping("/blacklisted")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getBlacklistedCustomers() {
-        List<Customer> customers = customerService.getBlacklistedCustomers();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getBlacklistedCustomers() {
+        List<CustomerResponse> customers = customerService.getBlacklistedCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Blacklisted customers retrieved successfully"));
     }
     
     @GetMapping("/with-credit")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersWithCreditFacility() {
-        List<Customer> customers = customerService.getCustomersWithCreditFacility();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersWithCreditFacility() {
+        List<CustomerResponse> customers = customerService.getCustomersWithCreditFacility();
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers with credit facility retrieved successfully"));
     }
     
     @GetMapping("/credit-exceeded")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersWithCreditExceeded() {
-        List<Customer> customers = customerService.getCustomersWithCreditExceeded();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersWithCreditExceeded() {
+        List<CustomerResponse> customers = customerService.getCustomersWithCreditExceeded();
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers with credit exceeded retrieved successfully"));
     }
     
     @GetMapping("/credit-warning")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersWithCreditWarning() {
-        List<Customer> customers = customerService.getCustomersWithCreditWarning();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersWithCreditWarning() {
+        List<CustomerResponse> customers = customerService.getCustomersWithCreditWarning();
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers with credit warning retrieved successfully"));
     }
     
     @GetMapping("/with-outstanding")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersWithOutstandingBalance() {
-        List<Customer> customers = customerService.getCustomersWithOutstandingBalance();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersWithOutstandingBalance() {
+        List<CustomerResponse> customers = customerService.getCustomersWithOutstandingBalance();
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers with outstanding balance retrieved successfully"));
     }
     
     @GetMapping("/with-overdue")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersWithOverdueBalance() {
-        List<Customer> customers = customerService.getCustomersWithOverdueBalance();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersWithOverdueBalance() {
+        List<CustomerResponse> customers = customerService.getCustomersWithOverdueBalance();
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers with overdue balance retrieved successfully"));
     }
     
     @GetMapping("/unverified")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getUnverifiedCustomers() {
-        List<Customer> customers = customerService.getUnverifiedCustomers();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getUnverifiedCustomers() {
+        List<CustomerResponse> customers = customerService.getUnverifiedCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Unverified customers retrieved successfully"));
     }
     
     @GetMapping("/without-recent-orders")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersWithoutRecentOrders(@RequestParam(defaultValue = "90") int days) {
-        List<Customer> customers = customerService.getCustomersWithoutRecentOrders(days);
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersWithoutRecentOrders(@RequestParam(defaultValue = "90") int days) {
+        List<CustomerResponse> customers = customerService.getCustomersWithoutRecentOrders(days);
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers without recent orders retrieved successfully"));
     }
     
     @GetMapping("/requiring-action")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersRequiringAction() {
-        List<Customer> customers = customerService.getCustomersRequiringAction();
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersRequiringAction() {
+        List<CustomerResponse> customers = customerService.getCustomersRequiringAction();
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers requiring action retrieved successfully"));
     }
     
     @GetMapping("/type/{customerType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersByType(@PathVariable String customerType) {
-        List<Customer> customers = customerService.getCustomersByType(customerType);
+    public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getCustomersByType(@PathVariable String customerType, Pageable pageable) {
+        PageResponse<CustomerResponse> customers = customerService.getCustomersByType(customerType, pageable);
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers by type retrieved successfully"));
     }
     
     @GetMapping("/route/{route}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersByRoute(@PathVariable String route) {
-        List<Customer> customers = customerService.getCustomersByRoute(route);
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersByRoute(@PathVariable String route) {
+        List<CustomerResponse> customers = customerService.getCustomersByRoute(route);
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers by route retrieved successfully"));
     }
     
-    @GetMapping("/sales-rep/{salesRepId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<Page<Customer>>> getCustomersBySalesRep(
-        @PathVariable Long salesRepId,
-        Pageable pageable
-    ) {
-        Page<Customer> customers = customerService.getCustomersBySalesRep(salesRepId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(customers, "Customers by sales rep retrieved successfully"));
-    }
+    // @GetMapping("/sales-rep/{salesRepId}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+    // public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersBySalesRep(
+    //     @PathVariable Long salesRepId,
+    //     Pageable pageable
+    // ) {
+    //     List<CustomerResponse> customers = customerService.getCustomersBySalesRep(salesRepId, pageable);
+    //     return ResponseEntity.ok(ApiResponse.success(customers, "Customers by sales rep retrieved successfully"));
+    // }
     
     @GetMapping("/sales-rep/{salesRepId}/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getCustomersBySalesRepList(@PathVariable Long salesRepId) {
-        List<Customer> customers = customerService.getCustomersBySalesRep(salesRepId);
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomersBySalesRepList(@PathVariable Long salesRepId) {
+        List<CustomerResponse> customers = customerService.getCustomersBySalesRep(salesRepId);
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers by sales rep list retrieved successfully"));
     }
     
     @GetMapping("/top")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getTopCustomers(@RequestParam(defaultValue = "10") int limit) {
-        List<Customer> customers = customerService.getTopCustomers(limit);
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getTopCustomers(@RequestParam(defaultValue = "10") int limit) {
+        List<CustomerResponse> customers = customerService.getTopCustomers(limit);
         return ResponseEntity.ok(ApiResponse.success(customers, "Top customers retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> getRecentCustomers(@RequestParam(defaultValue = "10") int limit) {
-        List<Customer> customers = customerService.getRecentCustomers(limit);
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getRecentCustomers(@RequestParam(defaultValue = "10") int limit) {
+        List<CustomerResponse> customers = customerService.getRecentCustomers(limit);
         return ResponseEntity.ok(ApiResponse.success(customers, "Recent customers retrieved successfully"));
     }
     
@@ -470,9 +470,9 @@ public class CustomerController {
     
     @PostMapping("/bulk")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Customer>>> createBulkCustomers(@Valid @RequestBody List<CustomerRequest> requests) {
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> createBulkCustomers(@Valid @RequestBody List<CustomerRequest> requests) {
         log.info("Creating {} customers in bulk", requests.size());
-        List<Customer> customers = customerService.createBulkCustomers(requests);
+        List<CustomerResponse> customers = customerService.createBulkCustomers(requests);
         return ResponseEntity.ok(ApiResponse.success(customers, customers.size() + " customers created successfully"));
     }
     

@@ -50,6 +50,7 @@ public class CustomerPriceListServiceImpl implements CustomerPriceListService {
 
         // Verify product exists
         Product product = findProductById(request.getProductId());
+        //CustomerPriceList product = findProductById(request.getProductId());
 
         // Check for duplicate active price list
         validateUniqueActivePrice(request.getCustomerId(), request.getProductId(), null);
@@ -87,6 +88,8 @@ public class CustomerPriceListServiceImpl implements CustomerPriceListService {
         // Update product if changed
         if (!priceList.getProduct().getId().equals(request.getProductId())) {
             Product product = findProductById(request.getProductId());
+            //priceList.setProduct(product);
+            //CustomerPriceList product = findProductById(request.getProductId());
             priceList.setProduct(product);
         }
 
@@ -155,10 +158,17 @@ public class CustomerPriceListServiceImpl implements CustomerPriceListService {
 
     @Override
     public CustomerPriceListResponse getCustomerProductPrice(Long customerId, Long productId) {
-        CustomerPriceList priceList = customerPriceListRepository
-            .findByCustomerIdAndProductId(customerId, productId)
-            .orElse(null);
-        return priceList != null ? customerPriceListMapper.toResponse(priceList) : null;
+        // CustomerPriceList priceList = customerPriceListRepository
+        //     .findByCustomerIdAndProductId(customerId, productId)
+        //     .orElse(null);
+        // return priceList != null ? customerPriceListMapper.toResponse(priceList) : null;
+
+        List<CustomerPriceList> priceLists = customerPriceListRepository
+            .findByCustomerIdAndProductId(customerId, productId);
+        if (priceLists.isEmpty()) {
+            return null;
+        }
+        return customerPriceListMapper.toResponse(priceLists.get(0));
     }
 
     @Override

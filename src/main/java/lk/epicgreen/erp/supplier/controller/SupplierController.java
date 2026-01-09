@@ -1,7 +1,7 @@
 package lk.epicgreen.erp.supplier.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.supplier.dto.SupplierRequest;
+import lk.epicgreen.erp.supplier.dto.request.SupplierRequest;
 import lk.epicgreen.erp.supplier.entity.Supplier;
 import lk.epicgreen.erp.supplier.service.SupplierService;
 import lombok.RequiredArgsConstructor;

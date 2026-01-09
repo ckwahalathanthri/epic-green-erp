@@ -27,8 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -334,5 +336,263 @@ public class BillOfMaterialsServiceImpl implements BillOfMaterialsService {
             .first(bomPage.isFirst())
             .empty(bomPage.isEmpty())
             .build();
+    }
+
+    @Override
+    public BillOfMaterialsResponse createBom(BillOfMaterialsRequest request) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createBom'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse updateBom(Long id, BillOfMaterialsRequest request) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateBom'");
+    }
+
+    @Override
+    public void deleteBom(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteBom'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse getBomById(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomById'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse getBomByCode(String bomCode) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomByCode'");
+    }
+
+    @Override
+    public Page<BillOfMaterialsResponse> getAllBoms(Pageable pageable) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getAllBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllBoms'");
+    }
+
+    @Override
+    public Page<BillOfMaterialsResponse> searchBoms(String keyword, Pageable pageable) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchBoms'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse approveBom(Long id, Long approvedByUserId, String approvalNotes) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'approveBom'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse activateBom(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'activateBom'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse deactivateBom(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deactivateBom'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse markAsObsolete(Long id, String obsoleteReason) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'markAsObsolete'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse setAsDefault(Long productId, Long bomId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setAsDefault'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse createNewVersion(Long bomId, String newVersion) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createNewVersion'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getBomVersions(Long productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomVersions'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse getLatestBomVersion(Long productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getLatestBomVersion'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getActiveBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getActiveBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getDraftBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDraftBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getApprovedBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getApprovedBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getObsoleteBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getObsoleteBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getBomsPendingApproval() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomsPendingApproval'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getActiveDefaultBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getActiveDefaultBoms'");
+    }
+
+    @Override
+    public BillOfMaterialsResponse getProductActiveBom(Long productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductActiveBom'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getProductBoms(Long productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getEffectiveBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getEffectiveBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getExpiredBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getExpiredBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getExpiringSoonBoms(int days) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getExpiringSoonBoms'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getBomsRequiringAction() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomsRequiringAction'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getBomsByType(String bomType) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomsByType'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> getRecentBoms(int limit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRecentBoms'");
+    }
+
+    @Override
+    public boolean canApproveBom(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canApproveBom'");
+    }
+
+    @Override
+    public boolean canActivateBom(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canActivateBom'");
+    }
+
+    @Override
+    public boolean canMarkAsObsolete(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canMarkAsObsolete'");
+    }
+
+    @Override
+    public boolean isBomCodeAvailable(String bomCode) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isBomCodeAvailable'");
+    }
+
+    @Override
+    public List<BillOfMaterialsResponse> createBulkBoms(List<BillOfMaterialsRequest> requests) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createBulkBoms'");
+    }
+
+    @Override
+    public int approveBulkBoms(List<Long> bomIds, Long approvedByUserId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'approveBulkBoms'");
+    }
+
+    @Override
+    public int deleteBulkBoms(List<Long> bomIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteBulkBoms'");
+    }
+
+    @Override
+    public Map<String, Object> getBomStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomStatistics'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getBomTypeDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBomTypeDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getStatusDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getStatusDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getMonthlyBomCreationCount(LocalDateTime startDate, LocalDateTime endDate) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getMonthlyBomCreationCount'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductsWithBoms() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductsWithBoms'");
+    }
+
+    @Override
+    public Map<String, Object> getDashboardStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDashboardStatistics'");
     }
 }

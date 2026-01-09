@@ -329,4 +329,10 @@ public interface ReportExecutionHistoryRepository extends JpaRepository<ReportEx
     @Query("SELECT reh FROM ReportExecutionHistory reh WHERE reh.status = 'RUNNING' " +
            "AND reh.executedAt < :thresholdTime ORDER BY reh.executedAt")
     List<ReportExecutionHistory> findLongRunningExecutions(@Param("thresholdTime") LocalDateTime thresholdTime);
+
+    Page<ReportExecutionHistory> findByReportIdOrderByExecutedAtDesc(Long reportId, Pageable pageable);
+
+    Page<ReportExecutionHistory> searchExecutionHistories(String keyword, Pageable pageable);
+
+    int deleteByExecutedAtBefore(LocalDateTime cutoffDate);
 }

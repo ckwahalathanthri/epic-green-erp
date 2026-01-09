@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for ProductionWastage entity
@@ -233,4 +234,12 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     @Query("SELECT pw FROM ProductionWastage pw WHERE pw.totalValue >= :threshold " +
            "ORDER BY pw.totalValue DESC")
     List<ProductionWastage> findHighValueWastage(@Param("threshold") BigDecimal threshold);
+
+    Page<ProductionWastage> searchWastages(String keyword, Pageable pageable);
+
+    Optional<BigDecimal> sumQuantityByWoAndType(Long woId, String wastageType);
+
+    Optional<BigDecimal> sumTotalValueByWo(Long woId);
+
+    Optional<BigDecimal> sumQuantityByWo(Long woId);
 }

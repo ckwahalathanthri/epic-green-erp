@@ -240,4 +240,6 @@ public interface WarehouseLocationRepository extends JpaRepository<WarehouseLoca
      * Find active locations for warehouse ordered by location code
      */
     List<WarehouseLocation> findByWarehouseIdAndIsActiveTrueOrderByLocationCodeAsc(Long warehouseId);
+
+    List<WarehouseLocation> searchLocations(String keyword);
 }

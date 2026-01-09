@@ -174,7 +174,7 @@ public class CustomerLedgerServiceImpl implements CustomerLedgerService {
         
         BigDecimal currentBalance = getCustomerBalance(customerId);
         
-        Integer transactionCount = customerLedgerRepository.countByCustomerId(customerId);
+        long transactionCount = customerLedgerRepository.countByCustomerId(customerId);
 
         return new CustomerLedgerSummary(
             customer.getId(),

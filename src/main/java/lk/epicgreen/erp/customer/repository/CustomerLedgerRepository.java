@@ -51,7 +51,7 @@ public interface CustomerLedgerRepository extends JpaRepository<CustomerLedger, 
     /**
      * Find ledger entries by transaction type
      */
-    List<CustomerLedger> findByTransactionType(String transactionType);
+    Page<CustomerLedger> findByTransactionType(String transactionType, Pageable pageable);
     
     /**
      * Find ledger entries by customer and transaction type
@@ -261,4 +261,23 @@ public interface CustomerLedgerRepository extends JpaRepository<CustomerLedger, 
     List<Long> findCustomersWithTransactions(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    Optional<BigDecimal> getCustomerBalance(Long customerId);
+
+    Optional<BigDecimal> getCustomerBalanceAsOfDate(Long customerId, LocalDate asOfDate);
+
+    Optional<BigDecimal> getTotalByCustomerAndType(Long customerId, String string);
+
+    Optional<BigDecimal> getTotalDebitsByCustomer(Long id);
+
+       Optional<BigDecimal> getTotalCreditsByCustomer(Long id);
+
+       Optional<BigDecimal> getTotalByCustomerAndTypeAndDateRange(Long customerId, String string, LocalDate startDate,
+                     LocalDate endDate);
+
+       Optional<BigDecimal> getTotalDebitsByCustomerAndDateRange(Long customerId, LocalDate startDate, LocalDate endDate);
+
+       Optional<BigDecimal> getTotalCreditsByCustomerAndDateRange(Long customerId, LocalDate startDate, LocalDate endDate);
+
+       Integer countByCustomerIdAndTransactionDateBetween(Long customerId, LocalDate startDate, LocalDate endDate);
 }

@@ -40,7 +40,7 @@ public interface CustomerContactRepository extends JpaRepository<CustomerContact
     /**
      * Find primary contact for a customer
      */
-    Optional<CustomerContact> findByCustomerIdAndIsPrimaryTrue(Long customerId);
+    List<CustomerContact> findByCustomerIdAndIsPrimaryTrue(Long customerId);
     
     /**
      * Find contacts by contact name

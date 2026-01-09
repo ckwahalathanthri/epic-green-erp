@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -383,7 +384,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     public List<WorkOrderResponse> getOverdueWorkOrders() {
-        List<WorkOrder> workOrders = workOrderRepository.findOverdueWorkOrders(LocalDate.now());
+        List<WorkOrder> workOrders = workOrderRepository.findOverdueWorkOrders();
         return workOrders.stream()
             .map(workOrderMapper::toResponse)
             .collect(Collectors.toList());
@@ -392,7 +393,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Override
     public List<WorkOrderResponse> getWorkOrdersDueSoon(Integer daysAhead) {
         LocalDate dueDate = LocalDate.now().plusDays(daysAhead);
-        List<WorkOrder> workOrders = workOrderRepository.findWorkOrdersDueSoon(LocalDate.now(), dueDate);
+        List<WorkOrder> workOrders = workOrderRepository.findWorkOrdersDueForCompletion(dueDate);
         return workOrders.stream()
             .map(workOrderMapper::toResponse)
             .collect(Collectors.toList());
@@ -400,7 +401,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     public List<WorkOrderResponse> getInProgressWorkOrders() {
-        List<WorkOrder> workOrders = workOrderRepository.findByStatus("IN_PROGRESS");
+        List<WorkOrder> workOrders = workOrderRepository.findInProgressWorkOrders();
         return workOrders.stream()
             .map(workOrderMapper::toResponse)
             .collect(Collectors.toList());
@@ -416,7 +417,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     public PageResponse<WorkOrderResponse> searchWorkOrders(String keyword, Pageable pageable) {
-        Page<WorkOrder> workOrderPage = workOrderRepository.searchWorkOrders(keyword, pageable);
+        Page<WorkOrder> workOrderPage = workOrderRepository.searchWorkOrders(keyword, null, null, null, null, null, null, pageable);
         return createPageResponse(workOrderPage);
     }
 
@@ -536,5 +537,239 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             .first(workOrderPage.isFirst())
             .empty(workOrderPage.isEmpty())
             .build();
+    }
+
+    @Override
+    public List<WorkOrderResponse> getAllWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllWorkOrders'");
+    }
+
+    @Override
+    public WorkOrderResponse approveWorkOrder(Long id, Long approvedByUserId, String approvalNotes) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'approveWorkOrder'");
+    }
+
+    @Override
+    public WorkOrderResponse startWorkOrder(Long id, LocalDate actualStartDate) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'startWorkOrder'");
+    }
+
+    @Override
+    public WorkOrderResponse completeWorkOrder(Long id, LocalDate actualEndDate, Double actualQuantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'completeWorkOrder'");
+    }
+
+    @Override
+    public WorkOrderResponse rejectWorkOrder(Long id, String rejectionReason) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'rejectWorkOrder'");
+    }
+
+    @Override
+    public void updateActualQuantity(Long workOrderId, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateActualQuantity'");
+    }
+
+    @Override
+    public void recordMaterialConsumption(Long workOrderId, Long materialId, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'recordMaterialConsumption'");
+    }
+
+    @Override
+    public void recordLabourHours(Long workOrderId, Double hours) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'recordLabourHours'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getDraftWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDraftWorkOrders'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getPendingWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPendingWorkOrders'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getApprovedWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getApprovedWorkOrders'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getCompletedWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCompletedWorkOrders'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getCancelledWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCancelledWorkOrders'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getWorkOrdersPendingApproval() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWorkOrdersPendingApproval'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getHighPriorityWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getHighPriorityWorkOrders'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getTodaysWorkOrders() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTodaysWorkOrders'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getWorkOrdersRequiringAction() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWorkOrdersRequiringAction'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getWorkOrdersByProduct(Long productId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWorkOrdersByProduct'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getWorkOrdersByProductionLine(Long productionLineId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWorkOrdersByProductionLine'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> getRecentWorkOrders(int limit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRecentWorkOrders'");
+    }
+
+    @Override
+    public boolean canApproveWorkOrder(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canApproveWorkOrder'");
+    }
+
+    @Override
+    public boolean canStartWorkOrder(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canStartWorkOrder'");
+    }
+
+    @Override
+    public boolean canCompleteWorkOrder(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canCompleteWorkOrder'");
+    }
+
+    @Override
+    public boolean canCancelWorkOrder(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canCancelWorkOrder'");
+    }
+
+    @Override
+    public Double calculateCompletionPercentage(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculateCompletionPercentage'");
+    }
+
+    @Override
+    public Double calculateVariance(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculateVariance'");
+    }
+
+    @Override
+    public Map<String, Object> calculateWorkOrderMetrics(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculateWorkOrderMetrics'");
+    }
+
+    @Override
+    public List<WorkOrderResponse> createBulkWorkOrders(List<WorkOrderRequest> requests) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createBulkWorkOrders'");
+    }
+
+    @Override
+    public int approveBulkWorkOrders(List<Long> workOrderIds, Long approvedByUserId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'approveBulkWorkOrders'");
+    }
+
+    @Override
+    public int deleteBulkWorkOrders(List<Long> workOrderIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteBulkWorkOrders'");
+    }
+
+    @Override
+    public Map<String, Object> getWorkOrderStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWorkOrderStatistics'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getWorkOrderTypeDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWorkOrderTypeDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getStatusDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getStatusDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getPriorityDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPriorityDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getMonthlyWorkOrderCount(LocalDate startDate, LocalDate endDate) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getMonthlyWorkOrderCount'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductionLinePerformance() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionLinePerformance'");
+    }
+
+    @Override
+    public Double getProductionEfficiency() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getProductionEfficiency'");
+    }
+
+    @Override
+    public Double getOnTimeCompletionRate() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getOnTimeCompletionRate'");
+    }
+
+    @Override
+    public Map<String, Object> getDashboardStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDashboardStatistics'");
     }
 }

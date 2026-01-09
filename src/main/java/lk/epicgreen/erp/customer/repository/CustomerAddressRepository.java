@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repository interface for CustomerAddress entity
@@ -42,7 +41,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
     /**
      * Find default address for a customer
      */
-    Optional<CustomerAddress> findByCustomerIdAndIsDefaultTrue(Long customerId);
+    List<CustomerAddress> findByCustomerIdAndIsDefaultTrue(Long customerId);
     
     /**
      * Find addresses by type for a customer

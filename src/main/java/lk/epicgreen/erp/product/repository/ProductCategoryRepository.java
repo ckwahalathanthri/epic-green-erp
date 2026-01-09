@@ -238,4 +238,8 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
      * Find categories with parent and active status
      */
     Page<ProductCategory> findByParentCategoryIdAndIsActive(Long parentCategoryId, boolean isActive, Pageable pageable);
+
+    long countProductsByCategoryId(Long id);
+
+    Page<ProductCategory> searchCategories(String keyword, Pageable pageable);
 }
