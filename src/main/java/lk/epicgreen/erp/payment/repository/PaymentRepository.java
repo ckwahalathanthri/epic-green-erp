@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -134,7 +135,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
      */
     @Query("SELECT p FROM Payment p WHERE " +
            "(:paymentNumber IS NULL OR LOWER(p.paymentNumber) LIKE LOWER(CONCAT('%', :paymentNumber, '%'))) AND " +
-           "(:customerId IS NULL OR p.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR p.customer.id = :customerId) AND " +
            "(:paymentMode IS NULL OR p.paymentMode = :paymentMode) AND " +
            "(:status IS NULL OR p.status = :status) AND " +
            "(:startDate IS NULL OR p.paymentDate >= :startDate) AND " +
@@ -257,21 +258,21 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
     /**
      * Get total payment amount for a customer
      */
-    @Query("SELECT SUM(p.totalAmount) FROM Payment p WHERE p.customerId = :customerId " +
+    @Query("SELECT SUM(p.totalAmount) FROM Payment p WHERE p.customer.id = :customerId " +
            "AND p.status = 'CLEARED'")
     BigDecimal getTotalPaymentByCustomer(@Param("customerId") Long customerId);
     
     /**
      * Get total allocated amount for a customer
      */
-    @Query("SELECT SUM(p.allocatedAmount) FROM Payment p WHERE p.customerId = :customerId " +
+    @Query("SELECT SUM(p.allocatedAmount) FROM Payment p WHERE p.customer.id = :customerId " +
            "AND p.status = 'CLEARED'")
     BigDecimal getTotalAllocatedByCustomer(@Param("customerId") Long customerId);
     
     /**
      * Get total unallocated amount for a customer
      */
-    @Query("SELECT SUM(p.totalAmount - p.allocatedAmount) FROM Payment p WHERE p.customerId = :customerId " +
+    @Query("SELECT SUM(p.totalAmount - p.allocatedAmount) FROM Payment p WHERE p.customer.id = :customerId " +
            "AND p.status = 'CLEARED'")
     BigDecimal getTotalUnallocatedByCustomer(@Param("customerId") Long customerId);
     
@@ -306,9 +307,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
     /**
      * Get payments grouped by customer
      */
-    @Query("SELECT p.customerId, COUNT(p) as paymentCount, SUM(p.totalAmount) as totalAmount " +
+    @Query("SELECT p.customer.id, COUNT(p) as paymentCount, SUM(p.totalAmount) as totalAmount " +
            "FROM Payment p WHERE p.status = 'CLEARED' " +
-           "GROUP BY p.customerId ORDER BY totalAmount DESC")
+           "GROUP BY p.customer.id ORDER BY totalAmount DESC")
     List<Object[]> getPaymentsByCustomer();
     
     /**
@@ -361,11 +362,45 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
     /**
      * Get top paying customers
      */
-    @Query("SELECT p.customerId, SUM(p.totalAmount) as totalPayment " +
+    @Query("SELECT p.customer.id, SUM(p.totalAmount) as totalPayment " +
            "FROM Payment p WHERE p.status = 'CLEARED' AND p.paymentDate BETWEEN :startDate AND :endDate " +
-           "GROUP BY p.customerId ORDER BY totalPayment DESC")
+           "GROUP BY p.customer.id ORDER BY totalPayment DESC")
     List<Object[]> getTopPayingCustomers(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             Pageable pageable);
+
+    List<Payment> findByReconciliationDateIsNullAndStatus(String cleared);
+
+    @Query("SELECT p FROM Payment p WHERE p.allocatedAmount > p.totalAmount")
+    List<Payment> findOverpayments();
+
+    @Query("SELECT p FROM Payment p WHERE p.allocatedAmount < p.totalAmount")
+    List<Payment> findPartialPayments();
+
+    @Query("SELECT p FROM Payment p WHERE p.customer.id = :customerId ORDER BY p.paymentDate DESC, p.createdAt DESC")
+    List<Payment> findByCustomerIdOrderByPaymentDateDescCreatedAtDesc(Long customerId);
+
+    @Query("SELECT p.paymentMode AS paymentMode, COUNT(p) AS count, SUM(p.totalAmount) AS totalAmount " +
+           "FROM Payment p GROUP BY p.paymentMode")
+    List<Map<String,Object>> getPaymentTypeDistribution();
+
+    @Query("SELECT SUM(p.totalAmount) FROM Payment p WHERE p.status = 'CLEARED'")
+    Optional<BigDecimal> sumTotalReceivedAmount();
+    @Query("SELECT SUM(p.totalAmount - p.allocatedAmount) FROM Payment p WHERE p.status = 'CLEARED'")
+
+    Optional<BigDecimal> sumTotalPendingAmount();
+@Query("SELECT SUM(p.totalAmount - p.allocatedAmount) FROM Payment p WHERE p.status = 'CLEARED'")
+    Optional<BigDecimal> sumTotalUnallocatedAmount();
+
+List<Payment> findUnallocatedPayments();
+
+@Query("SELECT AVG(p.totalAmount) FROM Payment p WHERE p.status = 'CLEARED'")
+double calculateAveragePaymentAmount();
+
+@Query("SELECT SUM(p.totalAmount) FROM Payment p")
+double sumTotalPaymentAmount();
+
+//    @Query("SELECT p FROM Payment p WHERE p.bankAccountId = :bankAccountId")
+//    List<Payment> findByBankAccountId(Long bankAccountId);
 }

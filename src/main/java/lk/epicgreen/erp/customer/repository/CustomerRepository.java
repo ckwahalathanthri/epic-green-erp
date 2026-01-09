@@ -347,4 +347,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
      * Find active customers ordered by name
      */
     List<Customer> findByIsActiveTrueOrderByCustomerNameAsc();
+
+    Customer findByIdAndDeletedAtIsNull(Long id);
 }

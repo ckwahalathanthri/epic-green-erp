@@ -22,7 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -165,7 +168,7 @@ public class ChequeServiceImpl implements ChequeService {
 
     @Override
     @Transactional
-    public void returnCheque(Long id, String reason) {
+    public Cheque returnCheque(Long id, String reason) {
         log.info("Returning Cheque: {} with reason: {}", id, reason);
 
         Cheque cheque = findChequeById(id);
@@ -182,11 +185,300 @@ public class ChequeServiceImpl implements ChequeService {
         chequeRepository.save(cheque);
 
         log.info("Cheque returned successfully: {}", id);
+        return cheque;
     }
 
+    @Transactional
+    public Cheque getChequeByNumber(String chequeNumber) {
+        log.info("Fetching Cheque by number: {}", chequeNumber);
+        return chequeRepository.findByChequeNumber(chequeNumber)
+            .orElseThrow(() -> new ResourceNotFoundException("Cheque not found: " + chequeNumber));
+    }
+
+    @Transactional
+    public Cheque presentCheque(Long id,LocalDate presentationDate) {
+        log.info("Presenting Cheque: {} on date: {}", id, presentationDate);
+
+        Cheque cheque = findChequeById(id);
+
+        if (!"RECEIVED".equals(cheque.getStatus())) {
+            throw new InvalidOperationException(
+                "Cannot present Cheque. Current status: " + cheque.getStatus() +
+                ". Only RECEIVED cheques can be presented.");
+        }
+
+        cheque.setStatus("PRESENTED");
+        cheque.setPresentationDate(presentationDate);
+        chequeRepository.save(cheque);
+
+        log.info("Cheque presented successfully: {}", id);
+        return cheque;
+    }
+
+    @Transactional
+    public List<Cheque> getPendingCheques(){
+        log.info("Fetching pending Cheques");
+        return chequeRepository.findByStatus("RECEIVED");
+    }
+
+    @Transactional
+    public List<Cheque> getPresentedCheques(){
+        log.info("Fetching presented Cheques");
+        return chequeRepository.findByStatus("PRESENTED");
+    }
+
+    @Transactional
+    public List<Cheque> getClearedCheques(){
+        log.info("Fetching cleared Cheques");
+        return chequeRepository.findByStatus("CLEARED");
+    }
+
+    @Transactional
+    public List<Cheque> getCancelledCheques(){
+        log.info("Fetching cancelled Cheques");
+        return chequeRepository.findByStatus("CANCELLED");
+    }
+
+    @Transactional
+    public List<Cheque> getPostDatedCheques(){
+        log.info("Fetching post-dated Cheques");
+        return chequeRepository.findPostDatedCheques();
+    }
+
+    @Transactional
+    public List<Cheque> getChequesDueForPresentation(){
+        log.info("Fetching Cheques due for presentation");
+        return chequeRepository.findChequesDueForPresentation();
+    }
+
+    @Transactional
+    public List<Cheque> getOverdueCheques(){
+        log.info("Fetching overdue Cheques");
+        return chequeRepository.findOverdueCheques();
+    }
+
+    @Transactional
+    public List<Cheque> getChequesRequiringAction(){
+        log.info("Fetching Cheques requiring action");
+        return chequeRepository.findChequesRequiringAction();
+    }
+
+    @Transactional
+    public List<Cheque> getRecentCheques( Pageable pageable){
+        log.info("Fetching recent Cheques, limit: {}");
+        return chequeRepository.findRecentCheques(pageable);
+    }
+
+    @Transactional
+    public List<Cheque> getCustomerRecentCheques(Long customerId,Pageable page){
+        log.info("Fetching recent Cheques for Customer: {}, limit: {}", customerId);
+        return chequeRepository.findRecentChequesByCustomer(customerId,page);
+    }
+
+    @Transactional
+    public boolean canPresentCheque(Long id){
+        Cheque cheque = findChequeById(id);
+        return "RECEIVED".equals(cheque.getStatus());
+    }
+
+    @Transactional
+    public  boolean canClearCheque(Long id){
+        Cheque cheque = findChequeById(id);
+        return "DEPOSITED".equals(cheque.getStatus());
+    }
+
+    @Transactional
+    public boolean canBounceCheque(Long id){
+        Cheque cheque = findChequeById(id);
+        return "DEPOSITED".equals(cheque.getStatus());
+    }
+
+    @Transactional
+    public  List<Cheque> createBulkCheques(List<ChequeRequest> requests){
+        log.info("Creating bulk Cheques, count: {}", requests.size());
+        List<Cheque> cheques = requests.stream().map(request -> {
+
+            Payment payment = findPaymentById(request.getPaymentId());
+
+
+            Customer customer = findCustomerById(request.getCustomerId());
+
+
+            Cheque cheque = chequeMapper.toEntity(request);
+            cheque.setPayment(payment);
+            cheque.setCustomer(customer);
+            return cheque;
+        }).collect(Collectors.toList());
+
+        List<Cheque> savedCheques = chequeRepository.saveAll(cheques);
+        log.info("Bulk Cheques created successfully, count: {}", savedCheques.size());
+        return savedCheques;
+    }
+    @Transactional
+    public int presentBulkCheques(List<Long> chequeIds,LocalDate presentationDate){
+        log.info("Presenting bulk Cheques, count: {}", chequeIds.size());
+        List<Cheque> cheques = chequeRepository.findAllById(chequeIds);
+        int presentedCount = 0;
+
+        for (Cheque cheque : cheques) {
+            if ("RECEIVED".equals(cheque.getStatus())) {
+                cheque.setStatus("PRESENTED");
+                cheque.setPresentationDate(presentationDate);
+                presentedCount++;
+            }
+        }
+
+        chequeRepository.saveAll(cheques);
+        log.info("Bulk Cheques presented successfully, count: {}", presentedCount);
+        return presentedCount;
+    }
+
+    @Transactional
+    public  int clearBulkCheques(List<Long>chequeIds,LocalDate clearanceDate){
+        log.info("Clearing bulk Cheques, count: {}", chequeIds.size());
+        List<Cheque> cheques = chequeRepository.findAllById(chequeIds);
+        int clearedCount = 0;
+
+        for (Cheque cheque : cheques) {
+            if ("DEPOSITED".equals(cheque.getStatus())) {
+                cheque.setStatus("CLEARED");
+                cheque.setClearanceDate(clearanceDate);
+                clearedCount++;
+            }
+        }
+
+        chequeRepository.saveAll(cheques);
+        log.info("Bulk Cheques cleared successfully, count: {}", clearedCount);
+        return clearedCount;
+    }
+
+    @Transactional
+    public int deleteBulkCheques(List<Long> chequeIds){
+        log.info("Deleting bulk Cheques, count: {}", chequeIds.size());
+        List<Cheque> cheques = chequeRepository.findAllById(chequeIds);
+        int deletedCount = 0;
+
+        for (Cheque cheque : cheques) {
+            if ("RECEIVED".equals(cheque.getStatus())) {
+                chequeRepository.delete(cheque);
+                deletedCount++;
+            }
+        }
+
+        log.info("Bulk Cheques deleted successfully, count: {}", deletedCount);
+        return deletedCount;
+    }
+
+    @Transactional
+    public Map<String,Object> getChequeStatistics(){
+        log.info("Fetching Cheque statistics");
+        Long totalCheques = chequeRepository.count();
+        Long receivedCheques = chequeRepository.countByStatus("RECEIVED");
+        Long depositedCheques = chequeRepository.countByStatus("DEPOSITED");
+        Long clearedCheques = chequeRepository.countByStatus("CLEARED");
+        Long bouncedCheques = chequeRepository.countByStatus("BOUNCED");
+        Long returnedCheques = chequeRepository.countByStatus("RETURNED");
+        Long cancelledCheques = chequeRepository.countByStatus("CANCELLED");
+
+        Map<String,Object> map=new HashMap<>();
+        map.put("totalCheques", totalCheques);
+        map.put("receivedCheques", receivedCheques);
+        map.put("depositedCheques", depositedCheques);
+        map.put("clearedCheques", clearedCheques);
+        map.put("bouncedCheques", bouncedCheques);
+        map.put("returnedCheques", returnedCheques);
+        map.put("cancelledCheques", cancelledCheques);
+
+        log.info("Cheque statistics fetched successfully");
+        return map;
+    }
+
+    @Transactional
+    public List<Map<String,Object>> getChequeStatusDistribution(){
+        log.info("Fetching Cheque status distribution");
+        Long receivedCheques = chequeRepository.countByStatus("RECEIVED");
+        Long depositedCheques = chequeRepository.countByStatus("DEPOSITED");
+        Long clearedCheques = chequeRepository.countByStatus("CLEARED");
+        Long bouncedCheques = chequeRepository.countByStatus("BOUNCED");
+        Long returnedCheques = chequeRepository.countByStatus("RETURNED");
+        Long cancelledCheques = chequeRepository.countByStatus("CANCELLED");
+
+        Map<String,Object> map=new HashMap<>();
+        map.put("RECEIVED", receivedCheques);
+        map.put("DEPOSITED", depositedCheques);
+        map.put("CLEARED", clearedCheques);
+        map.put("BOUNCED", bouncedCheques);
+        map.put("RETURNED", returnedCheques);
+        map.put("CANCELLED", cancelledCheques);
+
+        log.info("Cheque status distribution fetched successfully");
+
+        return Collections.singletonList(map);
+    }
+
+    @Transactional
+    public List<Map<String,Object>> getBankDistribution(){
+        log.info("Fetching Cheque bank distribution");
+        List<Map<String,Object>> bankDistribution = chequeRepository.findBankDistribution();
+        log.info("Cheque bank distribution fetched successfully");
+        return bankDistribution;
+    }
+
+    @Transactional
+    public double getTotalChequeAmount(){
+        log.info("Calculating total Cheque amount");
+        Double totalAmount = chequeRepository.sumTotalChequeAmount();
+        log.info("Total Cheque amount calculated: {}", totalAmount);
+        return totalAmount;
+    }
+
+    @Transactional
+    public double getAverageChequeAmount(){
+        log.info("Calculating average Cheque amount");
+        Double averageAmount = chequeRepository.averageChequeAmount();
+        log.info("Average Cheque amount calculated: {}", averageAmount);
+        return averageAmount;
+    }
+
+    @Transactional
+    public double getChequeBounceRate(){
+        log.info("Calculating Cheque bounce rate");
+        Long totalCheques = chequeRepository.count();
+        Long bouncedCheques = chequeRepository.countByStatus("BOUNCED");
+
+        double bounceRate = totalCheques > 0 ? (bouncedCheques.doubleValue() / totalCheques.doubleValue()) * 100 : 0.0;
+        log.info("Cheque bounce rate calculated: {}%", bounceRate);
+        return bounceRate;
+    }
+
+    @Transactional
+    public List<Map<String,Object>> getMonthlyChequeCount(LocalDate startDate,LocalDate endDate){
+        log.info("Fetching monthly Cheque count from {} to {}", startDate, endDate);
+        List<Map<String,Object>> monthlyCounts = chequeRepository.findMonthlyChequeCount(startDate, endDate);
+        log.info("Monthly Cheque count fetched successfully");
+        return monthlyCounts;
+    }
+
+    @Transactional
+    public Map<String,Object> getDashboardStatistics(){
+        log.info("Fetching Cheque dashboard statistics");
+        Long totalCheques = chequeRepository.count();
+        Long pendingCheques = chequeRepository.countByStatus("RECEIVED");
+        Long clearedCheques = chequeRepository.countByStatus("CLEARED");
+        Double totalAmount = chequeRepository.sumTotalChequeAmount();
+
+        Map<String,Object> map=new HashMap<>();
+        map.put("totalCheques", totalCheques);
+        map.put("pendingCheques", pendingCheques);
+        map.put("clearedCheques", clearedCheques);
+        map.put("totalAmount", totalAmount);
+
+        log.info("Cheque dashboard statistics fetched successfully");
+        return map;
+    }
     @Override
     @Transactional
-    public void cancelCheque(Long id, String reason) {
+    public Cheque cancelCheque(Long id, String reason) {
         log.info("Cancelling Cheque: {} with reason: {}", id, reason);
 
         Cheque cheque = findChequeById(id);
@@ -204,6 +496,7 @@ public class ChequeServiceImpl implements ChequeService {
         chequeRepository.save(cheque);
 
         log.info("Cheque cancelled successfully: {}", id);
+        return cheque;
     }
 
     @Override
@@ -313,20 +606,18 @@ public class ChequeServiceImpl implements ChequeService {
 
     @Override
     public PageResponse<ChequeResponse> searchCheques(String keyword, Pageable pageable) {
-        Page<Cheque> chequePage = chequeRepository.searchCheques(keyword, pageable);
+        Page<Cheque> chequePage = chequeRepository.searchCheques(keyword,null,null,null,null,null,pageable);
         return createPageResponse(chequePage);
     }
 
     @Override
     public BigDecimal getTotalChequeAmountByCustomer(Long customerId) {
-        return chequeRepository.sumChequeAmountByCustomer(customerId)
-            .orElse(BigDecimal.ZERO);
+        return chequeRepository.sumChequeAmountByCustomer(customerId);
     }
 
     @Override
     public BigDecimal getTotalPendingClearanceAmount() {
-        return chequeRepository.sumPendingClearanceAmount()
-            .orElse(BigDecimal.ZERO);
+        return chequeRepository.sumPendingClearanceAmount();
     }
 
     @Override
@@ -354,8 +645,7 @@ public class ChequeServiceImpl implements ChequeService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + id));
+        return customerRepository.findByIdAndDeletedAtIsNull(id);
     }
 
     private PageResponse<ChequeResponse> createPageResponse(Page<Cheque> chequePage) {

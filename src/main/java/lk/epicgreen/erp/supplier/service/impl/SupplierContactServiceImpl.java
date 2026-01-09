@@ -121,8 +121,7 @@ public class SupplierContactServiceImpl implements SupplierContactService {
 
     @Override
     public SupplierContactResponse getPrimaryContactBySupplier(Long supplierId) {
-        SupplierContact contact = supplierContactRepository.findBySupplierIdAndIsPrimaryTrue(supplierId)
-            .orElse(null);
+        SupplierContact contact = (SupplierContact) supplierContactRepository.findBySupplierIdAndIsPrimaryTrue(supplierId);
         return contact != null ? supplierContactMapper.toResponse(contact) : null;
     }
 
@@ -142,8 +141,7 @@ public class SupplierContactServiceImpl implements SupplierContactService {
     }
 
     private Supplier findSupplierById(Long id) {
-        return supplierRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Supplier not found: " + id));
+        return supplierRepository.findByIdAndDeletedAtIsNull(id);
     }
 
     private void unsetPrimaryContacts(Long supplierId) {
@@ -152,7 +150,7 @@ public class SupplierContactServiceImpl implements SupplierContactService {
 
     private void unsetPrimaryContacts(Long supplierId, Long excludeContactId) {
         List<SupplierContact> primaryContacts = supplierContactRepository.findBySupplierIdAndIsPrimaryTrue(supplierId);
-        
+
         for (SupplierContact contact : primaryContacts) {
             if (excludeContactId == null || !contact.getId().equals(excludeContactId)) {
                 contact.setIsPrimary(false);

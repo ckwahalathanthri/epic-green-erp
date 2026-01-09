@@ -4,12 +4,15 @@ import lk.epicgreen.erp.payment.dto.request.PaymentRequest;
 import lk.epicgreen.erp.payment.dto.request.PaymentAllocationRequest;
 import lk.epicgreen.erp.payment.dto.response.PaymentResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.payment.entity.Payment;
+import lk.epicgreen.erp.payment.entity.PaymentAllocation;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for Payment entity business logic
@@ -56,13 +59,50 @@ public interface PaymentService {
     /**
      * Cancel Payment (only from DRAFT status)
      */
-    void cancelPayment(Long id, String reason);
+    Payment cancelPayment(Long id, String reason);
 
     /**
      * Delete Payment (only in DRAFT status)
      */
     void deletePayment(Long id);
 
+    Payment completePayment(Long id);
+    Payment clearPayment(Long id);
+
+    Payment failPayment(Long id,String failureReason);
+
+    Payment reconcilePayment(Long id,LocalDate reconciliationDate);
+
+    PaymentAllocation allocatePayment(Long paymentId,Long invoiceId,double amount);
+
+    List<PaymentAllocation> allocatePaymentToMultipleInvoices(Long paymentId, Map<String,Object> allocations);
+    PaymentAllocation reverseAllocation(Long allocationId,String reason);
+    List<PaymentAllocation> getPaymentAllocations(Long paymentId);
+    List<PaymentAllocation> getInvoiceAllocations(Long invoiceId);
+
+    List<Payment> getCompletedPayments();
+    List<Payment> getClearedPayments();
+
+    List<Payment> getFailedPayments();
+
+    List<Payment> getUnreconciledPayments();
+
+    List<Payment> getCashPayments();
+
+    List<Payment> getChequePayments();
+
+    List<Payment> getPaymentsByBankAccount(Long bankAccountId);
+
+    List<Payment> getOverpayments();
+
+    List<Payment> getPartialPayments();
+
+    List<Payment> getBankTransferPayments();
+
+    Double getTotalAllocatedAmount(Long paymentId);
+
+    Double getUnallocatedAmount(Long paymentId);
+    List<Payment> getPendingPayments();
     /**
      * Allocate payment to invoice (bill-to-bill settlement)
      */
@@ -152,4 +192,37 @@ public interface PaymentService {
      * Check if can update
      */
     boolean canUpdate(Long id);
+
+    boolean canCompletePayment(Long id);
+
+    boolean canAllocatePayment(Long id);
+
+    boolean canReverseAllocation(Long allocationId);
+
+    double calculateRemainingAmount(Long id);
+
+//    List<Payment> createBulkPayments(PaymentRequest requests);
+
+    int completeBulkPayments(List<Long> paymentIds);
+
+    int deleteBulkPayments(List<Long> paymentIds);
+
+    int  reconcileBulkPayments(List<Long> paymentIds,LocalDate reconciliationDate);
+
+    Map<String,Object> getPaymentStatistics();
+
+    List<Map<String,Object>> getPaymentTypeDistribution();
+
+    Map<String,Object> getDashboardStatistics();
+
+    double getTotalUnallocatedAmount();
+
+    double getAveragePaymentAmount();
+
+    double getTotalPaymentAmount();
+
+    void calculatePaymentAllocations(Long id);
+double calculateTotalAllocated(Long id);
+    List<Payment> getRecentPayments();
+    List<Payment> getCustomerRecentPayments(Long customerId, int limit);
 }

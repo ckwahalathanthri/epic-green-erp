@@ -1,7 +1,7 @@
 package lk.epicgreen.erp.notification.repository;
 
 import lk.epicgreen.erp.notification.entity.NotificationQueue;
-import lk.epicgreen.erp.notification.entity.NotificationsQueue;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -262,7 +262,12 @@ public interface NotificationsQueueRepository extends JpaRepository<Notification
      * Find notifications by user and status
      */
     List<NotificationQueue> findByRecipientUserIdAndStatus(Long recipientUserId, String status);
-    
+
+    List<NotificationQueue> findByStatusAndScheduledAtLessThanEqual(String status, LocalDateTime dateTime);
+    List<NotificationQueue> findByBatchId(String batchId);
+    List<NotificationQueue> findByStatusAndScheduledAtNotNull(String status);
+    List<NotificationQueue> findByStatusAndCreatedAtLessThanEqual(String status, LocalDateTime dateTime);
+    List<NotificationQueue> findByStatusAndSentAtLessThanEqual(String status, LocalDateTime dateTime);
     /**
      * Find notifications by type and status
      */
@@ -307,14 +312,14 @@ public interface NotificationsQueueRepository extends JpaRepository<Notification
     /**
      * Get daily notification summary
      */
-    @Query("SELECT DATE(nq.createdAt) as notificationDate, COUNT(nq) as notificationCount, " +
-           "SUM(CASE WHEN nq.status = 'SENT' THEN 1 ELSE 0 END) as sentCount, " +
-           "SUM(CASE WHEN nq.status = 'FAILED' THEN 1 ELSE 0 END) as failedCount " +
-           "FROM NotificationQueue nq WHERE nq.createdAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY DATE(nq.createdAt) ORDER BY notificationDate DESC")
-    List<Object[]> getDailyNotificationSummary(
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime);
+//    @Query("SELECT DATE(nq.createdAt) as notificationDate, COUNT(nq) as notificationCount, " +
+//           "SUM(CASE WHEN nq.status = 'SENT' THEN 1 ELSE 0 END) as sentCount, " +
+//           "SUM(CASE WHEN nq.status = 'FAILED' THEN 1 ELSE 0 END) as failedCount " +
+//           "FROM NotificationQueue nq WHERE nq.createdAt BETWEEN :startTime AND :endTime " +
+//           "GROUP BY DATE(nq.createdAt) ORDER BY notificationDate DESC")
+//    List<Object[]> getDailyNotificationSummary(
+//            @Param("startTime") LocalDateTime startTime,
+//            @Param("endTime") LocalDateTime endTime);
     
     /**
      * Find today's notifications

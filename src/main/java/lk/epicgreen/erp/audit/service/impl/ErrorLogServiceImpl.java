@@ -74,7 +74,7 @@ public class ErrorLogServiceImpl implements ErrorLogService {
         }
 
         errorLog.setIsResolved(true);
-        errorLog.setResolvedBy(resolvedBy);
+//        errorLog.setResolvedBy(resolvedBy);
         errorLog.setResolvedAt(LocalDateTime.now());
         errorLogRepository.save(errorLog);
 
@@ -156,7 +156,7 @@ public class ErrorLogServiceImpl implements ErrorLogService {
 
     @Override
     public PageResponse<ErrorLogResponse> searchErrorLogs(String keyword, Pageable pageable) {
-        Page<ErrorLog> errorLogPage = errorLogRepository.searchErrorLogs(keyword, pageable);
+        Page<ErrorLog> errorLogPage = errorLogRepository.searchErrorLogs(keyword,null,null,null,null,null,null,pageable);
         return createPageResponse(errorLogPage);
     }
 

@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -85,15 +85,15 @@ public class JournalEntryController {
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<JournalEntry>>> getAllJournalEntriesList() {
-        List<JournalEntry> entries = journalEntryService.getAllJournalEntries();
+    public ResponseEntity<ApiResponse<PageResponse<JournalEntryResponse>>> getAllJournalEntriesList(Pageable pageable) {
+        PageResponse<JournalEntryResponse> entries = journalEntryService.getAllJournalEntries(pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Journal entries list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<JournalEntry>>> searchJournalEntries(@RequestParam String keyword, Pageable pageable) {
-        Page<JournalEntry> entries = journalEntryService.searchJournalEntries(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<JournalEntryResponse>>> searchJournalEntries(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<JournalEntryResponse> entries = journalEntryService.searchJournalEntries(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Search results retrieved successfully"));
     }
     
@@ -124,9 +124,9 @@ public class JournalEntryController {
     
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<JournalEntry>> approveJournalEntry(@PathVariable Long id, @RequestParam Long approvedBy) {
+    public ResponseEntity<ApiResponse<JournalEntry>> approveJournalEntry(@PathVariable Long id) {
         log.info("Approving journal entry: {}", id);
-        JournalEntry approved = journalEntryService.approveJournalEntry(id, approvedBy);
+        JournalEntry approved = journalEntryService.approveJournalEntry(id);
         return ResponseEntity.ok(ApiResponse.success(approved, "Journal entry approved successfully"));
     }
     
@@ -198,8 +198,8 @@ public class JournalEntryController {
     
     @GetMapping("/fiscal-period")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<JournalEntry>>> getEntriesByFiscalPeriod(@RequestParam Integer year, @RequestParam Integer period) {
-        List<JournalEntry> entries = journalEntryService.getEntriesByFiscalPeriod(year, period);
+    public ResponseEntity<ApiResponse<List<JournalEntry>>> getEntriesByFiscalPeriod(@RequestParam Integer year, @RequestParam String periodCode) {
+        List<JournalEntry> entries = journalEntryService.getEntriesByFiscalPeriod(year, periodCode);
         return ResponseEntity.ok(ApiResponse.success(entries, "Fiscal period entries retrieved successfully"));
     }
     

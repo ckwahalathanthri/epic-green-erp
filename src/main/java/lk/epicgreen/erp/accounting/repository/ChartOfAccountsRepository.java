@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,6 +84,8 @@ public interface ChartOfAccountsRepository extends JpaRepository<ChartOfAccounts
      * Find all group accounts
      */
     List<ChartOfAccounts> findByIsGroupAccountTrue();
+
+
     
     /**
      * Find all control accounts
@@ -120,6 +123,34 @@ public interface ChartOfAccountsRepository extends JpaRepository<ChartOfAccounts
            "(LOWER(coa.accountCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(coa.accountName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<ChartOfAccounts> searchActiveAccounts(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT COUNT(coa) FROM ChartOfAccounts coa WHERE coa.isActive=true")
+    Integer countByIsActiveEmps();
+
+    @Query("SELECT coa.accountType,COUNT(coa) FROM ChartOfAccounts coa GROUP BY coa.accountType")
+    List<Object[]> getAccountTypeDistribution();
+
+    @Query("SELECT coa.accountCategory,COUNT(coa) FROM ChartOfAccounts coa GROUP BY coa.accountCategory")
+    List<Object[]> getAccountCategoryDistribution();
+
+    @Query("SELECT coa.accountName FROM ChartOfAccounts coa ORDER BY coa.currentBalance DESC ")
+    List<Object[]> getMostActiveAccounts();
+
+    @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.currentBalance>0")
+    List<ChartOfAccounts> AccountsWithBalance();
+
+    @Query("SELECT SUM(coa.openingBalance) FROM ChartOfAccounts coa WHERE coa.id=:id AND coa.openingBalanceType='DEBIT'")
+    Double getTotalDebitForAccount(@Param("id") Long id);
+
+    @Query("SELECT SUM(coa.openingBalance) FROM ChartOfAccounts coa WHERE coa.id=:id AND coa.openingBalanceType='CREDIT'")
+
+    Double getTotalCreditForAccount(@Param("id") Long id);
+
+    @Query("SELECT SUM(coa.currentBalance) FROM ChartOfAccounts coa WHERE coa.id=:id AND coa.openDate BETWEEN :startDate AND :endDate" )
+    Double getAccountBalance(@Param("startDate")LocalDate startDate,@Param("endDate")LocalDate endDate,@Param("id")Long id);
+
+    @Query("SELECT SUM(coa.currentBalance) FROM ChartOfAccounts coa WHERE coa.id=:id AND coa.openDate=:date")
+    Double getAccountBalanceUpToDate(@Param("id") Long id,@Param("date") LocalDate date);
     
     /**
      * Search accounts by multiple criteria
@@ -200,7 +231,7 @@ public interface ChartOfAccountsRepository extends JpaRepository<ChartOfAccounts
     /**
      * Find root accounts (no parent)
      */
-    @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccountId IS NULL " +
+    @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccount.id IS NULL " +
            "AND coa.isActive = true ORDER BY coa.accountCode")
     List<ChartOfAccounts> findRootAccounts();
     
@@ -256,14 +287,14 @@ public interface ChartOfAccountsRepository extends JpaRepository<ChartOfAccounts
     /**
      * Find accounts by parent ordered by code
      */
-    @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccountId = :parentAccountId " +
+    @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccount.id = :parentAccountId " +
            "ORDER BY coa.accountCode")
     List<ChartOfAccounts> findByParentOrderByCode(@Param("parentAccountId") Long parentAccountId);
     
     /**
      * Get account hierarchy (recursive)
      */
-    @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccountId = :parentAccountId " +
+    @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccount.id = :parentAccountId " +
            "AND coa.isActive = true ORDER BY coa.accountCode")
     List<ChartOfAccounts> getAccountHierarchy(@Param("parentAccountId") Long parentAccountId);
 

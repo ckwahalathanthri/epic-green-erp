@@ -1,7 +1,10 @@
 package lk.epicgreen.erp.sales.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.customer.entity.Customer;
@@ -86,7 +89,10 @@ public class DispatchNote extends AuditEntity {
     @Size(max = 20)
     @Column(name = "vehicle_number", length = 20)
     private String vehicleNumber;
-    
+
+    @Column
+    private String dispatchNote;
+
     /**
      * Driver name
      */
@@ -303,7 +309,7 @@ public class DispatchNote extends AuditEntity {
         this.status = "RETURNED";
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (status == null) {

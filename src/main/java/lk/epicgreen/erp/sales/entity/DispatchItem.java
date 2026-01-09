@@ -1,14 +1,14 @@
 package lk.epicgreen.erp.sales.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.product.entity.Product;
 import lk.epicgreen.erp.warehouse.entity.WarehouseLocation;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 /**
@@ -125,5 +125,9 @@ public class DispatchItem {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public void setDispatchNote(DispatchNote dispatch) {
+        this.dispatch=dispatch;
     }
 }

@@ -41,11 +41,22 @@ public interface SyncLogRepository extends JpaRepository<SyncLog, Long>, JpaSpec
      * Find sync logs by user with pagination
      */
     Page<SyncLog> findByUserId(Long userId, Pageable pageable);
+    List<SyncLog> findByDeviceId(String deviceId);
+
+    List<SyncLog> findBySyncStatusIn(List<String> statuses);
+
     
     /**
      * Find sync logs by user and device
      */
     List<SyncLog> findByUserIdAndDeviceId(Long userId, String deviceId);
+
+    List<SyncLog> findByConflictsDetectedGreaterThan(int count);
+
+    List<SyncLog> findByConflictsResolvedLessThanConflictsDetected();
+    List<SyncLog> findByUserIdAndConflictsResolvedLessThanConflictsDetected(Long userId);
+
+
     
     /**
      * Find sync logs by user and device with pagination
@@ -103,7 +114,7 @@ public interface SyncLogRepository extends JpaRepository<SyncLog, Long>, JpaSpec
      * Search sync logs by multiple criteria
      */
     @Query("SELECT sl FROM SyncLog sl WHERE " +
-           "(:userId IS NULL OR sl.userId = :userId) AND " +
+           "(:userId IS NULL OR sl.user.id = :userId) AND " +
            "(:deviceId IS NULL OR LOWER(sl.deviceId) LIKE LOWER(CONCAT('%', :deviceId, '%'))) AND " +
            "(:deviceType IS NULL OR sl.deviceType = :deviceType) AND " +
            "(:syncType IS NULL OR sl.syncType = :syncType) AND " +
@@ -207,7 +218,7 @@ public interface SyncLogRepository extends JpaRepository<SyncLog, Long>, JpaSpec
     /**
      * Find latest sync by user and device
      */
-    @Query("SELECT sl FROM SyncLog sl WHERE sl.userId = :userId AND sl.deviceId = :deviceId " +
+    @Query("SELECT sl FROM SyncLog sl WHERE sl.user.id = :userId AND sl.deviceId = :deviceId " +
            "ORDER BY sl.startedAt DESC LIMIT 1")
     SyncLog findLatestSyncByUserAndDevice(@Param("userId") Long userId, @Param("deviceId") String deviceId);
     
@@ -219,21 +230,21 @@ public interface SyncLogRepository extends JpaRepository<SyncLog, Long>, JpaSpec
     /**
      * Get total records uploaded by user
      */
-    @Query("SELECT SUM(sl.recordsUploaded) FROM SyncLog sl WHERE sl.userId = :userId " +
+    @Query("SELECT SUM(sl.recordsUploaded) FROM SyncLog sl WHERE sl.user.id = :userId " +
            "AND sl.syncStatus = 'COMPLETED'")
     Long getTotalRecordsUploadedByUser(@Param("userId") Long userId);
     
     /**
      * Get total records downloaded by user
      */
-    @Query("SELECT SUM(sl.recordsDownloaded) FROM SyncLog sl WHERE sl.userId = :userId " +
+    @Query("SELECT SUM(sl.recordsDownloaded) FROM SyncLog sl WHERE sl.user.id = :userId " +
            "AND sl.syncStatus = 'COMPLETED'")
     Long getTotalRecordsDownloadedByUser(@Param("userId") Long userId);
     
     /**
      * Get total conflicts detected by user
      */
-    @Query("SELECT SUM(sl.conflictsDetected) FROM SyncLog sl WHERE sl.userId = :userId")
+    @Query("SELECT SUM(sl.conflictsDetected) FROM SyncLog sl WHERE sl.user.id = :userId")
     Long getTotalConflictsDetectedByUser(@Param("userId") Long userId);
     
     /**
@@ -277,19 +288,21 @@ public interface SyncLogRepository extends JpaRepository<SyncLog, Long>, JpaSpec
     /**
      * Get daily sync summary
      */
-    @Query("SELECT DATE(sl.startedAt) as syncDate, COUNT(sl) as syncCount, " +
-           "SUM(sl.recordsUploaded) as totalUploaded, SUM(sl.recordsDownloaded) as totalDownloaded " +
-           "FROM SyncLog sl WHERE sl.startedAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY DATE(sl.startedAt) ORDER BY syncDate DESC")
-    List<Object[]> getDailySyncSummary(
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime);
+//    @Query("SELECT DATE(sl.startedAt) as syncDate, COUNT(sl) as syncCount, " +
+//           "SUM(sl.recordsUploaded) as totalUploaded, SUM(sl.recordsDownloaded) as totalDownloaded " +
+//           "FROM SyncLog sl WHERE sl.startedAt BETWEEN :startTime AND :endTime " +
+//           "GROUP BY DATE(sl.startedAt) ORDER BY syncDate DESC")
+//    List<Object[]> getDailySyncSummary(
+//            @Param("startTime") LocalDateTime startTime,
+//            @Param("endTime") LocalDateTime endTime);
     
     /**
      * Find today's sync logs
      */
     @Query("SELECT sl FROM SyncLog sl WHERE DATE(sl.startedAt) = CURRENT_DATE ORDER BY sl.startedAt DESC")
     List<SyncLog> findTodaySyncLogs();
+
+
     
     /**
      * Find all sync logs ordered by started at

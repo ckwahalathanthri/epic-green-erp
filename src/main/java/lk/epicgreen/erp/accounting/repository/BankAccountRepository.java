@@ -39,6 +39,8 @@ public interface BankAccountRepository extends JpaRepository<BankAccount, Long>,
      * Find bank accounts by bank name
      */
     List<BankAccount> findByBankName(String bankName);
+    List<BankAccount> findByIsActive(Boolean value);
+
     
     /**
      * Find bank accounts by bank name with pagination

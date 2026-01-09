@@ -1,5 +1,8 @@
 package lk.epicgreen.erp.mobile.service.impl;
 
+import lk.epicgreen.erp.admin.entity.User;
+import lk.epicgreen.erp.admin.repository.UserRepository;
+import lk.epicgreen.erp.mobile.dto.request.SyncLogRequest;
 import lk.epicgreen.erp.mobile.dto.request.SyncQueueRequest;
 import lk.epicgreen.erp.mobile.dto.response.SyncQueueResponse;
 import lk.epicgreen.erp.mobile.entity.SyncQueue;
@@ -20,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static sun.plugin2.os.windows.OSVERSIONINFOA.size;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +33,7 @@ public class SyncQueueServiceImpl implements SyncQueueService {
 
     private final SyncQueueRepository syncQueueRepository;
     private final SyncQueueMapper syncQueueMapper;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -59,6 +65,124 @@ public class SyncQueueServiceImpl implements SyncQueueService {
 
         log.info("Sync queue item updated successfully");
         return syncQueueMapper.toResponse(updatedSyncQueue);
+    }
+
+    @Transactional
+    public int processPendingSyncQueues(Pageable limit){
+        return syncQueueRepository.findBySyncStatus("PENDING", limit).getSize();
+    }
+
+    @Transactional
+    public int processHighPriorityQueues(){
+        return syncQueueRepository.findBySyncStatus("HIGH_PRIORITY").size();
+    }
+
+    @Transactional
+    public int retryFailedSyncQueues(){
+        List<SyncQueue> failedItems = syncQueueRepository.findBySyncStatus("FAILED");
+        int retriedCount = 0;
+
+        for (SyncQueue item : failedItems) {
+            if (item.getRetryCount() < item.getMaxRetries()) {
+                item.setSyncStatus("PENDING");
+                item.setErrorMessage(null);
+                syncQueueRepository.save(item);
+                retriedCount++;
+            }
+        }
+
+        return retriedCount;
+    }
+
+    @Transactional
+    public SyncQueue getSyncQueueById(Long id){
+        return findSyncQueueById(id);
+    }
+
+    @Transactional
+    public Page<SyncQueue> getAllSyncQueues(Pageable pageable){
+        return syncQueueRepository.findAll(pageable);
+    }
+
+    @Transactional
+    public List<SyncQueue> getUserSyncQueues(Long userId){
+        return syncQueueRepository.findByUserId(userId);
+    }
+
+    @Transactional
+    public List<SyncQueue> getPendingSyncQueues(){
+        return syncQueueRepository.findBySyncStatus("PENDING");
+    }
+
+    @Transactional
+    public List<SyncQueue> getAllSyncQueues(){
+        return syncQueueRepository.findAll();
+    }
+
+    @Transactional
+    public List<SyncQueue> getDeviceSyncQueues(String deviceId){
+        return syncQueueRepository.findByDeviceId(deviceId);
+    }
+
+    @Transactional
+    public void cancelSyncQueue(Long queueId, String reason){
+        log.info("Cancelling sync queue item: {} Reason: {}", queueId, reason);
+
+        SyncQueue syncQueue = findSyncQueueById(queueId);
+        syncQueue.setSyncStatus("CANCELLED");
+        syncQueue.setErrorMessage(reason);
+        syncQueueRepository.save(syncQueue);
+
+        log.info("Sync queue item cancelled successfully");
+    }
+
+    @Transactional
+    public void cancelDevicePendingQueues(String deviceId,String reason){
+        log.info("Cancelling pending sync queues for device: {} Reason: {}", deviceId, reason);
+
+        List<SyncQueue> pendingQueues = syncQueueRepository.findByDeviceId(deviceId).stream()
+            .filter(queue -> "PENDING".equals(queue.getSyncStatus()))
+            .collect(Collectors.toList());
+
+        for (SyncQueue queue : pendingQueues) {
+            queue.setSyncStatus("CANCELLED");
+            queue.setErrorMessage(reason);
+            syncQueueRepository.save(queue);
+        }
+
+        log.info("Cancelled {} pending sync queues for device {}", pendingQueues.size(), deviceId);
+    }
+
+    @Transactional
+    public void cancelUserPendingQueues(Long userId, String reason){
+        log.info("Cancelling pending sync queues for user: {} Reason: {}", userId, reason);
+
+        List<SyncQueue> pendingQueues = syncQueueRepository.findByUserId(userId).stream()
+            .filter(queue -> "PENDING".equals(queue.getSyncStatus()))
+            .collect(Collectors.toList());
+
+        for (SyncQueue queue : pendingQueues) {
+            queue.setSyncStatus("CANCELLED");
+            queue.setErrorMessage(reason);
+            syncQueueRepository.save(queue);
+        }
+
+        log.info("Cancelled {} pending sync queues for user {}", pendingQueues.size(), userId);
+    }
+
+    @Transactional
+    public SyncQueue addToSyncQueue(SyncLogRequest request){
+        User user=userRepository.findById(request.getUserId()).orElseThrow(()->new ResourceNotFoundException("User not found"));
+        SyncQueue queue=SyncQueue.builder()
+                .user(user)
+                .deviceId(request.getDeviceId())
+                .syncStatus("PENDING")
+                .createdAt(LocalDateTime.now())
+                .errorMessage(null)
+                .retryCount(0)
+                .build();
+        return syncQueueRepository.save(queue);
+
     }
 
     @Override

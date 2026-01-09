@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.payment.repository;
 
+import lk.epicgreen.erp.customer.entity.Customer;
 import lk.epicgreen.erp.payment.entity.Cheque;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -135,7 +137,8 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             Pageable pageable);
-    
+
+
     // ==================== COUNT METHODS ====================
     
     /**
@@ -166,6 +169,10 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
      */
     @Query("SELECT c FROM Cheque c WHERE c.status = 'DEPOSITED' ORDER BY c.depositDate")
     List<Cheque> findDepositedCheques();
+
+    @Query("SELECT c FROM Cheque c WHERE c.chequeDate < CURRENT_DATE " +
+           "AND c.status = 'RECEIVED' ORDER BY c.chequeDate")
+    List<Cheque> findOverdueCheques();
     
     /**
      * Find cleared cheques
@@ -178,12 +185,52 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
      */
     @Query("SELECT c FROM Cheque c WHERE c.status = 'BOUNCED' ORDER BY c.chequeDate DESC")
     List<Cheque> findBouncedCheques();
-    
+
+    @Query("SELECT c FROM Cheque c WHERE " +
+           "(c.status = 'RECEIVED' AND c.chequeDate < CURRENT_DATE) OR " +
+           "(c.status = 'DEPOSITED' AND c.depositDate < CURRENT_DATE) " +
+           "ORDER BY c.chequeDate")
+    List<Cheque> findChequesRequiringAction();
+
+    @Query("SELECT c FROM Cheque c ORDER BY c.createdAt DESC")
+    List<Cheque> findRecentCheques(Pageable page);
+
+    @Query("SELECT c FROM Cheque c WHERE c.customerId = :customerId " +
+           "ORDER BY c.createdAt DESC")
+    List<Cheque> findRecentChequesByCustomer(@Param("customerId") Long customerId,Pageable page);
+
+    @Query("SELECT c.status as status, COUNT(c) as count " +
+           "FROM Cheque c GROUP BY c.status")
+    List<Map<String,Object>> findBankDistribution();
+
+
+    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c")
+    double sumTotalChequeAmount();
+
+    @Query("SELECT AVG(c.chequeAmount) FROM Cheque c")
+    double averageChequeAmount();
+
+    @Query("SELECT c FROM Cheque c WHERE c.chequeDate BETWEEN :startDate AND :endDate " +
+           "GROUP BY FUNCTION('MONTH', c.chequeDate), FUNCTION('YEAR', c.chequeDate) " +
+           "ORDER BY FUNCTION('YEAR', c.chequeDate) DESC, FUNCTION('MONTH', c.chequeDate) DESC")
+    List<Map<String,Object>>findMonthlyChequeCount(@Param("startDate")LocalDate startDate,@Param("endDate")LocalDate endDate);
+
     /**
      * Find returned cheques
      */
     @Query("SELECT c FROM Cheque c WHERE c.status = 'RETURNED' ORDER BY c.chequeDate DESC")
     List<Cheque> findReturnedCheques();
+
+    @Query("SELECT c FROM Cheque c WHERE " +
+           "c.chequeDate <= :asOfDate AND c.status = 'RECEIVED' " +
+           "ORDER BY c.chequeDate")
+    List<Cheque> findDueCheques(LocalDate asOfDate);
+
+    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.customerId = :customerId")
+    BigDecimal sumChequeAmountByCustomer(Long customerId);
+
+    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.status = 'RECEIVED'")
+    BigDecimal sumPendingClearanceAmount();
     
     /**
      * Find cancelled cheques
@@ -250,6 +297,10 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
     @Query("SELECT c.status, COUNT(c) as chequeCount, SUM(c.chequeAmount) as totalAmount " +
            "FROM Cheque c GROUP BY c.status ORDER BY chequeCount DESC")
     List<Object[]> getChequesByStatus();
+
+    @Query("SELECT c FROM Cheque c WHERE c.chequeDate <= CURRENT_DATE " +
+           "AND c.status = 'RECEIVED' ORDER BY c.chequeDate")
+    List<Cheque> findChequesDueForPresentation();
     
     /**
      * Get cheques grouped by bank

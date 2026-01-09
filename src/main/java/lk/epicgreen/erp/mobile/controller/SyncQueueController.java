@@ -1,9 +1,10 @@
 package lk.epicgreen.erp.mobile.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.mobile.dto.SyncRequest;
+import lk.epicgreen.erp.mobile.dto.request.SyncLogRequest;
+import lk.epicgreen.erp.mobile.entity.SyncLog;
 import lk.epicgreen.erp.mobile.entity.SyncQueue;
-import lk.epicgreen.erp.mobile.service.SyncService;
+import lk.epicgreen.erp.mobile.service.impl.SyncQueueServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -12,7 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -29,12 +31,12 @@ import java.util.List;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class SyncQueueController {
     
-    private final SyncService syncService;
+    private final SyncQueueServiceImpl syncService;
     
     // Queue Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'MOBILE_USER')")
-    public ResponseEntity<ApiResponse<SyncQueue>> addToSyncQueue(@Valid @RequestBody SyncRequest request) {
+    public ResponseEntity<ApiResponse<SyncQueue>> addToSyncQueue(@Valid @RequestBody SyncLogRequest request) {
         log.info("Adding to sync queue for user: {}", request.getUserId());
         SyncQueue queue = syncService.addToSyncQueue(request);
         return ResponseEntity.ok(ApiResponse.success(queue, "Added to sync queue"));
@@ -42,15 +44,15 @@ public class SyncQueueController {
     
     @PostMapping("/process")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> processSyncQueue() {
+    public ResponseEntity<ApiResponse<Integer>> processSyncQueue(@RequestParam Long userId, @RequestParam String deviceId) {
         log.info("Processing sync queue");
-        int processed = syncService.processSyncQueue();
-        return ResponseEntity.ok(ApiResponse.success(processed, processed + " items processed"));
+        syncService.processSyncQueue(userId, deviceId);
+        return ResponseEntity.ok(ApiResponse.success( " items processed"));
     }
     
     @PostMapping("/process-pending")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> processPendingSyncQueues(@RequestParam(defaultValue = "100") int limit) {
+    public ResponseEntity<ApiResponse<Integer>> processPendingSyncQueues( Pageable limit) {
         log.info("Processing pending sync queues with limit: {}", limit);
         int processed = syncService.processPendingSyncQueues(limit);
         return ResponseEntity.ok(ApiResponse.success(processed, processed + " items processed"));
@@ -128,15 +130,15 @@ public class SyncQueueController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<Integer>> cancelUserPendingQueues(@PathVariable Long userId, @RequestParam String reason) {
         log.info("Cancelling user pending queues: {}", userId);
-        int cancelled = syncService.cancelUserPendingQueues(userId, reason);
-        return ResponseEntity.ok(ApiResponse.success(cancelled, cancelled + " queues cancelled"));
+        syncService.cancelUserPendingQueues(userId, reason);
+        return ResponseEntity.ok(ApiResponse.success(" queues cancelled"));
     }
     
     @PutMapping("/device/{deviceId}/cancel-pending")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<Integer>> cancelDevicePendingQueues(@PathVariable String deviceId, @RequestParam String reason) {
         log.info("Cancelling device pending queues: {}", deviceId);
-        int cancelled = syncService.cancelDevicePendingQueues(deviceId, reason);
-        return ResponseEntity.ok(ApiResponse.success(cancelled, cancelled + " queues cancelled"));
+        syncService.cancelDevicePendingQueues(deviceId, reason);
+        return ResponseEntity.ok(ApiResponse.success(" queues cancelled"));
     }
 }

@@ -1,11 +1,12 @@
 package lk.epicgreen.erp.payment.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.customer.entity.Customer;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -80,6 +81,9 @@ public class Cheque extends AuditEntity {
     @Size(max = 100)
     @Column(name = "bank_branch", length = 100)
     private String bankBranch;
+
+    @Column
+    private LocalDate PresentationDate;
     
     /**
      * Account number
@@ -276,7 +280,7 @@ public class Cheque extends AuditEntity {
         return summary.toString();
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (status == null) {

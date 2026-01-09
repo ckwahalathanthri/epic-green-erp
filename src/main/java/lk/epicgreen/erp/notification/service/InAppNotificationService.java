@@ -1,12 +1,13 @@
-package lk.epicgreen.erp.notifications.service;
+package lk.epicgreen.erp.notification.service;
 
-import lk.epicgreen.erp.notifications.dto.request.InAppNotificationRequest;
-import lk.epicgreen.erp.notifications.dto.response.InAppNotificationResponse;
+import lk.epicgreen.erp.notification.dto.request.InAppNotificationRequest;
+import lk.epicgreen.erp.notification.dto.response.InAppNotificationResponse;
+
 import lk.epicgreen.erp.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for In-App Notification entity business logic
@@ -95,4 +96,6 @@ public interface InAppNotificationService {
      * Search notifications
      */
     PageResponse<InAppNotificationResponse> searchNotifications(String keyword, Pageable pageable);
+
+    Map<String, Object> getNotificationStatistics();
 }

@@ -1,12 +1,13 @@
 package lk.epicgreen.erp.mobile.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 /**
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
  * @version 1.0
  */
 @Entity
-@Table(name = "mobile_data_cache", 
+@Table(name = "mobile_data_cache",
     uniqueConstraints = @UniqueConstraint(name = "uk_user_cache_key", columnNames = {"user_id", "cache_key"}),
     indexes = {
         @Index(name = "idx_user_id", columnList = "user_id"),
@@ -70,6 +71,8 @@ public class MobileDataCache {
      */
     @Column(name = "last_synced_at")
     private LocalDateTime lastSyncedAt;
+
+    private Long UserId;
     
     /**
      * Expiry timestamp

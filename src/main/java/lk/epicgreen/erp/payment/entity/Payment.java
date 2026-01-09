@@ -1,12 +1,13 @@
 package lk.epicgreen.erp.payment.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.customer.entity.Customer;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -156,6 +157,9 @@ public class Payment extends AuditEntity {
      */
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
+
+    @Column
+    private LocalDate ReconciliationDate;
     
     /**
      * Remarks
@@ -363,7 +367,7 @@ public class Payment extends AuditEntity {
         this.allocatedAmount = newAllocated;
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (status == null) {

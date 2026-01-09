@@ -56,6 +56,11 @@ public interface MobileDataCacheRepository extends JpaRepository<MobileDataCache
      * Find cache entries by cache type with pagination
      */
     Page<MobileDataCache> findByCacheType(String cacheType, Pageable pageable);
+    long deleteByUserId(Long userId);
+
+    long deleteByExpiresAtBefore(LocalDateTime dateTime);
+
+    List<MobileDataCache> findByExpiresAtBefore(LocalDateTime dateTime);
     
     /**
      * Find cache entries by user and cache type
@@ -87,14 +92,14 @@ public interface MobileDataCacheRepository extends JpaRepository<MobileDataCache
      * Delete cache entry by user and cache key
      */
     @Modifying
-    @Query("DELETE FROM MobileDataCache mdc WHERE mdc.userId = :userId AND mdc.cacheKey = :cacheKey")
+    @Query("DELETE FROM MobileDataCache mdc WHERE mdc.user.id = :userId AND mdc.cacheKey = :cacheKey")
     void deleteByUserIdAndCacheKey(@Param("userId") Long userId, @Param("cacheKey") String cacheKey);
     
     /**
      * Delete all cache entries for a user
      */
     @Modifying
-    @Query("DELETE FROM MobileDataCache mdc WHERE mdc.userId = :userId")
+    @Query("DELETE FROM MobileDataCache mdc WHERE mdc.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);
     
     /**
@@ -112,6 +117,12 @@ public interface MobileDataCacheRepository extends JpaRepository<MobileDataCache
     void deleteCacheOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
     
     // ==================== CUSTOM QUERIES ====================
+
+    @Query("SELECT mdc FROM MobileDataCache mdc WHERE " +
+           "CAST(mdc.user.id AS string) LIKE %:keyword% OR " +
+           "mdc.cacheKey LIKE %:keyword% OR " +
+           "mdc.cacheType LIKE %:keyword%")
+    Page<MobileDataCache> searchCaches(@Param("keyword") String keyword,Pageable pageable);
     
     /**
      * Find customer cache entries
@@ -172,7 +183,7 @@ public interface MobileDataCacheRepository extends JpaRepository<MobileDataCache
     /**
      * Find valid (not expired) cache entries for user
      */
-    @Query("SELECT mdc FROM MobileDataCache mdc WHERE mdc.userId = :userId " +
+    @Query("SELECT mdc FROM MobileDataCache mdc WHERE mdc.user.id = :userId " +
            "AND (mdc.expiresAt IS NULL OR mdc.expiresAt >= CURRENT_TIMESTAMP) " +
            "ORDER BY mdc.lastSyncedAt DESC")
     List<MobileDataCache> findValidCacheByUser(@Param("userId") Long userId);
@@ -189,7 +200,7 @@ public interface MobileDataCacheRepository extends JpaRepository<MobileDataCache
      */
     @Query("SELECT " +
            "COUNT(mdc) as totalCacheEntries, " +
-           "COUNT(DISTINCT mdc.userId) as uniqueUsers, " +
+           "COUNT(DISTINCT mdc.user.id) as uniqueUsers, " +
            "SUM(CASE WHEN mdc.expiresAt IS NULL OR mdc.expiresAt >= CURRENT_TIMESTAMP THEN 1 ELSE 0 END) as validEntries, " +
            "SUM(CASE WHEN mdc.expiresAt < CURRENT_TIMESTAMP THEN 1 ELSE 0 END) as expiredEntries " +
            "FROM MobileDataCache mdc")
@@ -205,8 +216,8 @@ public interface MobileDataCacheRepository extends JpaRepository<MobileDataCache
     /**
      * Get cache entries grouped by user
      */
-    @Query("SELECT mdc.userId, COUNT(mdc) as entryCount " +
-           "FROM MobileDataCache mdc GROUP BY mdc.userId ORDER BY entryCount DESC")
+    @Query("SELECT mdc.user.id, COUNT(mdc) as entryCount " +
+           "FROM MobileDataCache mdc GROUP BY mdc.user.id ORDER BY entryCount DESC")
     List<Object[]> getCacheByUser();
     
     /**

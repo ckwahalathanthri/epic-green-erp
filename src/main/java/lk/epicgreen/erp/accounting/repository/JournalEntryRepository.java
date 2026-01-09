@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.accounting.repository;
 
+import lk.epicgreen.erp.accounting.entity.FinancialPeriod;
 import lk.epicgreen.erp.accounting.entity.JournalEntry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.jar.JarEntry;
 
 /**
  * Repository interface for JournalEntry entity
@@ -43,6 +45,10 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
      * Find journal entries by period
      */
     List<JournalEntry> findByPeriodId(Long periodId);
+
+    List<JournalEntry> findByIsPosted(Boolean value);
+    Integer countByIsPostedTrue();
+    Integer countByIsPostedFalse();
     
     /**
      * Find journal entries by period with pagination
@@ -126,24 +132,24 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     /**
      * Search journal entries by multiple criteria
      */
-    @Query("SELECT je FROM JournalEntry je WHERE " +
-           "(:journalNumber IS NULL OR LOWER(je.journalNumber) LIKE LOWER(CONCAT('%', :journalNumber, '%'))) AND " +
-           "(:periodId IS NULL OR je.periodId = :periodId) AND " +
-           "(:status IS NULL OR je.status = :status) AND " +
-           "(:entryType IS NULL OR je.entryType = :entryType) AND " +
-           "(:sourceType IS NULL OR je.sourceType = :sourceType) AND " +
-           "(:startDate IS NULL OR je.journalDate >= :startDate) AND " +
-           "(:endDate IS NULL OR je.journalDate <= :endDate)")
-    Page<JournalEntry> searchJournalEntries(
-            @Param("journalNumber") String journalNumber,
-            @Param("periodId") Long periodId,
-            @Param("status") String status,
-            @Param("entryType") String entryType,
-            @Param("sourceType") String sourceType,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            Pageable pageable);
-    
+//    @Query("SELECT je FROM JournalEntry je WHERE " +
+//           "(:journalNumber IS NULL OR LOWER(je.journalNumber) LIKE LOWER(CONCAT('%', :journalNumber, '%'))) AND " +
+//           "(:periodId IS NULL OR je.periodId = :periodId) AND " +
+//           "(:status IS NULL OR je.status = :status) AND " +
+//           "(:entryType IS NULL OR je.entryType = :entryType) AND " +
+//           "(:sourceType IS NULL OR je.sourceType = :sourceType) AND " +
+//           "(:startDate IS NULL OR je.journalDate >= :startDate) AND " +
+//           "(:endDate IS NULL OR je.journalDate <= :endDate)")
+//    Page<JournalEntry> searchJournalEntries(
+//            @Param("journalNumber") String journalNumber,
+//            @Param("periodId") Long periodId,
+//            @Param("status") String status,
+//            @Param("entryType") String entryType,
+//            @Param("sourceType") String sourceType,
+//            @Param("startDate") LocalDate startDate,
+//            @Param("endDate") LocalDate endDate,
+//            Pageable pageable);
+//
     // ==================== COUNT METHODS ====================
     
     /**
@@ -173,6 +179,24 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
      */
     @Query("SELECT je FROM JournalEntry je WHERE je.status = 'DRAFT' ORDER BY je.journalDate DESC")
     List<JournalEntry> findDraftJournalEntries();
+
+    @Query("SELECT COUNT(je) FROM JournalEntry je")
+    long countAll();
+
+    @Query("SELECT COALESCE(SUM(je.totalDebit),0) FROM JournalEntry je")
+    BigDecimal sumTotalDebit();
+
+    @Query("SELECT COALESCE(SUM(je.totalCredit),0) FROM JournalEntry je")
+    BigDecimal sumTotalCredit();
+
+    @Query("SELECT je.entryType,COUNT(je) FROM JournalEntry je GROUP BY je.entryType")
+    List<Object[]> countByEntryType();
+
+    @Query("SELECT je.postedBy,COUNT(je) From JournalEntry je GROUP BY je.postedBy ORDER BY COUNT(je) DESC ")
+    List<Object[]> mostActiveUsers();
+
+    @Query("SELECT je.status, COUNT(je) FROM JournalEntry je GROUP BY je.status")
+    List<Object[]> countByStatusDistribution();
     
     /**
      * Find posted journal entries
@@ -191,18 +215,32 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
      */
     @Query("SELECT je FROM JournalEntry je WHERE je.entryType = 'MANUAL' ORDER BY je.journalDate DESC")
     List<JournalEntry> findManualJournalEntries();
-    
+
+    @Query("SELECT je FROM JournalEntry je "+
+           "WHERE LOWER(je.description) LIKE LOWER(CONCAT('%', :keyword, '%') )"+
+            "OR LOWER(je.journalNumber) LIKE LOWER(CONCAT('%', :keyword, '%') ) "
+    )
+    Page<JournalEntry> searchJournalEntries(@Param("keyword")String keyword,Pageable pageable);
     /**
      * Find automated journal entries
      */
     @Query("SELECT je FROM JournalEntry je WHERE je.entryType = 'AUTOMATED' ORDER BY je.journalDate DESC")
     List<JournalEntry> findAutomatedJournalEntries();
+
+//    @Query("SELECT je FROM JournalEntry je WHERE je.status = 'DRAFT'")
+//    List<JournalEntry> getDraftEntries();
     
     /**
      * Find opening balance entries
      */
     @Query("SELECT je FROM JournalEntry je WHERE je.entryType = 'OPENING_BALANCE' ORDER BY je.journalDate")
     List<JournalEntry> findOpeningBalanceEntries();
+
+    List<JournalEntry> findByStatusNotIn(List<String> status);
+
+    List<JournalEntry> findByPeriod(FinancialPeriod period);
+    @Query("SELECT je FROM JournalEntry je WHERE je.journalDate BETWEEN :startDate AND :endDate")
+    List<JournalEntry> getEntriesByDateRange(@Param("startDate") LocalDate startDate,@Param("endDate") LocalDate endDate);
     
     /**
      * Find closing entries
@@ -230,14 +268,14 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     /**
      * Get total debit for period
      */
-    @Query("SELECT SUM(je.totalDebit) FROM JournalEntry je WHERE je.periodId = :periodId " +
+    @Query("SELECT SUM(je.totalDebit) FROM JournalEntry je WHERE je.period.id = :periodId " +
            "AND je.status = 'POSTED'")
     BigDecimal getTotalDebitByPeriod(@Param("periodId") Long periodId);
     
     /**
      * Get total credit for period
      */
-    @Query("SELECT SUM(je.totalCredit) FROM JournalEntry je WHERE je.periodId = :periodId " +
+    @Query("SELECT SUM(je.totalCredit) FROM JournalEntry je WHERE je.period.id = :periodId " +
            "AND je.status = 'POSTED'")
     BigDecimal getTotalCreditByPeriod(@Param("periodId") Long periodId);
     
@@ -290,7 +328,7 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     /**
      * Find today's journal entries
      */
-    @Query("SELECT je FROM JournalEntry je WHERE je.journalDate = CURRENT_DATE ORDER BY je.createdAt DESC")
+    @Query("SELECT je FROM JournalEntry je WHERE je.journalDate = CURRENT_DATE ORDER BY je.postedAt DESC")
     List<JournalEntry> findTodayJournalEntries();
     
     /**

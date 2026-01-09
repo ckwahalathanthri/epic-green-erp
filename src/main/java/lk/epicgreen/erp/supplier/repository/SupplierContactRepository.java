@@ -40,7 +40,7 @@ public interface SupplierContactRepository extends JpaRepository<SupplierContact
     /**
      * Find primary contact for a supplier
      */
-    Optional<SupplierContact> findBySupplierIdAndIsPrimaryTrue(Long supplierId);
+    List<SupplierContact> findBySupplierIdAndIsPrimaryTrue(Long supplierId);
     
     /**
      * Find contacts by contact name
@@ -84,7 +84,7 @@ public interface SupplierContactRepository extends JpaRepository<SupplierContact
     /**
      * Search contacts by keyword for a supplier
      */
-    @Query("SELECT sc FROM SupplierContact sc WHERE sc.supplierId = :supplierId AND " +
+    @Query("SELECT sc FROM SupplierContact sc WHERE sc.supplier.id = :supplierId AND " +
            "(LOWER(sc.contactName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(sc.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(sc.mobile) LIKE LOWER(CONCAT('%', :keyword, '%')))")
@@ -97,7 +97,7 @@ public interface SupplierContactRepository extends JpaRepository<SupplierContact
      * Search contacts by multiple criteria
      */
     @Query("SELECT sc FROM SupplierContact sc WHERE " +
-           "(:supplierId IS NULL OR sc.supplierId = :supplierId) AND " +
+           "(:supplierId IS NULL OR sc.supplier.id = :supplierId) AND " +
            "(:contactName IS NULL OR LOWER(sc.contactName) LIKE LOWER(CONCAT('%', :contactName, '%'))) AND " +
            "(:email IS NULL OR LOWER(sc.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
            "(:designation IS NULL OR sc.designation = :designation)")
@@ -126,7 +126,7 @@ public interface SupplierContactRepository extends JpaRepository<SupplierContact
      * Delete all contacts for a supplier
      */
     @Modifying
-    @Query("DELETE FROM SupplierContact sc WHERE sc.supplierId = :supplierId")
+    @Query("DELETE FROM SupplierContact sc WHERE sc.supplier.id = :supplierId")
     void deleteAllBySupplierId(@Param("supplierId") Long supplierId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -151,7 +151,7 @@ public interface SupplierContactRepository extends JpaRepository<SupplierContact
     /**
      * Find contacts for a supplier ordered by primary status
      */
-    @Query("SELECT sc FROM SupplierContact sc WHERE sc.supplierId = :supplierId ORDER BY sc.isPrimary DESC, sc.contactName")
+    @Query("SELECT sc FROM SupplierContact sc WHERE sc.supplier.id = :supplierId ORDER BY sc.isPrimary DESC, sc.contactName")
     List<SupplierContact> findBySupplierIdOrderByPrimaryAndName(@Param("supplierId") Long supplierId);
     
     /**
@@ -160,7 +160,7 @@ public interface SupplierContactRepository extends JpaRepository<SupplierContact
     @Query("SELECT " +
            "COUNT(sc) as totalContacts, " +
            "SUM(CASE WHEN sc.isPrimary = true THEN 1 ELSE 0 END) as primaryContacts, " +
-           "COUNT(DISTINCT sc.supplierId) as suppliersWithContacts " +
+           "COUNT(DISTINCT sc.supplier.id) as suppliersWithContacts " +
            "FROM SupplierContact sc")
     Object getContactStatistics();
     

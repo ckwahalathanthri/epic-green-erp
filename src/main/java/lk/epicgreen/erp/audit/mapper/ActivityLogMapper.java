@@ -1,8 +1,10 @@
 package lk.epicgreen.erp.audit.mapper;
 
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.audit.dto.request.ActivityLogRequest;
 import lk.epicgreen.erp.audit.dto.response.ActivityLogResponse;
 import lk.epicgreen.erp.audit.entity.ActivityLog;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ActivityLogMapper {
+    @Autowired
+    private UserRepository userRepository;
 
     public ActivityLog toEntity(ActivityLogRequest request) {
         if (request == null) {
@@ -20,7 +24,7 @@ public class ActivityLogMapper {
         }
 
         return ActivityLog.builder()
-            .userId(request.getUserId())
+            .user(userRepository.findById(request.getUserId()).orElse(null))
             .activityType(request.getActivityType())
             .module(request.getModule())
             .activityDescription(request.getActivityDescription())
@@ -31,6 +35,8 @@ public class ActivityLogMapper {
             .build();
     }
 
+
+
     public ActivityLogResponse toResponse(ActivityLog activityLog) {
         if (activityLog == null) {
             return null;
@@ -38,7 +44,7 @@ public class ActivityLogMapper {
 
         return ActivityLogResponse.builder()
             .id(activityLog.getId())
-            .userId(activityLog.getUserId())
+            .userId(activityLog.getUser().getId())
             .activityType(activityLog.getActivityType())
             .module(activityLog.getModule())
             .activityDescription(activityLog.getActivityDescription())

@@ -36,6 +36,9 @@ public interface SyncQueueRepository extends JpaRepository<SyncQueue, Long>, Jpa
      * Find sync queue items by user
      */
     List<SyncQueue> findByUserId(Long userId);
+    List<SyncQueue> findByDeviceId(String id);
+
+
     
     /**
      * Find sync queue items by user with pagination
@@ -111,6 +114,14 @@ public interface SyncQueueRepository extends JpaRepository<SyncQueue, Long>, Jpa
     void deleteSyncedBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
     
     // ==================== CUSTOM QUERIES ====================
+
+    @Query("SELECT sq FROM SyncQueue sq WHERE " +
+           "OR (sq.deviceId) LIKE %:keyword% " +
+           "OR (sq.entityType) LIKE %:keyword% " +
+           "OR (sq.operationType) LIKE %:keyword% " +
+           "OR (sq.syncStatus) LIKE %:keyword% " +
+           "OR (sq.errorMessage) LIKE %:keyword%")
+    Page<SyncQueue> searchSyncQueue(@Param("keyword") String keyword, Pageable pageable);
     
     /**
      * Find pending sync queue items
@@ -150,7 +161,7 @@ public interface SyncQueueRepository extends JpaRepository<SyncQueue, Long>, Jpa
     /**
      * Find pending items by user and device ordered by priority
      */
-    @Query("SELECT sq FROM SyncQueue sq WHERE sq.userId = :userId AND sq.deviceId = :deviceId " +
+    @Query("SELECT sq FROM SyncQueue sq WHERE sq.user.id = :userId AND sq.deviceId = :deviceId " +
            "AND sq.syncStatus = 'PENDING' ORDER BY sq.priority DESC, sq.createdAt ASC")
     List<SyncQueue> findPendingItemsByUserAndDevice(
             @Param("userId") Long userId, 

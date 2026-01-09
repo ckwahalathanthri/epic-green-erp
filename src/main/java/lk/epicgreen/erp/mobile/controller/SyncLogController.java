@@ -1,9 +1,10 @@
 package lk.epicgreen.erp.mobile.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.mobile.dto.SyncResponse;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.mobile.dto.response.SyncLogResponse;
 import lk.epicgreen.erp.mobile.entity.SyncLog;
-import lk.epicgreen.erp.mobile.service.SyncService;
+import lk.epicgreen.erp.mobile.service.impl.SyncLogServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,48 +32,48 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class SyncLogController {
     
-    private final SyncService syncService;
+    private final SyncLogServiceImpl syncService;
     
     // Log Query Operations
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'MOBILE_USER')")
-    public ResponseEntity<ApiResponse<SyncLog>> getSyncLogById(@PathVariable Long id) {
-        SyncLog log = syncService.getSyncLogById(id);
+    public ResponseEntity<ApiResponse<SyncLogResponse>> getSyncLogById(@PathVariable Long id) {
+        SyncLogResponse log = syncService.getSyncLogById(id);
         return ResponseEntity.ok(ApiResponse.success(log, "Sync log retrieved"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Page<SyncLog>>> getAllSyncLogs(Pageable pageable) {
-        Page<SyncLog> logs = syncService.getAllSyncLogs(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<SyncLogResponse>>> getAllSyncLogs(Pageable pageable) {
+        PageResponse<SyncLogResponse> logs = syncService.getAllSyncLogs(pageable);
         return ResponseEntity.ok(ApiResponse.success(logs, "Sync logs retrieved"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<SyncLog>>> getAllSyncLogsList() {
-        List<SyncLog> logs = syncService.getAllSyncLogs();
+    public ResponseEntity<ApiResponse<List<SyncLogResponse>>> getAllSyncLogsList(Pageable pageable) {
+        List<SyncLogResponse> logs = syncService.getAllSyncLogs(pageable).getContent();
         return ResponseEntity.ok(ApiResponse.success(logs, "Sync logs list retrieved"));
     }
     
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'MOBILE_USER')")
-    public ResponseEntity<ApiResponse<Page<SyncLog>>> getSyncLogsByUser(@PathVariable Long userId, Pageable pageable) {
-        Page<SyncLog> logs = syncService.getSyncLogsByUser(userId, pageable);
+    public ResponseEntity<ApiResponse<List<SyncLogResponse>>> getSyncLogsByUser(@PathVariable Long userId) {
+        List<SyncLogResponse> logs = syncService.getSyncLogsByUser(userId);
         return ResponseEntity.ok(ApiResponse.success(logs, "User sync logs retrieved"));
     }
     
     @GetMapping("/device/{deviceId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'MOBILE_USER')")
-    public ResponseEntity<ApiResponse<List<SyncLog>>> getSyncLogsByDevice(@PathVariable String deviceId) {
-        List<SyncLog> logs = syncService.getSyncLogsByDevice(deviceId);
+    public ResponseEntity<ApiResponse<List<SyncLogResponse>>> getSyncLogsByDevice(@PathVariable String deviceId) {
+        List<SyncLogResponse> logs = syncService.getSyncLogsByDevice(deviceId);
         return ResponseEntity.ok(ApiResponse.success(logs, "Device sync logs retrieved"));
     }
     
     @GetMapping("/status/{status}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<SyncLog>>> getSyncLogsByStatus(@PathVariable String status) {
-        List<SyncLog> logs = syncService.getSyncLogsByStatus(status);
+    public ResponseEntity<ApiResponse<PageResponse<SyncLogResponse>>> getSyncLogsByStatus(@PathVariable String status,Pageable pageable) {
+        PageResponse<SyncLogResponse> logs = syncService.getSyncLogsByStatus(status,pageable);
         return ResponseEntity.ok(ApiResponse.success(logs, "Sync logs by status retrieved"));
     }
     
@@ -92,18 +93,18 @@ public class SyncLogController {
     
     @GetMapping("/date-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<SyncLog>>> getSyncLogsByDateRange(
+    public ResponseEntity<ApiResponse<List<SyncLogResponse>>> getSyncLogsByDateRange(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
     ) {
-        List<SyncLog> logs = syncService.getSyncLogsByDateRange(startDate, endDate);
+        List<SyncLogResponse> logs = syncService.getSyncLogsByDateRange(startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(logs, "Sync logs by date range retrieved"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Page<SyncLog>>> searchSyncLogs(@RequestParam String keyword, Pageable pageable) {
-        Page<SyncLog> logs = syncService.searchSyncLogs(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<SyncLogResponse>>> searchSyncLogs(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<SyncLogResponse> logs = syncService.searchSyncLogs(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(logs, "Search results retrieved"));
     }
     
@@ -139,28 +140,28 @@ public class SyncLogController {
     // Conflict Resolution
     @PostMapping("/conflicts/{logId}/resolve/server-wins")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<SyncResponse>> resolveConflictServerWins(@PathVariable Long logId) {
+    public ResponseEntity<ApiResponse<SyncLogResponse>> resolveConflictServerWins(@PathVariable Long logId) {
         log.info("Resolving conflict - server wins: {}", logId);
-        SyncResponse response = syncService.resolveConflictServerWins(logId);
+        SyncLogResponse response = syncService.resolveConflictServerWins(logId);
         return ResponseEntity.ok(ApiResponse.success(response, "Conflict resolved - server wins"));
     }
-    
+
     @PostMapping("/conflicts/{logId}/resolve/client-wins")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<SyncResponse>> resolveConflictClientWins(@PathVariable Long logId) {
+    public ResponseEntity<ApiResponse<SyncLogResponse>> resolveConflictClientWins(@PathVariable Long logId) {
         log.info("Resolving conflict - client wins: {}", logId);
-        SyncResponse response = syncService.resolveConflictClientWins(logId);
+        SyncLogResponse response = syncService.resolveConflictClientWins(logId);
         return ResponseEntity.ok(ApiResponse.success(response, "Conflict resolved - client wins"));
     }
-    
+
     @PostMapping("/conflicts/{logId}/resolve/manual")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<SyncResponse>> resolveConflictManualMerge(
+    public ResponseEntity<ApiResponse<SyncLogResponse>> resolveConflictManualMerge(
         @PathVariable Long logId,
         @RequestBody Map<String, Object> mergedData
     ) {
         log.info("Resolving conflict - manual merge: {}", logId);
-        SyncResponse response = syncService.resolveConflictManualMerge(logId, mergedData);
+        SyncLogResponse response = syncService.resolveConflictManualMerge(logId, mergedData);
         return ResponseEntity.ok(ApiResponse.success(response, "Conflict resolved - manual merge"));
     }
 }

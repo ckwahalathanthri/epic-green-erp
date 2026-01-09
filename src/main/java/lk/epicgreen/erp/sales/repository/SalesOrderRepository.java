@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -135,10 +134,10 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
      */
     @Query("SELECT so FROM SalesOrder so WHERE " +
            "(:orderNumber IS NULL OR LOWER(so.orderNumber) LIKE LOWER(CONCAT('%', :orderNumber, '%'))) AND " +
-           "(:customerId IS NULL OR so.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR so.customer.id = :customerId) AND " +
            "(:status IS NULL OR so.status = :status) AND " +
            "(:orderType IS NULL OR so.orderType = :orderType) AND " +
-           "(:salesRepId IS NULL OR so.salesRepId = :salesRepId) AND " +
+           "(:salesRepId IS NULL OR so.salesRep.id = :salesRepId) AND " +
            "(:startDate IS NULL OR so.orderDate >= :startDate) AND " +
            "(:endDate IS NULL OR so.orderDate <= :endDate)")
     Page<SalesOrder> searchOrders(
@@ -253,7 +252,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
      */
     @Query("SELECT so FROM SalesOrder so WHERE so.expectedDeliveryDate < CURRENT_DATE " +
            "AND so.status NOT IN ('DELIVERED', 'CANCELLED') ORDER BY so.expectedDeliveryDate")
-    List<SalesOrder> findOverdueOrders();
+    List<SalesOrder> findOverdueOrders(LocalDate now);
     
     /**
      * Get orders by customer and status
@@ -288,16 +287,16 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
     /**
      * Get orders grouped by customer
      */
-    @Query("SELECT so.customerId, COUNT(so) as orderCount, SUM(so.totalAmount) as totalValue " +
-           "FROM SalesOrder so GROUP BY so.customerId ORDER BY totalValue DESC")
+    @Query("SELECT so.customer.id, COUNT(so) as orderCount, SUM(so.totalAmount) as totalValue " +
+           "FROM SalesOrder so GROUP BY so.customer.id ORDER BY totalValue DESC")
     List<Object[]> getOrdersByCustomer();
     
     /**
      * Get orders grouped by sales rep
      */
-    @Query("SELECT so.salesRepId, COUNT(so) as orderCount, SUM(so.totalAmount) as totalValue " +
-           "FROM SalesOrder so WHERE so.salesRepId IS NOT NULL " +
-           "GROUP BY so.salesRepId ORDER BY totalValue DESC")
+    @Query("SELECT so.salesRep.id, COUNT(so) as orderCount, SUM(so.totalAmount) as totalValue " +
+           "FROM SalesOrder so WHERE so.salesRep.id IS NOT NULL " +
+           "GROUP BY so.salesRep.id ORDER BY totalValue DESC")
     List<Object[]> getOrdersBySalesRep();
     
     /**
@@ -328,9 +327,9 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
     /**
      * Find top customers by order value
      */
-    @Query("SELECT so.customerId, SUM(so.totalAmount) as totalOrderValue " +
+    @Query("SELECT so.customer.id, SUM(so.totalAmount) as totalOrderValue " +
            "FROM SalesOrder so WHERE so.orderDate BETWEEN :startDate AND :endDate " +
-           "GROUP BY so.customerId ORDER BY totalOrderValue DESC")
+           "GROUP BY so.customer.id ORDER BY totalOrderValue DESC")
     List<Object[]> findTopCustomersByOrderValue(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
@@ -346,4 +345,24 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
      */
     List<SalesOrder> findByCustomerIdAndOrderDateBetween(
             Long customerId, LocalDate startDate, LocalDate endDate);
+
+    List<SalesOrder> findByPriority(String high);
+
+    @Query("SELECT so FROM SalesOrder so WHERE " +
+           "(so.status = 'PENDING_APPROVAL' OR " +
+           "(so.expectedDeliveryDate < :now AND so.status NOT IN ('DELIVERED', 'CANCELLED')))")
+    List<SalesOrder> findOrdersRequiringAction(LocalDate now);
+@Query("SELECT so FROM SalesOrder so WHERE so.customer.id = :customerId ORDER BY so.orderDate DESC")
+    List<SalesOrder> findTopByCustomerIdOrderByOrderDateDesc(Long customerId, Pageable limit);
+@Query("SELECT so.orderType, COUNT(so) as orderCount FROM SalesOrder so GROUP BY so.orderType")
+    List<Object[]> countOrdersByType();
+
+@Query("SELECT so.deliveryMode, COUNT(so) as orderCount FROM SalesOrder so GROUP BY so.deliveryMode")
+
+    List<Object[]> countOrdersByDeliveryStatus();
+@Query("SELECT SUM(so.totalAmount) FROM SalesOrder so")
+    Optional<Double> sumTotalOrderValue();
+
+@Query("SELECT AVG(so.totalAmount) FROM SalesOrder so")
+    Optional<Double> averageOrderValue();
 }

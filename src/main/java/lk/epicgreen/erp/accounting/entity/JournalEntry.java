@@ -1,11 +1,16 @@
 package lk.epicgreen.erp.accounting.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
+
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -86,6 +91,12 @@ public class JournalEntry extends AuditEntity {
     @Size(max = 50)
     @Column(name = "source_reference", length = 50)
     private String sourceReference;
+
+    @Column(name = "is_posted")
+    private Boolean isPosted;
+
+    @Column(name = "is_reversed")
+    private Boolean IsReversed;
     
     /**
      * Description
@@ -156,6 +167,7 @@ public class JournalEntry extends AuditEntity {
         line.setJournal(this);
         lines.add(line);
     }
+
     
     /**
      * Remove journal line

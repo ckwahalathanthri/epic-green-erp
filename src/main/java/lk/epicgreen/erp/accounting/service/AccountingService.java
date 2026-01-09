@@ -134,13 +134,13 @@ public interface AccountingService {
     Map<String, Object> getJournalEntryStatistics();
     Map<String, Object> getDashboardStatistics();
 
-    List<ChartOfAccounts> getPostingAccounts();
+//    List<ChartOfAccounts> getPostingAccounts();
 
     List<ChartOfAccounts> getBankAccounts();
 
-    List<ChartOfAccounts> getCashAccounts();
+//    List<ChartOfAccounts> getCashAccounts();
 
-    List<ChartOfAccounts> getReceivableAccounts();
+//    List<ChartOfAccounts> getReceivableAccounts();
 
     List<ChartOfAccounts> getPayableAccounts();
 
@@ -162,47 +162,47 @@ public interface AccountingService {
 
     Double getTotalCreditForAccount(Long id);
 
-    void updateAccountBalances(Long id);
+//    void updateAccountBalances(Long id);
+//
+//    void recalculateAllAccountBalances();
 
-    void recalculateAllAccountBalances();
+//    List<Map<String, Object>> getTrialBalance();
 
-    List<Map<String, Object>> getTrialBalance();
-
-    List<Map<String, Object>> getTrialBalanceForPeriod(LocalDate startDate, LocalDate endDate);
-
-    List<Map<String, Object>> getTrialBalanceForFiscalYear(Integer year);
-
-    Map<String, Object> verifyTrialBalance();
-
-    Map<String, Object> generateBalanceSheet(LocalDate asOfDate);
-
-    Map<String, Object> generateIncomeStatement(LocalDate startDate, LocalDate endDate);
-
-    Map<String, Object> generateCashFlowStatement(LocalDate startDate, LocalDate endDate);
-
-    Map<String, Object> generateEquityStatement(LocalDate startDate, LocalDate endDate);
-
-    Integer getCurrentFiscalYear();
-
-    Integer getCurrentFiscalPeriod();
-
-    void closeFiscalPeriod(Integer year, Integer period);
-
-    void closeFiscalYear(Integer year);
-
-    void reopenFiscalPeriod(Integer year, Integer period);
-
-    List<ChartOfAccounts> getAccountsRequiringReconciliation();
-
-    void markAccountAsReconciled(Long id, LocalDate reconciliationDate);
-
-    List<Map<String, Object>> getTotalBalanceByAccountType();
-
-    boolean isAccountCodeAvailable(String code);
-
-    boolean hasAccountTransactions(Long id);
-
-    boolean canDeleteAccount(Long id);
-
-    boolean validateAccountHierarchy(Long id);
+//    List<Map<String, Object>> getTrialBalanceForPeriod(LocalDate startDate, LocalDate endDate);
+//
+//    List<Map<String, Object>> getTrialBalanceForFiscalYear(Integer year);
+//
+//    Map<String, Object> verifyTrialBalance();
+//
+//    Map<String, Object> generateBalanceSheet(LocalDate asOfDate);
+//
+//    Map<String, Object> generateIncomeStatement(LocalDate startDate, LocalDate endDate);
+//
+//    Map<String, Object> generateCashFlowStatement(LocalDate startDate, LocalDate endDate);
+//
+//    Map<String, Object> generateEquityStatement(LocalDate startDate, LocalDate endDate);
+//
+//    Integer getCurrentFiscalYear();
+//
+//    Integer getCurrentFiscalPeriod();
+//
+//    void closeFiscalPeriod(Integer year, Integer period);
+//
+//    void closeFiscalYear(Integer year);
+//
+//    void reopenFiscalPeriod(Integer year, Integer period);
+//
+//    List<ChartOfAccounts> getAccountsRequiringReconciliation();
+//
+//    void markAccountAsReconciled(Long id, LocalDate reconciliationDate);
+//
+//    List<Map<String, Object>> getTotalBalanceByAccountType();
+//
+//    boolean isAccountCodeAvailable(String code);
+//
+//    boolean hasAccountTransactions(Long id);
+//
+//    boolean canDeleteAccount(Long id);
+//
+//    boolean validateAccountHierarchy(Long id);
 }

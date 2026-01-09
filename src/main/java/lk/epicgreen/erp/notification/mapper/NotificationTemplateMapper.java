@@ -1,8 +1,9 @@
-package lk.epicgreen.erp.notifications.mapper;
+package lk.epicgreen.erp.notification.mapper;
 
-import lk.epicgreen.erp.notifications.dto.request.NotificationTemplateRequest;
-import lk.epicgreen.erp.notifications.dto.response.NotificationTemplateResponse;
-import lk.epicgreen.erp.notifications.entity.NotificationTemplate;
+import lk.epicgreen.erp.notification.dto.request.NotificationTemplateRequest;
+import lk.epicgreen.erp.notification.dto.response.NotificationTemplateResponse;
+import lk.epicgreen.erp.notification.entity.NotificationTemplate;
+
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,7 +26,7 @@ public class NotificationTemplateMapper {
             .notificationType(request.getNotificationType())
             .subject(request.getSubject())
             .bodyTemplate(request.getBodyTemplate())
-            .variables(request.getVariables())
+            .variables(request.getVariables().toString())
             .isActive(request.getIsActive() != null ? request.getIsActive() : true)
             .build();
     }
@@ -40,7 +41,7 @@ public class NotificationTemplateMapper {
         template.setNotificationType(request.getNotificationType());
         template.setSubject(request.getSubject());
         template.setBodyTemplate(request.getBodyTemplate());
-        template.setVariables(request.getVariables());
+        template.setVariables(request.getVariables().toString());
         template.setIsActive(request.getIsActive());
     }
 
@@ -56,7 +57,7 @@ public class NotificationTemplateMapper {
             .notificationType(template.getNotificationType())
             .subject(template.getSubject())
             .bodyTemplate(template.getBodyTemplate())
-            .variables(template.getVariables())
+//            .variables(template.getVariables())
             .isActive(template.getIsActive())
             .createdAt(template.getCreatedAt())
             .createdBy(template.getCreatedBy())

@@ -318,8 +318,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PageResponse<InvoiceResponse> getInvoicesByStatus(String status, Pageable pageable) {
-        Page<Invoice> invoicePage = invoiceRepository.findByStatus(status, pageable);
-        return createPageResponse(invoicePage);
+        List<Invoice> invoicePage = invoiceRepository.findByStatus(status);
+        return createPageResponse((Page<Invoice>) invoicePage);
     }
 
     @Override
@@ -362,8 +362,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PageResponse<InvoiceResponse> getInvoicesByType(String invoiceType, Pageable pageable) {
-        Page<Invoice> invoicePage = invoiceRepository.findByInvoiceType(invoiceType, pageable);
-        return createPageResponse(invoicePage);
+        List<Invoice> invoicePage = invoiceRepository.findByInvoiceType(invoiceType);
+        return createPageResponse((Page<Invoice>) invoicePage);
     }
 
     @Override
@@ -376,7 +376,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceResponse> getOverdueInvoices() {
-        List<Invoice> invoices = invoiceRepository.findOverdueInvoices(LocalDate.now());
+        List<Invoice> invoices = invoiceRepository.findOverdueInvoices();
         return invoices.stream()
             .map(invoiceMapper::toResponse)
             .collect(Collectors.toList());
@@ -401,7 +401,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PageResponse<InvoiceResponse> searchInvoices(String keyword, Pageable pageable) {
-        Page<Invoice> invoicePage = invoiceRepository.searchInvoices(keyword, pageable);
+        Page<Invoice> invoicePage = invoiceRepository.searchInvoices(keyword,null,null,null,null,null,null, pageable);
         return createPageResponse(invoicePage);
     }
 
@@ -411,11 +411,21 @@ public class InvoiceServiceImpl implements InvoiceService {
             .orElse(BigDecimal.ZERO);
     }
 
+    /**
+     * Get total outstanding amount for a customer
+     *
+     * @param customerId
+     */
     @Override
     public BigDecimal getTotalOutstandingByCustomer(Long customerId) {
-        return invoiceRepository.sumOutstandingByCustomer(customerId)
-            .orElse(BigDecimal.ZERO);
+        return null;
     }
+
+//    @Override
+//    public BigDecimal getTotalOutstandingByCustomer(Long customerId) {
+//        return invoiceRepository.sumOutstandingByCustomer(customerId)
+//            .orElse(BigDecimal.ZERO);
+//    }
 
     @Override
     public BigDecimal getTotalInvoiceAmountByDateRange(LocalDate startDate, LocalDate endDate) {
@@ -492,8 +502,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + id));
+        return customerRepository.findByIdAndDeletedAtIsNull(id);
     }
 
     private CustomerAddress findCustomerAddressById(Long id) {
@@ -502,8 +511,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private Product findProductById(Long id) {
-        return productRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+        return productRepository.findByIdAndDeletedAtIsNull(id);
     }
 
     private UnitOfMeasure findUnitOfMeasureById(Long id) {

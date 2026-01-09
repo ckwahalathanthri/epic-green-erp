@@ -218,7 +218,7 @@ public class DispatchNoteServiceImpl implements DispatchNoteService {
 
         dispatch.setStatus("DISPATCHED");
         dispatch.setDispatchTime(LocalDateTime.now());
-        dispatch.setDeliveredBy(deliveredBy);
+        dispatch.setDeliveredBy(userRepository.findById(deliveredBy).get());
         dispatchNoteRepository.save(dispatch);
 
         log.info("Dispatch Note marked as DISPATCHED successfully: {}", id);
@@ -429,11 +429,22 @@ public class DispatchNoteServiceImpl implements DispatchNoteService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Search Dispatch Notes
+     *
+     * @param keyword
+     * @param pageable
+     */
     @Override
     public PageResponse<DispatchNoteResponse> searchDispatchNotes(String keyword, Pageable pageable) {
-        Page<DispatchNote> dispatchPage = dispatchNoteRepository.searchDispatches(keyword, pageable);
-        return createPageResponse(dispatchPage);
+        return null;
     }
+
+//    @Override
+//    public PageResponse<DispatchNoteResponse> searchDispatchNotes(String keyword, Pageable pageable) {
+//        Page<DispatchNote> dispatchPage = dispatchNoteRepository.searchDispatches(keyword, pageable);
+//        return createPageResponse(dispatchPage);
+//    }
 
     @Override
     public boolean canDelete(Long id) {
@@ -467,6 +478,11 @@ public class DispatchNoteServiceImpl implements DispatchNoteService {
         return item;
     }
 
+    private Product findProductById(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+    }
+
     private void validateUniqueDispatchNumber(String dispatchNumber, Long excludeId) {
         boolean exists;
         if (excludeId != null) {
@@ -496,8 +512,7 @@ public class DispatchNoteServiceImpl implements DispatchNoteService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + id));
+        return customerRepository.findByIdAndDeletedAtIsNull(id);
     }
 
     private CustomerAddress findCustomerAddressById(Long id) {
@@ -515,10 +530,10 @@ public class DispatchNoteServiceImpl implements DispatchNoteService {
             .orElseThrow(() -> new ResourceNotFoundException("Warehouse Location not found: " + id));
     }
 
-    private Product findProductById(Long id) {
-        return productRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
-    }
+//    private Product findProductById(Long id) {
+//        return productRepository.findByIdAndDeletedAtIsNull(id)
+//            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+//    }
 
     private UnitOfMeasure findUnitOfMeasureById(Long id) {
         return unitOfMeasureRepository.findById(id)

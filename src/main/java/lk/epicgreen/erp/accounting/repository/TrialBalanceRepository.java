@@ -52,7 +52,7 @@ public interface TrialBalanceRepository extends JpaRepository<TrialBalance, Long
     /**
      * Find all trial balance entries for a period ordered by account
      */
-    @Query("SELECT tb FROM TrialBalance tb WHERE tb.periodId = :periodId ORDER BY tb.accountId")
+    @Query("SELECT tb FROM TrialBalance tb WHERE tb.period.id = :periodId ORDER BY tb.account.id")
     List<TrialBalance> findByPeriodOrderByAccount(@Param("periodId") Long periodId);
     
     /**
@@ -90,7 +90,7 @@ public interface TrialBalanceRepository extends JpaRepository<TrialBalance, Long
      * Delete all trial balance entries for a period
      */
     @Modifying
-    @Query("DELETE FROM TrialBalance tb WHERE tb.periodId = :periodId")
+    @Query("DELETE FROM TrialBalance tb WHERE tb.period.id = :periodId")
     void deleteAllByPeriodId(@Param("periodId") Long periodId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -98,44 +98,44 @@ public interface TrialBalanceRepository extends JpaRepository<TrialBalance, Long
     /**
      * Get total opening debit for period
      */
-    @Query("SELECT SUM(tb.openingDebit) FROM TrialBalance tb WHERE tb.periodId = :periodId")
+    @Query("SELECT SUM(tb.openingDebit) FROM TrialBalance tb WHERE tb.period.id = :periodId")
     BigDecimal getTotalOpeningDebitByPeriod(@Param("periodId") Long periodId);
     
     /**
      * Get total opening credit for period
      */
-    @Query("SELECT SUM(tb.openingCredit) FROM TrialBalance tb WHERE tb.periodId = :periodId")
+    @Query("SELECT SUM(tb.openingCredit) FROM TrialBalance tb WHERE tb.period.id = :periodId")
     BigDecimal getTotalOpeningCreditByPeriod(@Param("periodId") Long periodId);
     
     /**
      * Get total period debit for period
      */
-    @Query("SELECT SUM(tb.periodDebit) FROM TrialBalance tb WHERE tb.periodId = :periodId")
+    @Query("SELECT SUM(tb.periodDebit) FROM TrialBalance tb WHERE tb.period.id = :periodId")
     BigDecimal getTotalPeriodDebitByPeriod(@Param("periodId") Long periodId);
     
     /**
      * Get total period credit for period
      */
-    @Query("SELECT SUM(tb.periodCredit) FROM TrialBalance tb WHERE tb.periodId = :periodId")
+    @Query("SELECT SUM(tb.periodCredit) FROM TrialBalance tb WHERE tb.period.id = :periodId")
     BigDecimal getTotalPeriodCreditByPeriod(@Param("periodId") Long periodId);
     
     /**
      * Get total closing debit for period
      */
-    @Query("SELECT SUM(tb.closingDebit) FROM TrialBalance tb WHERE tb.periodId = :periodId")
+    @Query("SELECT SUM(tb.closingDebit) FROM TrialBalance tb WHERE tb.period.id = :periodId")
     BigDecimal getTotalClosingDebitByPeriod(@Param("periodId") Long periodId);
     
     /**
      * Get total closing credit for period
      */
-    @Query("SELECT SUM(tb.closingCredit) FROM TrialBalance tb WHERE tb.periodId = :periodId")
+    @Query("SELECT SUM(tb.closingCredit) FROM TrialBalance tb WHERE tb.period.id = :periodId")
     BigDecimal getTotalClosingCreditByPeriod(@Param("periodId") Long periodId);
     
     /**
      * Find trial balance entries with activity (period debit or credit > 0)
      */
-    @Query("SELECT tb FROM TrialBalance tb WHERE tb.periodId = :periodId " +
-           "AND (tb.periodDebit > 0 OR tb.periodCredit > 0) ORDER BY tb.accountId")
+    @Query("SELECT tb FROM TrialBalance tb WHERE tb.period.id = :periodId " +
+           "AND (tb.periodDebit > 0 OR tb.periodCredit > 0) ORDER BY tb.account.id")
     List<TrialBalance> findActiveEntriesByPeriod(@Param("periodId") Long periodId);
     
     /**
@@ -158,12 +158,12 @@ public interface TrialBalanceRepository extends JpaRepository<TrialBalance, Long
            "SUM(tb.periodCredit) as totalPeriodCredit, " +
            "SUM(tb.closingDebit) as totalClosingDebit, " +
            "SUM(tb.closingCredit) as totalClosingCredit " +
-           "FROM TrialBalance tb WHERE tb.periodId = :periodId")
+           "FROM TrialBalance tb WHERE tb.period.id = :periodId")
     Object getTrialBalanceStatistics(@Param("periodId") Long periodId);
     
     /**
      * Find all trial balance entries ordered by period
      */
-    @Query("SELECT tb FROM TrialBalance tb ORDER BY tb.periodId, tb.accountId")
+    @Query("SELECT tb FROM TrialBalance tb ORDER BY tb.period.id, tb.account.id")
     List<TrialBalance> findAllOrderedByPeriod();
 }

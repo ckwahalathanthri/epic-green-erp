@@ -1,12 +1,12 @@
 package lk.epicgreen.erp.audit.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 /**
@@ -69,6 +69,9 @@ public class AuditLog {
      */
     @Column(name = "entity_id")
     private Long entityId;
+
+    @Column(name="module_type")
+    private String model;
     
     /**
      * Entity name (for display)

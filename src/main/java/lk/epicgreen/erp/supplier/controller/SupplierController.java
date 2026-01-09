@@ -1,7 +1,10 @@
 package lk.epicgreen.erp.supplier.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.supplier.dto.SupplierRequest;
+
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.supplier.dto.request.SupplierRequest;
+import lk.epicgreen.erp.supplier.dto.response.SupplierResponse;
 import lk.epicgreen.erp.supplier.entity.Supplier;
 import lk.epicgreen.erp.supplier.service.SupplierService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -38,20 +42,20 @@ public class SupplierController {
     
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Supplier>> createSupplier(@Valid @RequestBody SupplierRequest request) {
+    public ResponseEntity<ApiResponse<SupplierResponse>> createSupplier(@Valid @RequestBody SupplierRequest request) {
         log.info("Creating supplier: {}", request.getSupplierName());
-        Supplier created = supplierService.createSupplier(request);
+        SupplierResponse created = supplierService.createSupplier(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Supplier created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Supplier>> updateSupplier(
+    public ResponseEntity<ApiResponse<SupplierResponse>> updateSupplier(
         @PathVariable Long id,
         @Valid @RequestBody SupplierRequest request
     ) {
         log.info("Updating supplier: {}", id);
-        Supplier updated = supplierService.updateSupplier(id, request);
+        SupplierResponse updated = supplierService.updateSupplier(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Supplier updated successfully"));
     }
     
@@ -65,15 +69,15 @@ public class SupplierController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Supplier>> getSupplierById(@PathVariable Long id) {
-        Supplier supplier = supplierService.getSupplierById(id);
+    public ResponseEntity<ApiResponse<SupplierResponse>> getSupplierById(@PathVariable Long id) {
+        SupplierResponse supplier = supplierService.getSupplierById(id);
         return ResponseEntity.ok(ApiResponse.success(supplier, "Supplier retrieved successfully"));
     }
     
     @GetMapping("/code/{supplierCode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Supplier>> getSupplierByCode(@PathVariable String supplierCode) {
-        Supplier supplier = supplierService.getSupplierByCode(supplierCode);
+    public ResponseEntity<ApiResponse<SupplierResponse>> getSupplierByCode(@PathVariable String supplierCode) {
+        SupplierResponse supplier = supplierService.getSupplierByCode(supplierCode);
         return ResponseEntity.ok(ApiResponse.success(supplier, "Supplier retrieved successfully"));
     }
     
@@ -86,25 +90,25 @@ public class SupplierController {
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Supplier>>> getAllSuppliers(Pageable pageable) {
-        Page<Supplier> suppliers = supplierService.getAllSuppliers(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<SupplierResponse>>> getAllSuppliers(Pageable pageable) {
+        PageResponse<SupplierResponse> suppliers = supplierService.getAllSuppliers(pageable);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getAllSuppliersList() {
-        List<Supplier> suppliers = supplierService.getAllSuppliers();
+    public ResponseEntity<ApiResponse<PageResponse<SupplierResponse>>> getAllSuppliersList(Pageable pageable) {
+        PageResponse<SupplierResponse> suppliers = supplierService.getAllSuppliers(pageable);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Supplier>>> searchSuppliers(
+    public ResponseEntity<ApiResponse<PageResponse<SupplierResponse>>> searchSuppliers(
         @RequestParam String keyword,
         Pageable pageable
     ) {
-        Page<Supplier> suppliers = supplierService.searchSuppliers(keyword, pageable);
+        PageResponse<SupplierResponse> suppliers = supplierService.searchSuppliers(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Search results retrieved successfully"));
     }
     
@@ -225,8 +229,8 @@ public class SupplierController {
     
     @GetMapping("/type/{supplierType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersByType(@PathVariable String supplierType) {
-        List<Supplier> suppliers = supplierService.getSuppliersByType(supplierType);
+    public ResponseEntity<ApiResponse<PageResponse<SupplierResponse>>> getSuppliersByType(@PathVariable String supplierType,Pageable pageable) {
+        PageResponse<SupplierResponse> suppliers = supplierService.getSuppliersByType(supplierType,pageable);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers by type retrieved successfully"));
     }
     
@@ -267,37 +271,37 @@ public class SupplierController {
     
     @GetMapping("/credit-exceeded")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersExceedingCreditLimit() {
-        List<Supplier> suppliers = supplierService.getSuppliersExceedingCreditLimit();
+    public ResponseEntity<ApiResponse<List<SupplierResponse>>> getSuppliersExceedingCreditLimit() {
+        List<SupplierResponse> suppliers = supplierService.getSuppliersExceedingCreditLimit();
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers exceeding credit limit retrieved successfully"));
     }
     
     @GetMapping("/with-outstanding")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersWithOutstandingBalance() {
-        List<Supplier> suppliers = supplierService.getSuppliersWithOutstandingBalance();
+    public ResponseEntity<ApiResponse<List<SupplierResponse>>> getSuppliersWithOutstandingBalance() {
+        List<SupplierResponse> suppliers = supplierService.getSuppliersWithOutstandingBalance();
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers with outstanding balance retrieved successfully"));
     }
     
-    @GetMapping("/credit-limit-range")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersByCreditLimitRange(
-        @RequestParam Double minLimit,
-        @RequestParam Double maxLimit
-    ) {
-        List<Supplier> suppliers = supplierService.getSuppliersByCreditLimitRange(minLimit, maxLimit);
-        return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers by credit limit range retrieved successfully"));
-    }
+//    @GetMapping("/credit-limit-range")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersByCreditLimitRange(
+//        @RequestParam Double minLimit,
+//        @RequestParam Double maxLimit
+//    ) {
+//        List<Supplier> suppliers = supplierService.getSuppliersByCreditLimitRange(minLimit, maxLimit);
+//        return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers by credit limit range retrieved successfully"));
+//    }
     
-    @GetMapping("/balance-range")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersByBalanceRange(
-        @RequestParam Double minBalance,
-        @RequestParam Double maxBalance
-    ) {
-        List<Supplier> suppliers = supplierService.getSuppliersByBalanceRange(minBalance, maxBalance);
-        return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers by balance range retrieved successfully"));
-    }
+//    @GetMapping("/balance-range")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersByBalanceRange(
+//        @RequestParam Double minBalance,
+//        @RequestParam Double maxBalance
+//    ) {
+//        List<Supplier> suppliers = supplierService.getSuppliersByBalanceRange(minBalance, maxBalance);
+//        return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers by balance range retrieved successfully"));
+//    }
     
     @GetMapping("/high-rated")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'USER')")
@@ -331,35 +335,35 @@ public class SupplierController {
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getRecentSuppliers(@RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<ApiResponse<List<Supplier>>> getRecentSuppliers(Pageable limit) {
         List<Supplier> suppliers = supplierService.getRecentSuppliers(limit);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Recent suppliers retrieved successfully"));
     }
     
     @GetMapping("/recently-updated")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getRecentlyUpdatedSuppliers(@RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<ApiResponse<List<Supplier>>> getRecentlyUpdatedSuppliers(Pageable limit) {
         List<Supplier> suppliers = supplierService.getRecentlyUpdatedSuppliers(limit);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Recently updated suppliers retrieved successfully"));
     }
     
     @GetMapping("/top-rated")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getTopRatedSuppliers(@RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<ApiResponse<List<Supplier>>> getTopRatedSuppliers(Pageable limit) {
         List<Supplier> suppliers = supplierService.getTopRatedSuppliers(limit);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Top rated suppliers retrieved successfully"));
     }
     
     @GetMapping("/highest-balance")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersWithHighestBalance(@RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersWithHighestBalance(Pageable limit) {
         List<Supplier> suppliers = supplierService.getSuppliersWithHighestBalance(limit);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers with highest balance retrieved successfully"));
     }
     
     @GetMapping("/highest-credit")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersWithHighestCreditLimit(@RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersWithHighestCreditLimit(Pageable limit) {
         List<Supplier> suppliers = supplierService.getSuppliersWithHighestCreditLimit(limit);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers with highest credit limit retrieved successfully"));
     }
@@ -556,48 +560,48 @@ public class SupplierController {
     // BATCH OPERATIONS
     // ===================================================================
     
-    @PostMapping("/bulk")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Supplier>>> createBulkSuppliers(@Valid @RequestBody List<SupplierRequest> requests) {
-        log.info("Creating {} suppliers in bulk", requests.size());
-        List<Supplier> suppliers = supplierService.createBulkSuppliers(requests);
-        return ResponseEntity.ok(ApiResponse.success(suppliers, suppliers.size() + " suppliers created successfully"));
-    }
-    
-    @PutMapping("/bulk/activate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> activateBulkSuppliers(@RequestBody List<Long> supplierIds) {
-        log.info("Activating {} suppliers in bulk", supplierIds.size());
-        int count = supplierService.activateBulkSuppliers(supplierIds);
-        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers activated successfully"));
-    }
-    
-    @PutMapping("/bulk/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> deactivateBulkSuppliers(@RequestBody List<Long> supplierIds) {
-        log.info("Deactivating {} suppliers in bulk", supplierIds.size());
-        int count = supplierService.deactivateBulkSuppliers(supplierIds);
-        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers deactivated successfully"));
-    }
-    
-    @PutMapping("/bulk/approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> approveBulkSuppliers(
-        @RequestBody List<Long> supplierIds,
-        @RequestParam Long approvedByUserId
-    ) {
-        log.info("Approving {} suppliers in bulk", supplierIds.size());
-        int count = supplierService.approveBulkSuppliers(supplierIds, approvedByUserId);
-        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers approved successfully"));
-    }
-    
-    @DeleteMapping("/bulk")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> deleteBulkSuppliers(@RequestBody List<Long> supplierIds) {
-        log.info("Deleting {} suppliers in bulk", supplierIds.size());
-        int count = supplierService.deleteBulkSuppliers(supplierIds);
-        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers deleted successfully"));
-    }
+//    @PostMapping("/bulk")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<List<Supplier>>> createBulkSuppliers(@Valid @RequestBody List<SupplierRequest> requests) {
+//        log.info("Creating {} suppliers in bulk", requests.size());
+//        List<Supplier> suppliers = supplierService.createBulkSuppliers(requests);
+//        return ResponseEntity.ok(ApiResponse.success(suppliers, suppliers.size() + " suppliers created successfully"));
+//    }
+//
+//    @PutMapping("/bulk/activate")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<Integer>> activateBulkSuppliers(@RequestBody List<Long> supplierIds) {
+//        log.info("Activating {} suppliers in bulk", supplierIds.size());
+//        int count = supplierService.activateBulkSuppliers(supplierIds);
+//        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers activated successfully"));
+//    }
+//
+//    @PutMapping("/bulk/deactivate")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<Integer>> deactivateBulkSuppliers(@RequestBody List<Long> supplierIds) {
+//        log.info("Deactivating {} suppliers in bulk", supplierIds.size());
+//        int count = supplierService.deactivateBulkSuppliers(supplierIds);
+//        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers deactivated successfully"));
+//    }
+//
+//    @PutMapping("/bulk/approve")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<Integer>> approveBulkSuppliers(
+//        @RequestBody List<Long> supplierIds,
+//        @RequestParam Long approvedByUserId
+//    ) {
+//        log.info("Approving {} suppliers in bulk", supplierIds.size());
+//        int count = supplierService.approveBulkSuppliers(supplierIds, approvedByUserId);
+//        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers approved successfully"));
+//    }
+//
+//    @DeleteMapping("/bulk")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<Integer>> deleteBulkSuppliers(@RequestBody List<Long> supplierIds) {
+//        log.info("Deleting {} suppliers in bulk", supplierIds.size());
+//        int count = supplierService.deleteBulkSuppliers(supplierIds);
+//        return ResponseEntity.ok(ApiResponse.success(count, count + " suppliers deleted successfully"));
+//    }
     
     // ===================================================================
     // STATISTICS
@@ -610,40 +614,40 @@ public class SupplierController {
         return ResponseEntity.ok(ApiResponse.success(statistics, "Supplier statistics retrieved successfully"));
     }
     
-    @GetMapping("/statistics/type-distribution")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getSupplierTypeDistribution() {
-        List<Map<String, Object>> distribution = supplierService.getSupplierTypeDistribution();
-        return ResponseEntity.ok(ApiResponse.success(distribution, "Supplier type distribution retrieved successfully"));
-    }
+//    @GetMapping("/statistics/type-distribution")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getSupplierTypeDistribution() {
+//        List<Map<String, Object>> distribution = supplierService.getSupplierTypeDistribution();
+//        return ResponseEntity.ok(ApiResponse.success(distribution, "Supplier type distribution retrieved successfully"));
+//    }
     
-    @GetMapping("/statistics/status-distribution")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getStatusDistribution() {
-        List<Map<String, Object>> distribution = supplierService.getStatusDistribution();
-        return ResponseEntity.ok(ApiResponse.success(distribution, "Status distribution retrieved successfully"));
-    }
+//    @GetMapping("/statistics/status-distribution")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getStatusDistribution() {
+//        List<Map<String, Object>> distribution = supplierService.getStatusDistribution();
+//        return ResponseEntity.ok(ApiResponse.success(distribution, "Status distribution retrieved successfully"));
+//    }
     
-    @GetMapping("/statistics/by-country")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getSuppliersByCountry() {
-        List<Map<String, Object>> stats = supplierService.getSuppliersByCountry();
-        return ResponseEntity.ok(ApiResponse.success(stats, "Suppliers by country retrieved successfully"));
-    }
+//    @GetMapping("/statistics/by-country")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<List<Supplier>>> getSuppliersByCountry(@PathVariable String country) {
+//        List<Supplier> stats = supplierService.getSuppliersByCountry(country);
+//        return ResponseEntity.ok(ApiResponse.success(stats, "Suppliers by country retrieved successfully"));
+//    }
     
-    @GetMapping("/statistics/by-city")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getSuppliersByCity() {
-        List<Map<String, Object>> stats = supplierService.getSuppliersByCity();
-        return ResponseEntity.ok(ApiResponse.success(stats, "Suppliers by city retrieved successfully"));
-    }
+//    @GetMapping("/statistics/by-city")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getSuppliersByCity() {
+//        List<Map<String, Object>> stats = supplierService.getSuppliersByCity();
+//        return ResponseEntity.ok(ApiResponse.success(stats, "Suppliers by city retrieved successfully"));
+//    }
     
-    @GetMapping("/statistics/payment-terms-distribution")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getPaymentTermsDistribution() {
-        List<Map<String, Object>> distribution = supplierService.getPaymentTermsDistribution();
-        return ResponseEntity.ok(ApiResponse.success(distribution, "Payment terms distribution retrieved successfully"));
-    }
+//    @GetMapping("/statistics/payment-terms-distribution")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getPaymentTermsDistribution() {
+//        List<Map<String, Object>> distribution = supplierService.getPaymentTermsDistribution();
+//        return ResponseEntity.ok(ApiResponse.success(distribution, "Payment terms distribution retrieved successfully"));
+//    }
     
     @GetMapping("/statistics/total-outstanding")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
@@ -687,13 +691,13 @@ public class SupplierController {
         return ResponseEntity.ok(ApiResponse.success(summary, "Supplier summary retrieved successfully"));
     }
     
-    @GetMapping("/statistics/top-by-orders")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTopSuppliersByOrders(@RequestParam(defaultValue = "10") int limit) {
-        List<Map<String, Object>> topSuppliers = supplierService.getTopSuppliersByOrders(limit);
-        return ResponseEntity.ok(ApiResponse.success(topSuppliers, "Top suppliers by orders retrieved successfully"));
-    }
-    
+//    @GetMapping("/statistics/top-by-orders")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTopSuppliersByOrders(Pageable limit) {
+//        List<Map<String, Object>> topSuppliers = supplierService.getTopSuppliersByOrders(limit);
+//        return ResponseEntity.ok(ApiResponse.success(topSuppliers, "Top suppliers by orders retrieved successfully"));
+//    }
+//
     @GetMapping("/statistics/dashboard")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboardStatistics() {

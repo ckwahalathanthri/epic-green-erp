@@ -84,11 +84,44 @@ public class AccountingServiceImpl implements AccountingService {
     public List<ChartOfAccounts> getAllAccounts() {
         return accountRepository.findAll(Sort.by(Sort.Direction.ASC, "accountCode"));
     }
+
+    @Transactional
+    public List<ChartOfAccounts> getEquityAccounts(){
+        return  accountRepository.findEquityAccounts();
+    }
+
+    @Transactional
+    public List<ChartOfAccounts> getLiabilityAccounts(){
+        return accountRepository.findLiabilityAccounts();
+    }
+
+    @Transactional
+    public List<ChartOfAccounts> getAssetAccounts(){
+        return accountRepository.findAssetAccounts();
+    }
+    @Transactional
+    public List<ChartOfAccounts> getPayableAccounts(){
+        return accountRepository.findLiabilityAccounts();
+    }
+
+    @Transactional
+    public List<ChartOfAccounts> getExpenseAccounts(){
+        return  accountRepository.findExpenseAccounts();
+    }
+
+    @Transactional
+    public List<ChartOfAccounts> getRevenueAccounts(){
+        return accountRepository.findRevenueAccounts();
+    }
+//    @Transactional
+//    public List<ChartOfAccounts> getPostingAccounts(){
+//
+//    }
     
     @Override
     @Transactional(readOnly = true)
     public Page<ChartOfAccounts> searchAccounts(String keyword, Pageable pageable) {
-        return accountRepository.searchAccounts(keyword, pageable);
+        return accountRepository.searchAccounts(keyword,null,null,null,null,pageable);
     }
     
     @Override
@@ -116,7 +149,30 @@ public class AccountingServiceImpl implements AccountingService {
     public List<ChartOfAccounts> getAccountsByCategory(String category) {
         return accountRepository.findByAccountCategory(category);
     }
-    
+
+    @Transactional
+    public Double getAccountBalanceUpToDate(Long id, LocalDate date){
+        return accountRepository.getAccountBalanceUpToDate(id,date);
+    }
+
+
+    @Transactional
+    public Double getAccountBalanceForPeriod(Long id, LocalDate startDate, LocalDate endDate){
+        return accountRepository.getAccountBalance(startDate,endDate,id);
+    }
+    @Transactional
+    public List<ChartOfAccounts> getBankAccounts(){
+        return accountRepository.findAll();
+    }
+
+    @Transactional
+    public Double getTotalDebitForAccount(Long id){
+        return accountRepository.getTotalDebitForAccount(id);
+    }
+
+    public Double getTotalCreditForAccount(Long id){
+        return accountRepository.getTotalCreditForAccount(id);
+    }
     @Override
     @Transactional(readOnly = true)
     public List<ChartOfAccounts> getActiveAccounts() {
@@ -170,7 +226,7 @@ public class AccountingServiceImpl implements AccountingService {
     public Map<String, Object> getAccountReconciliationStatus(Long accountId) {
         ChartOfAccounts account = getAccountById(accountId);
         Map<String, Object> status = new HashMap<>();
-        status.put("isReconciled", account.getIsReconciled());
+        status.put("isReconciled", account.getIsReconsiled());
         status.put("lastReconciledAt", account.getLastReconciledAt());
         return status;
     }
@@ -227,21 +283,21 @@ public class AccountingServiceImpl implements AccountingService {
     @Override
     @Transactional(readOnly = true)
     public FinancialPeriod getCurrentPeriod() {
-        LocalDate today = LocalDate.now();
-        return periodRepository.findCurrentPeriod(today)
+//        LocalDate today = LocalDate.now();
+        return periodRepository.findCurrentPeriod()
             .orElseThrow(() -> new RuntimeException("No current period found"));
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<FinancialPeriod> getOpenPeriods() {
-        return periodRepository.findByIsClosed(false);
+        return periodRepository.findByIsClosedFalse();
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<FinancialPeriod> getClosedPeriods() {
-        return periodRepository.findByIsClosed(true);
+        return periodRepository.findByIsClosedTrue();
     }
     
     @Override
@@ -437,7 +493,8 @@ public class AccountingServiceImpl implements AccountingService {
     @Override
     @Transactional(readOnly = true)
     public Page<BankAccount> searchBankAccounts(String keyword, Pageable pageable) {
-        return bankAccountRepository.searchBankAccounts(keyword, pageable);
+        // for now only filters through account number
+        return bankAccountRepository.searchBankAccounts(keyword,null,null,null,null,pageable);
     }
     
     @Override
@@ -543,9 +600,9 @@ public class AccountingServiceImpl implements AccountingService {
     public Map<String, Object> getAccountingStatistics() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalAccounts", accountRepository.count());
-        stats.put("activeAccounts", accountRepository.countByIsActive(true));
+        stats.put("activeAccounts", accountRepository.countByIsActiveEmps());
         stats.put("totalJournalEntries", journalEntryRepository.count());
-        stats.put("postedJournalEntries", journalEntryRepository.countByIsPosted(true));
+        stats.put("postedJournalEntries", journalEntryRepository.countByIsPostedTrue());
         return stats;
     }
     
@@ -573,7 +630,7 @@ public class AccountingServiceImpl implements AccountingService {
     @Override
     @Transactional(readOnly = true)
     public List<ChartOfAccounts> getAccountsWithBalance() {
-        return accountRepository.findAccountsWithBalance();
+        return accountRepository.AccountsWithBalance();
     }
     
     @Override
@@ -581,8 +638,8 @@ public class AccountingServiceImpl implements AccountingService {
     public Map<String, Object> getJournalEntryStatistics() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalEntries", journalEntryRepository.count());
-        stats.put("postedEntries", journalEntryRepository.countByIsPosted(true));
-        stats.put("unpostedEntries", journalEntryRepository.countByIsPosted(false));
+        stats.put("postedEntries", journalEntryRepository.countByIsPostedTrue());
+        stats.put("unpostedEntries", journalEntryRepository.countByIsPostedFalse());
         return stats;
     }
     

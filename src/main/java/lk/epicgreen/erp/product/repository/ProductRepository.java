@@ -353,4 +353,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
      */
     @Query("SELECT p FROM Product p WHERE p.updatedAt >= :date")
     List<Product> findRecentlyUpdatedProducts(@Param("date") java.time.LocalDateTime date);
+
+    @Query("SELECT p FROM Product p WHERE p.id = :id AND p.deletedAt IS NULL")
+    Product findByIdAndDeletedAtIsNull(Long id);
 }

@@ -50,6 +50,7 @@ public interface PaymentAllocationRepository extends JpaRepository<PaymentAlloca
      * Find all allocations for an invoice with pagination
      */
     Page<PaymentAllocation> findByInvoiceId(Long invoiceId, Pageable pageable);
+
     
     /**
      * Find allocation by payment and invoice

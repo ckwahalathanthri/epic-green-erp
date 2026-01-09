@@ -1,9 +1,11 @@
 package lk.epicgreen.erp.notification.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.notification.dto.NotificationTemplateRequest;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.notification.dto.request.NotificationTemplateRequest;
+import lk.epicgreen.erp.notification.dto.response.NotificationTemplateResponse;
 import lk.epicgreen.erp.notification.entity.NotificationTemplate;
-import lk.epicgreen.erp.notification.service.NotificationService;
+import lk.epicgreen.erp.notification.service.impl.NotificationTemplateServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -12,7 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,22 +33,22 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class NotificationTemplateController {
     
-    private final NotificationService notificationService;
+    private final NotificationTemplateServiceImpl notificationService;
     
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<NotificationTemplate>> createTemplate(@Valid @RequestBody NotificationTemplateRequest request) {
+    public ResponseEntity<ApiResponse<NotificationTemplateResponse>> createTemplate(@Valid @RequestBody NotificationTemplateRequest request) {
         log.info("Creating notification template: {}", request.getTemplateCode());
-        NotificationTemplate created = notificationService.createTemplate(request);
+        NotificationTemplateResponse created = notificationService.createTemplate(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Template created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<NotificationTemplate>> updateTemplate(@PathVariable Long id, @Valid @RequestBody NotificationTemplateRequest request) {
+    public ResponseEntity<ApiResponse<NotificationTemplateResponse>> updateTemplate(@PathVariable Long id, @Valid @RequestBody NotificationTemplateRequest request) {
         log.info("Updating notification template: {}", id);
-        NotificationTemplate updated = notificationService.updateTemplate(id, request);
+        NotificationTemplateResponse updated = notificationService.updateTemplate(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Template updated successfully"));
     }
     
@@ -59,44 +62,44 @@ public class NotificationTemplateController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<NotificationTemplate>> getTemplateById(@PathVariable Long id) {
-        NotificationTemplate template = notificationService.getTemplateById(id);
+    public ResponseEntity<ApiResponse<NotificationTemplateResponse>> getTemplateById(@PathVariable Long id) {
+        NotificationTemplateResponse template = notificationService.getTemplateById(id);
         return ResponseEntity.ok(ApiResponse.success(template, "Template retrieved successfully"));
     }
     
     @GetMapping("/code/{templateCode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<NotificationTemplate>> getTemplateByCode(@PathVariable String templateCode) {
-        NotificationTemplate template = notificationService.getTemplateByCode(templateCode);
+    public ResponseEntity<ApiResponse<NotificationTemplateResponse>> getTemplateByCode(@PathVariable String templateCode) {
+        NotificationTemplateResponse template = notificationService.getTemplateByCode(templateCode);
         return ResponseEntity.ok(ApiResponse.success(template, "Template retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<NotificationTemplate>>> getAllTemplates(Pageable pageable) {
-        Page<NotificationTemplate> templates = notificationService.getAllTemplates(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<NotificationTemplateResponse>>> getAllTemplates(Pageable pageable) {
+        PageResponse<NotificationTemplateResponse> templates = notificationService.getAllTemplates(pageable);
         return ResponseEntity.ok(ApiResponse.success(templates, "Templates retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<NotificationTemplate>>> getAllTemplatesList() {
-        List<NotificationTemplate> templates = notificationService.getAllTemplates();
+    public ResponseEntity<ApiResponse<PageResponse<NotificationTemplateResponse>>> getAllTemplatesList(Pageable pageable) {
+        PageResponse<NotificationTemplateResponse> templates = notificationService.getAllTemplates(pageable);
         return ResponseEntity.ok(ApiResponse.success(templates, "Templates list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<NotificationTemplate>>> searchTemplates(@RequestParam String keyword, Pageable pageable) {
-        Page<NotificationTemplate> templates = notificationService.searchTemplates(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<NotificationTemplateResponse>>> searchTemplates(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<NotificationTemplateResponse> templates = notificationService.searchTemplates(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(templates, "Search results retrieved successfully"));
     }
     
     // Template Type Queries
     @GetMapping("/type/{notificationType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<NotificationTemplate>>> getTemplatesByType(@PathVariable String notificationType) {
-        List<NotificationTemplate> templates = notificationService.getTemplatesByType(notificationType);
+    public ResponseEntity<ApiResponse<List<NotificationTemplateResponse>>> getTemplatesByType(@PathVariable String notificationType) {
+        List<NotificationTemplateResponse> templates = notificationService.getTemplatesByType(notificationType);
         return ResponseEntity.ok(ApiResponse.success(templates, "Templates by type retrieved successfully"));
     }
     
@@ -109,8 +112,8 @@ public class NotificationTemplateController {
     
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<NotificationTemplate>>> getActiveTemplates() {
-        List<NotificationTemplate> templates = notificationService.getActiveTemplates();
+    public ResponseEntity<ApiResponse<List<NotificationTemplateResponse>>> getActiveTemplates() {
+        List<NotificationTemplateResponse> templates = notificationService.getActiveTemplates();
         return ResponseEntity.ok(ApiResponse.success(templates, "Active templates retrieved successfully"));
     }
     
@@ -134,22 +137,23 @@ public class NotificationTemplateController {
     // Template Rendering
     @PostMapping("/{templateCode}/render")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Map<String, String>>> renderTemplate(
+    public ResponseEntity<ApiResponse<Map<String,Object>>> renderTemplate(
         @PathVariable String templateCode,
         @RequestBody Map<String, Object> variables
     ) {
-        NotificationTemplate template = notificationService.getTemplateByCode(templateCode);
+        NotificationTemplateResponse template = notificationService.getTemplateByCode(templateCode);
         
         String subject = notificationService.renderSubject(template, variables);
         String body = notificationService.renderBody(template, variables);
         String htmlBody = notificationService.renderHtmlBody(template, variables);
         
-        Map<String, String> rendered = Map.of(
-            "subject", subject,
-            "body", body,
-            "htmlBody", htmlBody != null ? htmlBody : ""
-        );
+
+
+        Map<String,Object> map=new HashMap<>();
+        map.put("subject",subject);
+        map.put("body",body);
+        map.put("htmlBody",htmlBody != null ? htmlBody : "");
         
-        return ResponseEntity.ok(ApiResponse.success(rendered, "Template rendered successfully"));
+        return ResponseEntity.ok(ApiResponse.success(map, "Template rendered successfully"));
     }
 }

@@ -33,11 +33,17 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
      * Find in-app notifications by user
      */
     List<InAppNotification> findByUserId(Long userId);
+
+    List<InAppNotification> findByUserIdAndIsReadFalse(Long userId);
     
     /**
      * Find in-app notifications by user with pagination
      */
     Page<InAppNotification> findByUserId(Long userId, Pageable pageable);
+
+    long deleteByUserId(Long userId);
+
+    Page<InAppNotification> findByUserIdAndIsReadTrue(Long userId, Pageable pageable);
     
     /**
      * Find in-app notifications by notification type
@@ -73,12 +79,15 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
      * Find in-app notifications by created at time range
      */
     List<InAppNotification> findByCreatedAtBetween(LocalDateTime startTime, LocalDateTime endTime);
+
+    List<InAppNotification> findActiveNotifications(Long userId, LocalDateTime now);
     
     /**
      * Find in-app notifications by created at time range with pagination
      */
     Page<InAppNotification> findByCreatedAtBetween(LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
-    
+
+    int deleteByExpiresAtBefore(LocalDateTime time);
     // ==================== SEARCH METHODS ====================
     
     /**
@@ -95,7 +104,7 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
      * Search in-app notifications by multiple criteria
      */
     @Query("SELECT ian FROM InAppNotification ian WHERE " +
-           "(:userId IS NULL OR ian.userId = :userId) AND " +
+           "(:userId IS NULL OR ian.user.id = :userId) AND " +
            "(:notificationType IS NULL OR ian.notificationType = :notificationType) AND " +
            "(:isRead IS NULL OR ian.isRead = :isRead) AND " +
            "(:startTime IS NULL OR ian.createdAt >= :startTime) AND " +
@@ -107,6 +116,11 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
             Pageable pageable);
+
+    @Query("SELECT ian FROM InAppNotification ian WHERE " +
+           "LOWER(ian.notificationTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(ian.notificationMessage) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<InAppNotification> searchNotifications(@Param("keyword") String keyword,Pageable pageable);
     
     // ==================== COUNT METHODS ====================
     
@@ -162,7 +176,7 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
      * Delete all notifications for a user
      */
     @Modifying
-    @Query("DELETE FROM InAppNotification ian WHERE ian.userId = :userId")
+    @Query("DELETE FROM InAppNotification ian WHERE ian.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -170,14 +184,14 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
     /**
      * Find unread notifications by user
      */
-    @Query("SELECT ian FROM InAppNotification ian WHERE ian.userId = :userId AND ian.isRead = false " +
+    @Query("SELECT ian FROM InAppNotification ian WHERE ian.user.id = :userId AND ian.isRead = false " +
            "ORDER BY ian.createdAt DESC")
     List<InAppNotification> findUnreadNotificationsByUser(@Param("userId") Long userId);
     
     /**
      * Find unread notifications by user with pagination
      */
-    @Query("SELECT ian FROM InAppNotification ian WHERE ian.userId = :userId AND ian.isRead = false " +
+    @Query("SELECT ian FROM InAppNotification ian WHERE ian.user.id = :userId AND ian.isRead = false " +
            "ORDER BY ian.createdAt DESC")
     Page<InAppNotification> findUnreadNotificationsByUser(@Param("userId") Long userId, Pageable pageable);
     
@@ -222,14 +236,14 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
     /**
      * Find notifications by user, ordered by created at
      */
-    @Query("SELECT ian FROM InAppNotification ian WHERE ian.userId = :userId " +
+    @Query("SELECT ian FROM InAppNotification ian WHERE ian.user.id = :userId " +
            "ORDER BY ian.createdAt DESC")
     List<InAppNotification> findByUserOrderByCreatedAt(@Param("userId") Long userId);
     
     /**
      * Find valid (not expired) notifications by user
      */
-    @Query("SELECT ian FROM InAppNotification ian WHERE ian.userId = :userId " +
+    @Query("SELECT ian FROM InAppNotification ian WHERE ian.user.id = :userId " +
            "AND (ian.expiresAt IS NULL OR ian.expiresAt >= CURRENT_TIMESTAMP) " +
            "ORDER BY ian.createdAt DESC")
     List<InAppNotification> findValidNotificationsByUser(@Param("userId") Long userId);
@@ -278,7 +292,7 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
            "COUNT(ian) as totalNotifications, " +
            "SUM(CASE WHEN ian.isRead = false THEN 1 ELSE 0 END) as unreadNotifications, " +
            "SUM(CASE WHEN ian.isRead = true THEN 1 ELSE 0 END) as readNotifications " +
-           "FROM InAppNotification ian WHERE ian.userId = :userId")
+           "FROM InAppNotification ian WHERE ian.user.id = :userId")
     Object getInAppNotificationStatisticsByUser(@Param("userId") Long userId);
     
     /**
@@ -292,13 +306,13 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
     /**
      * Get daily in-app notification summary
      */
-    @Query("SELECT DATE(ian.createdAt) as notificationDate, COUNT(ian) as notificationCount, " +
-           "SUM(CASE WHEN ian.isRead = true THEN 1 ELSE 0 END) as readCount " +
-           "FROM InAppNotification ian WHERE ian.createdAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY DATE(ian.createdAt) ORDER BY notificationDate DESC")
-    List<Object[]> getDailyInAppNotificationSummary(
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime);
+//    @Query("SELECT DATE(ian.createdAt) as notificationDate, COUNT(ian) as notificationCount, " +
+//           "SUM(CASE WHEN ian.isRead = true THEN 1 ELSE 0 END) as readCount " +
+//           "FROM InAppNotification ian WHERE ian.createdAt BETWEEN :startTime AND :endTime " +
+//           "GROUP BY DATE(ian.createdAt) ORDER BY notificationDate DESC")
+//    List<Object[]> getDailyInAppNotificationSummary(
+//            @Param("startTime") LocalDateTime startTime,
+//            @Param("endTime") LocalDateTime endTime);
     
     /**
      * Find today's notifications
@@ -317,7 +331,7 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
      */
     @Modifying
     @Query("UPDATE InAppNotification ian SET ian.isRead = true, ian.readAt = CURRENT_TIMESTAMP " +
-           "WHERE ian.userId = :userId AND ian.isRead = false")
+           "WHERE ian.user.id = :userId AND ian.isRead = false")
     void markAllAsReadByUser(@Param("userId") Long userId);
     
     /**
@@ -327,6 +341,6 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
            "COUNT(ian) as totalNotifications, " +
            "SUM(CASE WHEN ian.isRead = true THEN 1 ELSE 0 END) as readNotifications, " +
            "(SUM(CASE WHEN ian.isRead = true THEN 1 ELSE 0 END) * 100.0 / COUNT(ian)) as readRate " +
-           "FROM InAppNotification ian WHERE ian.userId = :userId AND ian.createdAt >= :sinceTime")
+           "FROM InAppNotification ian WHERE ian.user.id = :userId AND ian.createdAt >= :sinceTime")
     Object getNotificationReadRateByUser(@Param("userId") Long userId, @Param("sinceTime") LocalDateTime sinceTime);
 }

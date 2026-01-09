@@ -1,11 +1,12 @@
 package lk.epicgreen.erp.accounting.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
  * @version 1.0
  */
 @Entity
-@Table(name = "trial_balance", 
+@Table(name = "trial_balance",
     uniqueConstraints = @UniqueConstraint(name = "uk_period_account", columnNames = {"period_id", "account_id"}),
     indexes = {
         @Index(name = "idx_period_id", columnList = "period_id"),
@@ -53,13 +54,13 @@ public class TrialBalance {
     /**
      * Opening debit balance
      */
-    @PositiveOrZero(message = "Opening debit must be positive or zero")
-    @Column(name = "opening_debit", precision = 15, scale = 2)
-    private BigDecimal openingDebit;
+
     
     /**
      * Opening credit balance
      */
+
+
     @PositiveOrZero(message = "Opening credit must be positive or zero")
     @Column(name = "opening_credit", precision = 15, scale = 2)
     private BigDecimal openingCredit;
@@ -70,7 +71,10 @@ public class TrialBalance {
     @PositiveOrZero(message = "Period debit must be positive or zero")
     @Column(name = "period_debit", precision = 15, scale = 2)
     private BigDecimal periodDebit;
-    
+
+    @PositiveOrZero(message = "Opening debit must be positive or zero")
+    @Column(name = "opening_debit", precision = 15, scale = 2)
+    private BigDecimal openingDebit;
     /**
      * Period credit (total credits in period)
      */
