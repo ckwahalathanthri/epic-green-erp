@@ -90,14 +90,14 @@ public interface PaymentAllocationRepository extends JpaRepository<PaymentAlloca
      * Delete all allocations for a payment
      */
     @Modifying
-    @Query("DELETE FROM PaymentAllocation pa WHERE pa.paymentId = :paymentId")
+    @Query("DELETE FROM PaymentAllocation pa WHERE pa.payment.id = :paymentId")
     void deleteAllByPaymentId(@Param("paymentId") Long paymentId);
     
     /**
      * Delete all allocations for an invoice
      */
     @Modifying
-    @Query("DELETE FROM PaymentAllocation pa WHERE pa.invoiceId = :invoiceId")
+    @Query("DELETE FROM PaymentAllocation pa WHERE pa.invoice.id = :invoiceId")
     void deleteAllByInvoiceId(@Param("invoiceId") Long invoiceId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -105,13 +105,13 @@ public interface PaymentAllocationRepository extends JpaRepository<PaymentAlloca
     /**
      * Get total allocated amount for a payment
      */
-    @Query("SELECT SUM(pa.allocatedAmount) FROM PaymentAllocation pa WHERE pa.paymentId = :paymentId")
+    @Query("SELECT SUM(pa.allocatedAmount) FROM PaymentAllocation pa WHERE pa.payment.id = :paymentId")
     BigDecimal getTotalAllocatedByPayment(@Param("paymentId") Long paymentId);
     
     /**
      * Get total allocated amount for an invoice
      */
-    @Query("SELECT SUM(pa.allocatedAmount) FROM PaymentAllocation pa WHERE pa.invoiceId = :invoiceId")
+    @Query("SELECT SUM(pa.allocatedAmount) FROM PaymentAllocation pa WHERE pa.invoice.id = :invoiceId")
     BigDecimal getTotalAllocatedByInvoice(@Param("invoiceId") Long invoiceId);
     
     /**
@@ -120,23 +120,23 @@ public interface PaymentAllocationRepository extends JpaRepository<PaymentAlloca
     @Query("SELECT " +
            "COUNT(pa) as totalAllocations, " +
            "SUM(pa.allocatedAmount) as totalAllocatedAmount, " +
-           "COUNT(DISTINCT pa.paymentId) as uniquePayments, " +
-           "COUNT(DISTINCT pa.invoiceId) as uniqueInvoices " +
+           "COUNT(DISTINCT pa.payment.id) as uniquePayments, " +
+           "COUNT(DISTINCT pa.invoice.id) as uniqueInvoices " +
            "FROM PaymentAllocation pa")
     Object getAllocationStatistics();
     
     /**
      * Get allocations grouped by payment
      */
-    @Query("SELECT pa.paymentId, COUNT(pa) as allocationCount, SUM(pa.allocatedAmount) as totalAllocated " +
-           "FROM PaymentAllocation pa GROUP BY pa.paymentId ORDER BY totalAllocated DESC")
+    @Query("SELECT pa.payment.id, COUNT(pa) as allocationCount, SUM(pa.allocatedAmount) as totalAllocated " +
+           "FROM PaymentAllocation pa GROUP BY pa.payment.id ORDER BY totalAllocated DESC")
     List<Object[]> getAllocationsByPayment();
     
     /**
      * Get allocations grouped by invoice
      */
-    @Query("SELECT pa.invoiceId, COUNT(pa) as allocationCount, SUM(pa.allocatedAmount) as totalAllocated " +
-           "FROM PaymentAllocation pa GROUP BY pa.invoiceId ORDER BY totalAllocated DESC")
+    @Query("SELECT pa.invoice.id, COUNT(pa) as allocationCount, SUM(pa.allocatedAmount) as totalAllocated " +
+           "FROM PaymentAllocation pa GROUP BY pa.invoice.id ORDER BY totalAllocated DESC")
     List<Object[]> getAllocationsByInvoice();
     
     /**
@@ -166,7 +166,7 @@ public interface PaymentAllocationRepository extends JpaRepository<PaymentAlloca
      */
     @Query("SELECT CASE WHEN SUM(pa.allocatedAmount) >= " +
            "(SELECT p.totalAmount FROM Payment p WHERE p.id = :paymentId) " +
-           "THEN true ELSE false END FROM PaymentAllocation pa WHERE pa.paymentId = :paymentId")
+           "THEN true ELSE false END FROM PaymentAllocation pa WHERE pa.payment.id = :paymentId")
     boolean isPaymentFullyAllocated(@Param("paymentId") Long paymentId);
     
     /**
@@ -174,6 +174,9 @@ public interface PaymentAllocationRepository extends JpaRepository<PaymentAlloca
      */
     @Query("SELECT CASE WHEN SUM(pa.allocatedAmount) >= " +
            "(SELECT i.totalAmount FROM Invoice i WHERE i.id = :invoiceId) " +
-           "THEN true ELSE false END FROM PaymentAllocation pa WHERE pa.invoiceId = :invoiceId")
+           "THEN true ELSE false END FROM PaymentAllocation pa WHERE pa.invoice.id = :invoiceId")
     boolean isInvoiceFullyPaid(@Param("invoiceId") Long invoiceId);
+
+    @Query("SELECT pa FROM PaymentAllocation pa WHERE pa.payment.customer.id = :customerId")
+    List<PaymentAllocation> findByPaymentCustomerId(Long customerId);
 }

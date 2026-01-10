@@ -84,7 +84,7 @@ public interface CustomerContactRepository extends JpaRepository<CustomerContact
     /**
      * Search contacts by keyword for a customer
      */
-    @Query("SELECT cc FROM CustomerContact cc WHERE cc.customerId = :customerId AND " +
+    @Query("SELECT cc FROM CustomerContact cc WHERE cc.customer.id = :customerId AND " +
            "(LOWER(cc.contactName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(cc.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(cc.mobile) LIKE LOWER(CONCAT('%', :keyword, '%')))")
@@ -97,7 +97,7 @@ public interface CustomerContactRepository extends JpaRepository<CustomerContact
      * Search contacts by multiple criteria
      */
     @Query("SELECT cc FROM CustomerContact cc WHERE " +
-           "(:customerId IS NULL OR cc.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR cc.customer.id = :customerId) AND " +
            "(:contactName IS NULL OR LOWER(cc.contactName) LIKE LOWER(CONCAT('%', :contactName, '%'))) AND " +
            "(:email IS NULL OR LOWER(cc.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
            "(:designation IS NULL OR cc.designation = :designation)")
@@ -126,7 +126,7 @@ public interface CustomerContactRepository extends JpaRepository<CustomerContact
      * Delete all contacts for a customer
      */
     @Modifying
-    @Query("DELETE FROM CustomerContact cc WHERE cc.customerId = :customerId")
+    @Query("DELETE FROM CustomerContact cc WHERE cc.customer.id = :customerId")
     void deleteAllByCustomerId(@Param("customerId") Long customerId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -151,7 +151,7 @@ public interface CustomerContactRepository extends JpaRepository<CustomerContact
     /**
      * Find contacts for a customer ordered by primary status
      */
-    @Query("SELECT cc FROM CustomerContact cc WHERE cc.customerId = :customerId ORDER BY cc.isPrimary DESC, cc.contactName")
+    @Query("SELECT cc FROM CustomerContact cc WHERE cc.customer.id = :customerId ORDER BY cc.isPrimary DESC, cc.contactName")
     List<CustomerContact> findByCustomerIdOrderByPrimaryAndName(@Param("customerId") Long customerId);
     
     /**
@@ -160,7 +160,7 @@ public interface CustomerContactRepository extends JpaRepository<CustomerContact
     @Query("SELECT " +
            "COUNT(cc) as totalContacts, " +
            "SUM(CASE WHEN cc.isPrimary = true THEN 1 ELSE 0 END) as primaryContacts, " +
-           "COUNT(DISTINCT cc.customerId) as customersWithContacts " +
+           "COUNT(DISTINCT cc.customer.id) as customersWithContacts " +
            "FROM CustomerContact cc")
     Object getContactStatistics();
 }

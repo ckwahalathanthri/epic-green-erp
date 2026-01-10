@@ -1,8 +1,9 @@
 package lk.epicgreen.erp.admin.entity;
 
-import jakarta.persistence.*;
+
 import lombok.*;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
  * @version 1.0
  */
 @Entity
-@Table(name = "user_roles", 
+@Table(name = "user_roles",
        uniqueConstraints = {
            @UniqueConstraint(name = "uk_user_role", columnNames = {"user_id", "role_id"})
        },

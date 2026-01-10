@@ -1,10 +1,8 @@
 package lk.epicgreen.erp.warehouse.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;

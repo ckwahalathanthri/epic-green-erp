@@ -98,12 +98,14 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     /**
      * Find journal entries posted by user
      */
-    List<JournalEntry> findByPostedBy(Long postedBy);
+    @Query("SELECT je FROM JournalEntry je WHERE je.postedBy = :postedBy")
+    List<JournalEntry> findByPostedBy(@Param("postedBy") Long postedBy);
     
     /**
      * Find journal entries approved by user
      */
-    List<JournalEntry> findByApprovedBy(Long approvedBy);
+    @Query("SELECT je FROM JournalEntry je WHERE je.approvedBy = :approvedBy")
+    List<JournalEntry> findByApprovedBy(@Param("approvedBy") Long approvedBy);
     
     // ==================== EXISTENCE CHECKS ====================
     
@@ -335,4 +337,9 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
      * Find all journal entries ordered by date
      */
     List<JournalEntry> findAllByOrderByJournalDateDescCreatedAtDesc();
+@Query("SELECT je FROM JournalEntry je "+
+       "WHERE LOWER(je.journalNumber) LIKE LOWER(CONCAT('%', :keyword, '%') )"+
+        "OR LOWER(je.sourceReference) LIKE LOWER(CONCAT('%', :keyword, '%') )"+
+        "OR LOWER(je.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<JournalEntry> searchJournals(String keyword, Pageable pageable);
 }

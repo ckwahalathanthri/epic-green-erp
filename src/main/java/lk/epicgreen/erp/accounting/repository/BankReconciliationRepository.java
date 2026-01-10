@@ -160,7 +160,7 @@ public interface BankReconciliationRepository extends JpaRepository<BankReconcil
      * Find latest reconciliation for a bank account
      */
     @Query("SELECT br FROM BankReconciliation br WHERE br.bankAccount.id = :bankAccountId " +
-           "ORDER BY br.statementDate DESC, br.reconciledAt DESC LIMIT 1")
+           "ORDER BY br.statementDate DESC, br.reconciledAt DESC ")
     Optional<BankReconciliation> findLatestReconciliationByBankAccount(@Param("bankAccountId") Long bankAccountId);
     
     /**
@@ -189,7 +189,7 @@ public interface BankReconciliationRepository extends JpaRepository<BankReconcil
      */
     @Query("SELECT br.statementBalance FROM BankReconciliation br " +
            "WHERE br.bankAccount.id = :bankAccountId AND br.status = 'COMPLETED' " +
-           "ORDER BY br.statementDate DESC LIMIT 1")
+           "ORDER BY br.statementDate DESC ")
     BigDecimal getLatestStatementBalance(@Param("bankAccountId") Long bankAccountId);
     
     /**

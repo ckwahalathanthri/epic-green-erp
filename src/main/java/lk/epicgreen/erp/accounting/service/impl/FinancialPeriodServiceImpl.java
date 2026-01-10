@@ -6,6 +6,7 @@ import lk.epicgreen.erp.accounting.entity.FinancialPeriod;
 import lk.epicgreen.erp.accounting.mapper.FinancialPeriodMapper;
 import lk.epicgreen.erp.accounting.repository.FinancialPeriodRepository;
 import lk.epicgreen.erp.accounting.service.FinancialPeriodService;
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lk.epicgreen.erp.common.exception.InvalidOperationException;
@@ -30,6 +31,7 @@ public class FinancialPeriodServiceImpl implements FinancialPeriodService {
 
     private final FinancialPeriodRepository periodRepository;
     private final FinancialPeriodMapper periodMapper;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -83,7 +85,7 @@ public class FinancialPeriodServiceImpl implements FinancialPeriodService {
         }
 
         period.setIsClosed(true);
-        period.setClosedBy(closedBy);
+        period.setClosedBy(userRepository.findById(closedBy).get());
         period.setClosedAt(LocalDateTime.now());
         periodRepository.save(period);
 
@@ -148,12 +150,21 @@ public class FinancialPeriodServiceImpl implements FinancialPeriodService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * @param date
+     * @return
+     */
     @Override
     public FinancialPeriodResponse getCurrentPeriod(LocalDate date) {
-        FinancialPeriod period = periodRepository.findByStartDateLessThanEqualAndEndDateGreaterThanEqual(date, date)
-            .orElseThrow(() -> new ResourceNotFoundException("No period found for date: " + date));
-        return periodMapper.toResponse(period);
+        return null;
     }
+
+//    @Override
+//    public FinancialPeriodResponse getCurrentPeriod(LocalDate date) {
+//        FinancialPeriod period = periodRepository.findByStartDateLessThanEqualAndEndDateGreaterThanEqual(date, date)
+//            .orElseThrow(() -> new ResourceNotFoundException("No period found for date: " + date));
+//        return periodMapper.toResponse(period);
+//    }
 
     @Override
     public boolean canDelete(Long id) {

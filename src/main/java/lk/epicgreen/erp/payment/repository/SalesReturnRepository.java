@@ -39,7 +39,7 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Find sales return by return number
      */
-    Optional<SalesReturn> findByReturnNumber(String returnNumber);
+//    Optional<SalesReturn> findByReturnNumber(String returnNumber);
     
     /**
      * Find all returns for a customer
@@ -54,13 +54,13 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Find returns by order
      */
-    List<SalesReturn> findByOrderId(Long orderId);
-    
-    /**
-     * Find returns by invoice
-     */
-    List<SalesReturn> findByInvoiceId(Long invoiceId);
-    
+//    List<SalesReturn> findByOrderId(Long orderId);
+//
+//    /**
+//     * Find returns by invoice
+//     */
+//    List<SalesReturn> findByInvoiceId(Long invoiceId);
+//
     /**
      * Find returns by warehouse
      */
@@ -79,63 +79,63 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Find returns by return type
      */
-    List<SalesReturn> findByReturnType(String returnType);
-    
-    /**
-     * Find returns by refund mode
-     */
-    List<SalesReturn> findByRefundMode(String refundMode);
-    
-    /**
-     * Find returns by refund status
-     */
-    List<SalesReturn> findByRefundStatus(String refundStatus);
-    
-    /**
-     * Find returns by return date
-     */
-    List<SalesReturn> findByReturnDate(LocalDate returnDate);
-    
-    /**
-     * Find returns by return date range
-     */
-    List<SalesReturn> findByReturnDateBetween(LocalDate startDate, LocalDate endDate);
+//    List<SalesReturn> findByReturnType(String returnType);
+//
+//    /**
+//     * Find returns by refund mode
+//     */
+//    List<SalesReturn> findByRefundMode(String refundMode);
+//
+//    /**
+//     * Find returns by refund status
+//     */
+//    List<SalesReturn> findByRefundStatus(String refundStatus);
+//
+//    /**
+//     * Find returns by return date
+//     */
+//    List<SalesReturn> findByReturnDate(LocalDate returnDate);
+//
+//    /**
+//     * Find returns by return date range
+//     */
+//    List<SalesReturn> findByReturnDateBetween(LocalDate startDate, LocalDate endDate);
     
     /**
      * Find returns by return date range with pagination
      */
-    Page<SalesReturn> findByReturnDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
+//    Page<SalesReturn> findByReturnDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
     
     /**
      * Find returns approved by user
      */
-    List<SalesReturn> findByApprovedBy(Long approvedBy);
+//    List<SalesReturn> findByApprovedBy(Long approvedBy);
     
     // ==================== EXISTENCE CHECKS ====================
     
     /**
      * Check if return number exists
      */
-    boolean existsByReturnNumber(String returnNumber);
+//    boolean existsByReturnNumber(String returnNumber);
     
     /**
      * Check if return number exists excluding specific return ID
      */
-    boolean existsByReturnNumberAndIdNot(String returnNumber, Long id);
+//    boolean existsByReturnNumberAndIdNot(String returnNumber, Long id);
     
     // ==================== SEARCH METHODS ====================
     
     /**
      * Search returns by return number containing (case-insensitive)
      */
-    Page<SalesReturn> findByReturnNumberContainingIgnoreCase(String returnNumber, Pageable pageable);
+//    Page<SalesReturn> findByReturnNumberContainingIgnoreCase(String returnNumber, Pageable pageable);
     
     /**
      * Search returns by multiple criteria
      */
     @Query("SELECT sr FROM SalesReturn sr WHERE " +
            "(:returnNumber IS NULL OR LOWER(sr.returnNumber) LIKE LOWER(CONCAT('%', :returnNumber, '%'))) AND " +
-           "(:customerId IS NULL OR sr.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR sr.customer.id = :customerId) AND " +
            "(:status IS NULL OR sr.status = :status) AND " +
            "(:returnType IS NULL OR sr.returnType = :returnType) AND " +
            "(:refundStatus IS NULL OR sr.refundStatus = :refundStatus) AND " +
@@ -161,7 +161,7 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Count returns by return type
      */
-    long countByReturnType(String returnType);
+//    long countByReturnType(String returnType);
     
     /**
      * Count returns by customer
@@ -171,7 +171,7 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Count returns in date range
      */
-    long countByReturnDateBetween(LocalDate startDate, LocalDate endDate);
+//    long countByReturnDateBetween(LocalDate startDate, LocalDate endDate);
     
     // ==================== CUSTOM QUERIES ====================
     
@@ -226,12 +226,12 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Find returns by customer and status
      */
-    List<SalesReturn> findByCustomerIdAndStatus(Long customerId, String status);
+//    List<SalesReturn> findByCustomerIdAndStatus(Long customerId, String status);
     
     /**
      * Get total return amount by customer
      */
-    @Query("SELECT SUM(sr.totalAmount) FROM SalesReturn sr WHERE sr.customerId = :customerId " +
+    @Query("SELECT SUM(sr.totalAmount) FROM SalesReturn sr WHERE sr.customer.id = :customerId " +
            "AND sr.status IN ('APPROVED', 'RECEIVED', 'PROCESSED')")
     BigDecimal getTotalReturnAmountByCustomer(@Param("customerId") Long customerId);
     
@@ -272,8 +272,8 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Get returns grouped by customer
      */
-    @Query("SELECT sr.customerId, COUNT(sr) as returnCount, SUM(sr.totalAmount) as totalAmount " +
-           "FROM SalesReturn sr GROUP BY sr.customerId ORDER BY totalAmount DESC")
+    @Query("SELECT sr.customer.id, COUNT(sr) as returnCount, SUM(sr.totalAmount) as totalAmount " +
+           "FROM SalesReturn sr GROUP BY sr.customer.id ORDER BY totalAmount DESC")
     List<Object[]> getReturnsByCustomer();
     
     /**
@@ -304,7 +304,7 @@ public interface SalesReturnRepository extends JpaRepository<SalesReturn, Long>,
     /**
      * Find all returns ordered by date
      */
-    List<SalesReturn> findAllByOrderByReturnDateDescCreatedAtDesc();
+//    List<SalesReturn> findAllByOrderByReturnDateDescCreatedAtDesc();
     
     /**
      * Find returns pending refund

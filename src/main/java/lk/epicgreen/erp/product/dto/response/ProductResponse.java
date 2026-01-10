@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.PositiveOrZero;
+
 
 /**
  * DTO for product response

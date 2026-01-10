@@ -55,6 +55,9 @@ public class Payment extends AuditEntity {
     @NotNull(message = "Payment date is required")
     @Column(name = "payment_date", nullable = false)
     private LocalDate paymentDate;
+
+    @Column
+    private LocalDate reconciliationDate;
     
     /**
      * Customer reference

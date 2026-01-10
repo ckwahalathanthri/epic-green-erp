@@ -6,6 +6,7 @@ import lk.epicgreen.erp.report.dto.response.SavedReportResponse;
 import lk.epicgreen.erp.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -13,8 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.time.LocalDate;
+
+import static org.springframework.http.MediaTypeFactory.getMediaType;
 
 /**
  * Report Controller
@@ -29,7 +33,8 @@ import java.time.LocalDate;
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ReportController {
-    
+
+    @Autowired
     private final ReportService reportService;
     
     // Report Generation
@@ -65,7 +70,7 @@ public class ReportController {
         byte[] data = reportService.downloadReport(id);
         
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(getMediaType(report.getFormat()));
+        headers.setContentType(getMediaType(report.getFormat()).get());
         headers.setContentDispositionFormData("attachment", report.getReportCode() + "." + report.getFormat().toLowerCase());
         
         return ResponseEntity.ok().headers(headers).body(data);
@@ -79,7 +84,7 @@ public class ReportController {
         byte[] data = reportService.downloadReportByCode(code);
         
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(getMediaType(report.getFormat()));
+        headers.setContentType(getMediaType(report.getFormat()).get());
         headers.setContentDispositionFormData("attachment", report.getReportCode() + "." + report.getFormat().toLowerCase());
         
         return ResponseEntity.ok().headers(headers).body(data);
@@ -444,13 +449,13 @@ public class ReportController {
     }
     
     // Helper Method
-    private MediaType getMediaType(String format) {
-        return switch (format.toUpperCase()) {
-            case "PDF" -> MediaType.APPLICATION_PDF;
-            case "EXCEL", "XLSX" -> MediaType.APPLICATION_OCTET_STREAM;
-            case "CSV" -> MediaType.parseMediaType("text/csv");
-            case "HTML" -> MediaType.TEXT_HTML;
-            default -> MediaType.APPLICATION_OCTET_STREAM;
-        };
-    }
+//    private MediaType getMediaType(String format) {
+//        return switch (format.toUpperCase()) {
+//            case "PDF" -> MediaType.APPLICATION_PDF;
+//            case "EXCEL", "XLSX" -> MediaType.APPLICATION_OCTET_STREAM;
+//            case "CSV" -> MediaType.parseMediaType("text/csv");
+//            case "HTML" -> MediaType.TEXT_HTML;
+//            default -> MediaType.APPLICATION_OCTET_STREAM;
+//        };
+//    }
 }

@@ -265,6 +265,6 @@ public interface SyncConflictRepository extends JpaRepository<SyncConflict, Long
      * Get oldest unresolved conflict
      */
     @Query("SELECT sc FROM SyncConflict sc WHERE sc.status = 'DETECTED' " +
-           "ORDER BY sc.detectedAt ASC LIMIT 1")
+           "ORDER BY sc.detectedAt ASC ")
     SyncConflict getOldestUnresolvedConflict();
 }

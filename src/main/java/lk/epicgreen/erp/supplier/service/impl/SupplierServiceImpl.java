@@ -106,6 +106,96 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Transactional
+    public List<Supplier> getSuppliersByCreditLimitRange(Double minLimit, Double maxLimit){
+        return supplierRepository.findByCreditLimitBetweenAndIsActiveTrueAndDeletedAtIsNull(
+            BigDecimal.valueOf(minLimit), BigDecimal.valueOf(maxLimit));
+    }
+
+    @Transactional
+    public List<Supplier> getSuppliersByBalanceRange(Double minBalance, Double maxBalance){
+        return supplierRepository.findByCurrentBalanceBetweenAndIsActiveTrueAndDeletedAtIsNull(
+            BigDecimal.valueOf(minBalance), BigDecimal.valueOf(maxBalance));
+    }
+
+    @Transactional
+    public int activateBulkSuppliers(List<Long> supplierIds){
+        log.info("Activating bulk suppliers: count={}", supplierIds.size());
+
+        List<Supplier> suppliers = supplierRepository.findAllById(supplierIds);
+        for (Supplier supplier : suppliers) {
+            supplier.setIsActive(true);
+        }
+        supplierRepository.saveAll(suppliers);
+
+        log.info("Bulk suppliers activated successfully: count={}", suppliers.size());
+        return suppliers.size();
+    }
+
+    @Transactional
+    public  int deactivateBulkSuppliers(List<Long> supplierIds){
+        log.info("Deactivating bulk suppliers: count={}", supplierIds.size());
+
+        List<Supplier> suppliers = supplierRepository.findAllById(supplierIds);
+        for (Supplier supplier : suppliers) {
+            supplier.setIsActive(false);
+        }
+        supplierRepository.saveAll(suppliers);
+
+        log.info("Bulk suppliers deactivated successfully: count={}", suppliers.size());
+        return suppliers.size();
+    }
+
+    @Transactional
+    public int approveBulkSuppliers(List<Long> supplierIds, Long approvedByUserId){
+        log.info("Approving bulk suppliers: count={}", supplierIds.size());
+
+        List<Supplier> suppliers = supplierRepository.findAllById(supplierIds);
+        for (Supplier supplier : suppliers) {
+            supplier.setIsApproved(true);
+            supplier.setApprovedBy(approvedByUserId);
+            supplier.setApprovedAt(LocalDateTime.now());
+        }
+        supplierRepository.saveAll(suppliers);
+
+        log.info("Bulk suppliers approved successfully: count={}", suppliers.size());
+        return suppliers.size();
+    }
+
+    @Transactional
+    public int deleteBulkSuppliers(List<Long> supplierIds){
+        log.info("Deleting bulk suppliers (soft delete): count={}", supplierIds.size());
+
+        List<Supplier> suppliers = supplierRepository.findAllById(supplierIds);
+        for (Supplier supplier : suppliers) {
+            supplier.setDeletedAt(LocalDateTime.now());
+            supplier.setIsActive(false);
+        }
+        supplierRepository.saveAll(suppliers);
+
+        log.info("Bulk suppliers deleted successfully: count={}", suppliers.size());
+        return suppliers.size();
+    }
+
+    @Transactional
+    public List<Map<String, Object>> getStatusDistribution(){
+        return supplierRepository.getStatusDistribution();
+    }
+
+    @Transactional
+    public List<Supplier> createBulkSuppliers(List<SupplierRequest> requests){
+        log.info("Creating bulk suppliers: count={}", requests.size());
+
+        List<Supplier> suppliers = requests.stream()
+            .map(supplierMapper::toEntity)
+            .collect(Collectors.toList());
+
+        List<Supplier> savedSuppliers = supplierRepository.saveAll(suppliers);
+        log.info("Bulk suppliers created successfully: count={}", savedSuppliers.size());
+
+        return savedSuppliers;
+    }
+
+    @Transactional
     public Supplier approveSupplier(Long id, Long approvedByUserId, String approvalNotes){
         log.info("Approving supplier: {}", id);
 

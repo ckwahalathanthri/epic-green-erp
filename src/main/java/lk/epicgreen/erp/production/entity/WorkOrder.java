@@ -1,7 +1,8 @@
 package lk.epicgreen.erp.production.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
@@ -361,7 +362,7 @@ public class WorkOrder extends AuditEntity {
         this.status = "CANCELLED";
     }
     
-    @PrePersist
+//    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (status == null) {

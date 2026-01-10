@@ -40,7 +40,9 @@ public class AuditLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_audit_log_user"))
     private User user;
-    
+
+    @Column
+    private String actionType;
     /**
      * Username (denormalized for performance)
      */
@@ -55,6 +57,9 @@ public class AuditLog {
     @Size(max = 50)
     @Column(name = "action", nullable = false, length = 50)
     private String action;
+
+    @Column
+    private boolean IsReconciled;
     
     /**
      * Entity type (e.g., SALES_ORDER, CUSTOMER, PAYMENT)

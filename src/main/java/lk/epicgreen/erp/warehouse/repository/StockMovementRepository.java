@@ -111,8 +111,8 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
      * Search movements by multiple criteria
      */
     @Query("SELECT sm FROM StockMovement sm WHERE " +
-           "(:warehouseId IS NULL OR sm.warehouseId = :warehouseId) AND " +
-           "(:productId IS NULL OR sm.productId = :productId) AND " +
+           "(:warehouseId IS NULL OR sm.warehouse.id = :warehouseId) AND " +
+           "(:productId IS NULL OR sm.product.id = :productId) AND " +
            "(:movementType IS NULL OR sm.movementType = :movementType) AND " +
            "(:startDate IS NULL OR sm.movementDate >= :startDate) AND " +
            "(:endDate IS NULL OR sm.movementDate <= :endDate) AND " +
@@ -202,28 +202,28 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
     /**
      * Get total quantity moved for a product
      */
-    @Query("SELECT SUM(sm.quantity) FROM StockMovement sm WHERE sm.productId = :productId")
+    @Query("SELECT SUM(sm.quantity) FROM StockMovement sm WHERE sm.product.id = :productId")
     BigDecimal getTotalQuantityMovedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total quantity received for a product
      */
     @Query("SELECT SUM(sm.quantity) FROM StockMovement sm " +
-           "WHERE sm.productId = :productId AND sm.movementType = 'RECEIPT'")
+           "WHERE sm.product.id = :productId AND sm.movementType = 'RECEIPT'")
     BigDecimal getTotalQuantityReceivedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total quantity issued for a product
      */
     @Query("SELECT SUM(sm.quantity) FROM StockMovement sm " +
-           "WHERE sm.productId = :productId AND sm.movementType = 'ISSUE'")
+           "WHERE sm.product.id = :productId AND sm.movementType = 'ISSUE'")
     BigDecimal getTotalQuantityIssuedByProduct(@Param("productId") Long productId);
     
     /**
      * Get movement statistics by warehouse
      */
     @Query("SELECT sm.movementType, COUNT(sm) as movementCount, SUM(sm.quantity) as totalQuantity " +
-           "FROM StockMovement sm WHERE sm.warehouseId = :warehouseId " +
+           "FROM StockMovement sm WHERE sm.warehouse.id = :warehouseId " +
            "GROUP BY sm.movementType ORDER BY movementCount DESC")
     List<Object[]> getMovementStatisticsByWarehouse(@Param("warehouseId") Long warehouseId);
     
@@ -231,7 +231,7 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
      * Get movement statistics by product
      */
     @Query("SELECT sm.movementType, COUNT(sm) as movementCount, SUM(sm.quantity) as totalQuantity " +
-           "FROM StockMovement sm WHERE sm.productId = :productId " +
+           "FROM StockMovement sm WHERE sm.product.id = :productId " +
            "GROUP BY sm.movementType ORDER BY movementCount DESC")
     List<Object[]> getMovementStatisticsByProduct(@Param("productId") Long productId);
     
@@ -253,7 +253,7 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
     /**
      * Find movements by warehouse, type, and date range
      */
-    @Query("SELECT sm FROM StockMovement sm WHERE sm.warehouseId = :warehouseId " +
+    @Query("SELECT sm FROM StockMovement sm WHERE sm.warehouse.id = :warehouseId " +
            "AND sm.movementType = :movementType AND sm.movementDate BETWEEN :startDate AND :endDate " +
            "ORDER BY sm.movementDate DESC")
     List<StockMovement> findByWarehouseTypeAndDateRange(
@@ -280,7 +280,7 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
      * Get movement value by warehouse and date range
      */
     @Query("SELECT SUM(sm.quantity * sm.unitCost) FROM StockMovement sm " +
-           "WHERE sm.warehouseId = :warehouseId AND sm.movementDate BETWEEN :startDate AND :endDate")
+           "WHERE sm.warehouse.id = :warehouseId AND sm.movementDate BETWEEN :startDate AND :endDate")
     BigDecimal getMovementValueByWarehouseAndDateRange(
             @Param("warehouseId") Long warehouseId,
             @Param("startDate") LocalDate startDate,

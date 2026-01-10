@@ -297,10 +297,28 @@ public interface ChartOfAccountsRepository extends JpaRepository<ChartOfAccounts
     @Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.parentAccount.id = :parentAccountId " +
            "AND coa.isActive = true ORDER BY coa.accountCode")
     List<ChartOfAccounts> getAccountHierarchy(@Param("parentAccountId") Long parentAccountId);
-
-    BigDecimal getAccountBalance(Long accountId);
+@Query("SELECT coa.currentBalance FROM ChartOfAccounts coa WHERE coa.id=:accountId")
+    BigDecimal getAccountBalance(@Param("accountId") Long accountId);
 
     List<ChartOfAccounts> findByParentAccountIsNull();
 
     List<ChartOfAccounts> findByIsActive(boolean b);
+@Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.isGroupAccount = false AND coa.isActive = true ORDER BY coa.accountCode")
+    List<ChartOfAccounts> findPostingAccounts();
+
+@Query("SELECT coa.accountType, SUM(coa.currentBalance) FROM ChartOfAccounts coa GROUP BY coa.accountType")
+    List<Object[]> getTotalBalanceByAccountType();
+
+@Query("SELECT coa.accountName, coa.currentBalance FROM ChartOfAccounts coa WHERE coa.currentBalance <> 0 ORDER BY coa.accountCode")
+    List<Object[]> getTrialBalance();
+
+@Query("SELECT coa.accountName, coa.currentBalance FROM ChartOfAccounts coa WHERE coa.currentBalance <> 0 AND coa.openDate BETWEEN :startDate AND :endDate ORDER BY coa.accountCode")
+    List<Object[]> getTrialBalanceForPeriod(@Param("startDate")LocalDate startDate,@Param("endDate") LocalDate endDate);
+
+@Query("SELECT coa.accountName, coa.currentBalance FROM ChartOfAccounts coa WHERE coa.currentBalance <> 0 AND FUNCTION('YEAR', coa.openDate) = :year ORDER BY coa.accountCode")
+    List<Object[]> getTrialBalanceForFiscalYear(@Param("year") Integer year);
 }
+
+//@Query("SELECT coa FROM ChartOfAccounts coa WHERE coa.isReconsiled = false")
+//    List<ChartOfAccounts> findByIsReconsiledFalse();
+//}

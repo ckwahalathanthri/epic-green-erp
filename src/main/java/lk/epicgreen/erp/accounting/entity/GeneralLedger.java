@@ -42,6 +42,9 @@ public class GeneralLedger {
     @NotNull(message = "Transaction date is required")
     @Column(name = "transaction_date", nullable = false)
     private LocalDate transactionDate;
+
+    @Column
+    private boolean isPosted;
     
     /**
      * Financial period

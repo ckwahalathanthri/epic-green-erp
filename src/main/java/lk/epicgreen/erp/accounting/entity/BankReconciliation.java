@@ -42,7 +42,8 @@ public class BankReconciliation extends AuditEntity {
     @Size(max = 30)
     @Column(name = "reconciliation_number", nullable = false, unique = true, length = 30)
     private String reconciliationNumber;
-    
+
+
     /**
      * Bank account
      */
@@ -59,7 +60,7 @@ public class BankReconciliation extends AuditEntity {
     private LocalDate statementDate;
 
     @Column(name = "is_reconciled")
-    private Boolean IsReconciled;
+    private Boolean isReconciled;
     
     /**
      * Bank statement balance (as per bank)

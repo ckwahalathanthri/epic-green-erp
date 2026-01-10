@@ -42,6 +42,8 @@ public class FinancialPeriod {
     @Size(max = 20)
     @Column(name = "period_code", nullable = false, unique = true, length = 20)
     private String periodCode;
+
+    @Column String code;
     
     /**
      * Period name (e.g., "January 2024", "Q1 2024", "Fiscal Year 2024")

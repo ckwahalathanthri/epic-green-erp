@@ -1,8 +1,7 @@
 package lk.epicgreen.erp.admin.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;

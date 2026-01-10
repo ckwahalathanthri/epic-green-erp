@@ -1,8 +1,9 @@
 package lk.epicgreen.erp.admin.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
@@ -135,7 +136,7 @@ public class Role extends AuditEntity {
         return !isSystemRole() && (userRoles == null || userRoles.isEmpty());
     }
     
-    @PrePersist
+//    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (isSystemRole == null) {

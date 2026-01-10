@@ -51,14 +51,14 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
     /**
      * Find billing addresses for a customer
      */
-    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customerId = :customerId AND " +
+    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customer.id = :customerId AND " +
            "(ca.addressType = 'BILLING' OR ca.addressType = 'BOTH')")
     List<CustomerAddress> findBillingAddressesByCustomerId(@Param("customerId") Long customerId);
     
     /**
      * Find shipping addresses for a customer
      */
-    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customerId = :customerId AND " +
+    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customer.id = :customerId AND " +
            "(ca.addressType = 'SHIPPING' OR ca.addressType = 'BOTH')")
     List<CustomerAddress> findShippingAddressesByCustomerId(@Param("customerId") Long customerId);
     
@@ -89,7 +89,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
     /**
      * Search addresses by keyword for a customer
      */
-    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customerId = :customerId AND " +
+    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customer.id = :customerId AND " +
            "(LOWER(ca.addressName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(ca.addressLine1) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(ca.city) LIKE LOWER(CONCAT('%', :keyword, '%')))")
@@ -102,7 +102,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
      * Search addresses by multiple criteria
      */
     @Query("SELECT ca FROM CustomerAddress ca WHERE " +
-           "(:customerId IS NULL OR ca.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR ca.customer.id = :customerId) AND " +
            "(:addressType IS NULL OR ca.addressType = :addressType) AND " +
            "(:city IS NULL OR ca.city = :city) AND " +
            "(:state IS NULL OR ca.state = :state) AND " +
@@ -143,7 +143,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
      * Delete all addresses for a customer
      */
     @Modifying
-    @Query("DELETE FROM CustomerAddress ca WHERE ca.customerId = :customerId")
+    @Query("DELETE FROM CustomerAddress ca WHERE ca.customer.id = :customerId")
     void deleteAllByCustomerId(@Param("customerId") Long customerId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -187,7 +187,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
     /**
      * Find addresses for a customer ordered by default status
      */
-    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customerId = :customerId ORDER BY ca.isDefault DESC, ca.addressName")
+    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customer.id = :customerId ORDER BY ca.isDefault DESC, ca.addressName")
     List<CustomerAddress> findByCustomerIdOrderByDefaultAndName(@Param("customerId") Long customerId);
     
     /**
@@ -219,7 +219,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
     /**
      * Find addresses by customer and type ordered by default
      */
-    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customerId = :customerId AND ca.addressType = :addressType " +
+    @Query("SELECT ca FROM CustomerAddress ca WHERE ca.customer.id = :customerId AND ca.addressType = :addressType " +
            "ORDER BY ca.isDefault DESC, ca.addressName")
     List<CustomerAddress> findByCustomerIdAndAddressTypeOrderByDefault(
             @Param("customerId") Long customerId,

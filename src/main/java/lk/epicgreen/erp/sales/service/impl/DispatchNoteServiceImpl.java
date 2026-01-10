@@ -512,7 +512,7 @@ public class DispatchNoteServiceImpl implements DispatchNoteService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id);
+        return customerRepository.findByIdAndDeletedAtIsNull(id).get();
     }
 
     private CustomerAddress findCustomerAddressById(Long id) {

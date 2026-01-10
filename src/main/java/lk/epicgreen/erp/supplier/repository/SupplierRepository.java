@@ -371,8 +371,11 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long>, JpaSp
     @Query("SELECT s FROM Supplier s WHERE s.rating>:rating")
     List<Supplier> findByRatingIsLargerThan(@Param("rating") double rating);
 
+
+
     @Query("SELECT s FROM Supplier s WHERE s.rating <= :rating AND s.deletedAt IS NULL")
-    List<Supplier> findByRatingLessThanEqualAndDeletedAtIsNull(BigDecimal bigDecimal);
+    List<Supplier> findByRatingLessThanEqualAndDeletedAtIsNull(@Param("rating") BigDecimal rating);
+
 
     @Query("SELECT s FROM Supplier s WHERE s.region = :region AND s.deletedAt IS NULL")
     List<Supplier> findByRegionAndDeletedAtIsNull(String region);
@@ -474,6 +477,13 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long>, JpaSp
 
 @Query("SELECT s FROM Supplier s WHERE s.deletedAt IS NULL")
     Page<Supplier> findByDeletedAtIsNull(Pageable pageable);
+
+@Query("SELECT s FROM Supplier s WHERE s.creditLimit BETWEEN :bigDecimal AND :bigDecimal1 AND s.isActive = true AND s.deletedAt IS NULL")
+    List<Supplier> findByCreditLimitBetweenAndIsActiveTrueAndDeletedAtIsNull(BigDecimal bigDecimal, BigDecimal bigDecimal1);
+@Query("SELECT s FROM Supplier s WHERE s.currentBalance BETWEEN :bigDecimal AND :bigDecimal1 AND s.isActive = true AND s.deletedAt IS NULL")
+    List<Supplier> findByCurrentBalanceBetweenAndIsActiveTrueAndDeletedAtIsNull(BigDecimal bigDecimal, BigDecimal bigDecimal1);
+@Query("SELECT s.supplierType AS type, COUNT(s) AS count FROM Supplier s WHERE s.deletedAt IS NULL GROUP BY s.supplierType")
+    List<Map<String, Object>> getStatusDistribution();
 
 //@Query
 //    List<Map<String, Object>> getTopSuppliersByOrders(Pageable limit);

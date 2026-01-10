@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -66,7 +67,7 @@ public class ProductionOutputRequest {
     @DecimalMin(value = "0.0", message = "Unit cost must be >= 0")
     private BigDecimal unitCost;
 
-    @Pattern(regexp = "^(PENDING|PASSED|FAILED)$", 
+    @Pattern(regexp = "^(PENDING|PASSED|FAILED)$",
              message = "Quality status must be one of: PENDING, PASSED, FAILED")
     private String qualityStatus;
 

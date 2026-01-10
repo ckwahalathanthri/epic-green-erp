@@ -132,10 +132,10 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, Jpa
      */
     @Query("SELECT wo FROM WorkOrder wo WHERE " +
            "(:woNumber IS NULL OR LOWER(wo.woNumber) LIKE LOWER(CONCAT('%', :woNumber, '%'))) AND " +
-           "(:finishedProductId IS NULL OR wo.finishedProductId = :finishedProductId) AND " +
+           "(:finishedProductId IS NULL OR wo.finishedProduct.id = :finishedProductId) AND " +
            "(:status IS NULL OR wo.status = :status) AND " +
            "(:priority IS NULL OR wo.priority = :priority) AND " +
-           "(:supervisorId IS NULL OR wo.supervisorId = :supervisorId) AND " +
+           "(:supervisorId IS NULL OR wo.supervisor.id = :supervisorId) AND " +
            "(:startDate IS NULL OR wo.woDate >= :startDate) AND " +
            "(:endDate IS NULL OR wo.woDate <= :endDate)")
     Page<WorkOrder> searchWorkOrders(
@@ -267,18 +267,18 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, Jpa
     /**
      * Get work orders grouped by finished product
      */
-    @Query("SELECT wo.finishedProductId, COUNT(wo) as orderCount, " +
+    @Query("SELECT wo.finishedProduct.id, COUNT(wo) as orderCount, " +
            "SUM(wo.plannedQuantity) as totalPlanned, SUM(wo.actualQuantity) as totalActual " +
-           "FROM WorkOrder wo GROUP BY wo.finishedProductId ORDER BY orderCount DESC")
+           "FROM WorkOrder wo GROUP BY wo.finishedProduct.id ORDER BY orderCount DESC")
     List<Object[]> getWorkOrdersByProduct();
     
     /**
      * Get work orders grouped by supervisor
      */
-    @Query("SELECT wo.supervisorId, COUNT(wo) as orderCount, " +
+    @Query("SELECT wo.supervisor.id, COUNT(wo) as orderCount, " +
            "SUM(wo.plannedQuantity) as totalPlanned " +
-           "FROM WorkOrder wo WHERE wo.supervisorId IS NOT NULL " +
-           "GROUP BY wo.supervisorId ORDER BY orderCount DESC")
+           "FROM WorkOrder wo WHERE wo.supervisor.id IS NOT NULL " +
+           "GROUP BY wo.supervisor.id ORDER BY orderCount DESC")
     List<Object[]> getWorkOrdersBySupervisor();
     
     /**
@@ -306,9 +306,9 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, Jpa
     /**
      * Get total production cost by product
      */
-    @Query("SELECT wo.finishedProductId, SUM(wo.totalCost) as totalCost " +
+    @Query("SELECT wo.finishedProduct.id, SUM(wo.totalCost) as totalCost " +
            "FROM WorkOrder wo WHERE wo.status = 'COMPLETED' " +
-           "GROUP BY wo.finishedProductId ORDER BY totalCost DESC")
+           "GROUP BY wo.finishedProduct.id ORDER BY totalCost DESC")
     List<Object[]> getTotalCostByProduct();
     
     /**
@@ -327,12 +327,12 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, Jpa
     /**
      * Get production efficiency by product
      */
-    @Query("SELECT wo.finishedProductId, " +
+    @Query("SELECT wo.finishedProduct.id, " +
            "SUM(wo.plannedQuantity) as totalPlanned, " +
            "SUM(wo.actualQuantity) as totalActual, " +
            "(SUM(wo.actualQuantity) / SUM(wo.plannedQuantity) * 100) as efficiency " +
            "FROM WorkOrder wo WHERE wo.status = 'COMPLETED' AND wo.plannedQuantity > 0 " +
-           "GROUP BY wo.finishedProductId")
+           "GROUP BY wo.finishedProduct.id")
     List<Object[]> getProductionEfficiencyByProduct();
 
     Integer countByBomId(Long bomId);

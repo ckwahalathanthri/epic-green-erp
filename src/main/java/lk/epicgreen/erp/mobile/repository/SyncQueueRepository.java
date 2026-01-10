@@ -115,13 +115,14 @@ public interface SyncQueueRepository extends JpaRepository<SyncQueue, Long>, Jpa
     
     // ==================== CUSTOM QUERIES ====================
 
-    @Query("SELECT sq FROM SyncQueue sq WHERE " +
-           "OR (sq.deviceId) LIKE %:keyword% " +
-           "OR (sq.entityType) LIKE %:keyword% " +
-           "OR (sq.operationType) LIKE %:keyword% " +
-           "OR (sq.syncStatus) LIKE %:keyword% " +
-           "OR (sq.errorMessage) LIKE %:keyword%")
+    @Query("SELECT sq FROM SyncQueue sq " +
+            "WHERE sq.deviceId LIKE CONCAT('%', :keyword, '%') " +
+            "OR sq.entityType LIKE CONCAT('%', :keyword, '%') " +
+            "OR sq.operationType LIKE CONCAT('%', :keyword, '%') " +
+            "OR sq.syncStatus LIKE CONCAT('%', :keyword, '%') " +
+            "OR sq.errorMessage LIKE CONCAT('%', :keyword, '%')")
     Page<SyncQueue> searchSyncQueue(@Param("keyword") String keyword, Pageable pageable);
+
     
     /**
      * Find pending sync queue items
@@ -235,6 +236,6 @@ public interface SyncQueueRepository extends JpaRepository<SyncQueue, Long>, Jpa
      * Get oldest pending item
      */
     @Query("SELECT sq FROM SyncQueue sq WHERE sq.syncStatus = 'PENDING' " +
-           "ORDER BY sq.createdAt ASC LIMIT 1")
+           "ORDER BY sq.createdAt ASC ")
     SyncQueue getOldestPendingItem();
 }

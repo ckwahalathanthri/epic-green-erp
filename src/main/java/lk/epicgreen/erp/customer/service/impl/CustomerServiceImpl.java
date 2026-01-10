@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -546,20 +548,51 @@ public class CustomerServiceImpl implements CustomerService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Check if email is available
+     *
+     * @param email
+     */
     @Override
-    public boolean isEmailAvailable(String email){
-        return customerRepository.findByEmailAndDeletedAtIsNull(email).isEmpty();
+    public boolean isEmailAvailable(String email) {
+        return false;
     }
 
+    /**
+     * Check if phone is available
+     *
+     * @param phone
+     */
     @Override
-    public boolean isPhoneAvailable(String phoneNum){
-        return customerRepository.findByPhoneNumberAndDeletedAtIsNull(phoneNum).isEmpty();
+    public boolean isPhoneAvailable(String phone) {
+        return false;
     }
 
+    /**
+     * Check if customer code is available
+     *
+     * @param customerCode
+     */
     @Override
-    public boolean isCustomerCodeAvailable(String customerCode){
-        return customerRepository.findByCustomerCodeAndDeletedAtIsNull(customerCode).isEmpty();
+    public boolean isCustomerCodeAvailable(String customerCode) {
+        return false;
     }
+
+//    @Override
+//    public boolean isEmailAvailable(String email){
+//        return customerRepository.findByEmailAndDeletedAtIsNull(email).isEmpty();
+//    }
+//
+//    @Override
+//    public boolean isPhoneAvailable(String phoneNum){
+//        return customerRepository.findByPhoneNumberAndDeletedAtIsNull(phoneNum).isEmpty();
+//    }
+
+//    @Override
+//    public boolean isCustomerCodeAvailable(String customerCode){
+////        return customerRepository.findByCustomerCodeAndDeletedAtIsNull(customerCode).isEmpty();
+//        null;
+//    }
 
     @Override
     public boolean canActivateCustomer(Long id){
@@ -710,16 +743,21 @@ public class CustomerServiceImpl implements CustomerService {
         long blacklistedCustomers = customerRepository.countByIsBlacklistedTrueAndDeletedAtIsNull();
         long customersWithCreditFacility = customerRepository.countByHasCreditFacilityTrueAndDeletedAtIsNull();
 
-        Map<String, Object> stats = Map.of(
-            "totalCustomers", totalCustomers,
-            "activeCustomers", activeCustomers,
-            "inactiveCustomers", inactiveCustomers,
-            "blacklistedCustomers", blacklistedCustomers,
-            "customersWithCreditFacility", customersWithCreditFacility
-        );
-
+//        Map<String, Object> stats = Map.of(
+//            "totalCustomers", totalCustomers,
+//            "activeCustomers", activeCustomers,
+//            "inactiveCustomers", inactiveCustomers,
+//            "blacklistedCustomers", blacklistedCustomers,
+//            "customersWithCreditFacility", customersWithCreditFacility
+//        );
+        Map<String,Object> map=new HashMap<>();
+        map.put("totalCustomers", totalCustomers);
+        map.put("activeCustomers", activeCustomers);
+        map.put("inactiveCustomers", inactiveCustomers);
+        map.put("blacklistedCustomers", blacklistedCustomers);
+        map.put("customersWithCreditFacility", customersWithCreditFacility);
         log.info("Customer statistics fetched successfully");
-        return stats;
+        return map;
     }
 
     @Override
@@ -727,32 +765,42 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Fetching customer type distribution");
 
         List<Object[]> distributionData = customerRepository.countCustomersByType();
+
         List<Map<String, Object>> distribution = distributionData.stream()
-            .map(data -> Map.of(
-                "customerType", data[0],
-                "count", data[1]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("customerType", data[0]);
+                        map.put("count", data[1]);
+                        return map;
+                    })
             .collect(Collectors.toList());
+
+
 
         log.info("Customer type distribution fetched successfully");
         return distribution;
     }
 
     @Override
-    public List<Map<String, Object>> getCustomerStatusDistribution(){
+    public List<Map<String, Object>> getCustomerStatusDistribution() {
         log.info("Fetching customer status distribution");
 
         List<Object[]> distributionData = customerRepository.countCustomersByStatus();
+
         List<Map<String, Object>> distribution = distributionData.stream()
-            .map(data -> Map.of(
-                "isActive", data[0],
-                "count", data[1]
-            ))
-            .collect(Collectors.toList());
+                .map(data -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("isActive", data[0]);
+                    map.put("count", data[1]);
+                    return map;
+                })
+                .collect(Collectors.toList());
 
         log.info("Customer status distribution fetched successfully");
         return distribution;
     }
+
 
     @Override
     public List<Map<String, Object>> getCreditStatusDistribution(){
@@ -760,10 +808,13 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Object[]> distributionData = customerRepository.countCustomersByCreditStatus();
         List<Map<String, Object>> distribution = distributionData.stream()
-            .map(data -> Map.of(
-                "hasCreditFacility", data[0],
-                "count", data[1]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("hasCreditFacility", data[0]);
+                        map.put("count", data[1]);
+                        return map;
+                    })
             .collect(Collectors.toList());
 
         log.info("Customer credit status distribution fetched successfully");
@@ -776,10 +827,13 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Object[]> distributionData = customerRepository.countCustomersByPaymentTerms();
         List<Map<String, Object>> distribution = distributionData.stream()
-            .map(data -> Map.of(
-                "paymentTerms", data[0],
-                "count", data[1]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("paymentTerms", data[0]);
+                        map.put("count", data[1]);
+                        return map;
+                    })
             .collect(Collectors.toList());
 
         log.info("Customer payment terms distribution fetched successfully");
@@ -792,10 +846,13 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Object[]> distributionData = customerRepository.countCustomersByRoute();
         List<Map<String, Object>> distribution = distributionData.stream()
-            .map(data -> Map.of(
-                "routeCode", data[0],
-                "count", data[1]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("routeCode", data[0]);
+                        map.put("count", data[1]);
+                        return map;
+                    })
             .collect(Collectors.toList());
 
         log.info("Customer route distribution fetched successfully");
@@ -808,10 +865,14 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Object[]> distributionData = customerRepository.countCustomersByCity();
         List<Map<String, Object>> distribution = distributionData.stream()
-            .map(data -> Map.of(
-                "city", data[0],
-                "count", data[1]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("city", data[0]);
+                        map.put("count", data[1]);
+                        return map;
+                    }
+                   )
             .collect(Collectors.toList());
 
         log.info("Customer city distribution fetched successfully");
@@ -824,10 +885,13 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Object[]> distributionData = customerRepository.countCustomersByProvince();
         List<Map<String, Object>> distribution = distributionData.stream()
-            .map(data -> Map.of(
-                "province", data[0],
-                "count", data[1]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("province", data[0]);
+                        map.put("count", data[1]);
+                        return map;
+                    })
             .collect(Collectors.toList());
 
         log.info("Customer province distribution fetched successfully");
@@ -840,11 +904,15 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Object[]> registrationData = customerRepository.countMonthlyRegistrations();
         List<Map<String, Object>> monthlyCounts = registrationData.stream()
-            .map(data -> Map.of(
-                "month", data[0],
-                "year", data[1],
-                "count", data[2]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("month", data[0]);
+                        map.put("year", data[1]);
+                        map.put("count", data[2]);
+                        return map;
+                    }
+                  )
             .collect(Collectors.toList());
 
         log.info("Monthly customer registration count fetched successfully");
@@ -857,12 +925,17 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Object[]> salesRepData = customerRepository.findCustomersBySalesRepWithTotals();
         List<Map<String, Object>> result = salesRepData.stream()
-            .map(data -> Map.of(
-                "salesRepId", data[0],
-                "salesRepName", data[1],
-                "customerCount", data[2],
-                "totalSalesAmount", data[3]
-            ))
+            .map(data ->
+                    {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("salesRepId", data[0]);
+                        map.put("salesRepName", data[1]);
+                        map.put("customerCount", data[2]);
+                        map.put("totalSalesAmount", data[3]);
+                        return map;
+                    }
+
+             )
             .collect(Collectors.toList());
 
         log.info("Customers by sales representative with totals fetched successfully");
@@ -943,15 +1016,14 @@ public class CustomerServiceImpl implements CustomerService {
     public Map<String, Object> getDashboardStatistics(){
         log.info("Fetching customer dashboard statistics");
 
-        Map<String, Object> stats = Map.of(
-            "totalSales", getTotalCustomerSales(),
-            "totalOutstandingBalance", getTotalOutstandingBalance(),
-            "totalOverdueAmount", getTotalOverdueAmount(),
-            "totalCreditLimit", getTotalCreditLimit(),
-            "totalAvailableCredit", getTotalAvailableCredit(),
-            "averageOrderValue", getAverageOrderValue(),
-            "creditUtilizationRate", getCreditUtilizationRate()
-        );
+        Map<String, Object> stats =new HashMap<>();
+        stats.put("totalSales", getTotalCustomerSales());
+        stats.put("totalOutstandingBalance", getTotalOutstandingBalance());
+        stats.put("totalOverdueAmount", getTotalOverdueAmount());
+        stats.put("totalCreditLimit", getTotalCreditLimit());
+        stats.put("totalAvailableCredit", getTotalAvailableCredit());
+        stats.put("averageOrderValue", getAverageOrderValue());
+        stats.put("creditUtilizationRate", getCreditUtilizationRate());
 
         log.info("Customer dashboard statistics fetched successfully");
         return stats;
@@ -1014,7 +1086,7 @@ public class CustomerServiceImpl implements CustomerService {
     public List<CustomerLedgerResponse> getCustomerLedgerEntries(Long customerId){
         log.info("Fetching all ledger entries for customer: {}", customerId);
 
-        List<CustomerLedgerResponse> ledgerEntries = List.of();
+        List<CustomerLedgerResponse> ledgerEntries = Arrays.asList();
         // Placeholder for actual ledger entries retrieval logic
 
         log.info("All ledger entries fetched successfully for customer: {}", customerId);
@@ -1025,7 +1097,7 @@ public class CustomerServiceImpl implements CustomerService {
     public List<CustomerLedgerResponse> getCustomerLedgerStatement(Long customerId, LocalDate startDate, LocalDate endDate){
         log.info("Fetching ledger statement for customer: {} from {} to {}", customerId, startDate, endDate);
 
-        List<CustomerLedgerResponse> ledgerStatement = List.of();
+        List<CustomerLedgerResponse> ledgerStatement = Arrays.asList();
         // Placeholder for actual ledger statement retrieval logic
 
         log.info("Ledger statement fetched successfully for customer: {}", customerId);

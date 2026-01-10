@@ -1,10 +1,8 @@
 package lk.epicgreen.erp.admin.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
@@ -48,6 +46,9 @@ public class UnitOfMeasure extends AuditEntity {
     @Size(max = 50)
     @Column(name = "uom_name", nullable = false, length = 50)
     private String uomName;
+
+    @Column
+    private Long baseUomId;
     
     /**
      * UOM type (WEIGHT, VOLUME, LENGTH, QUANTITY, AREA)
@@ -127,7 +128,7 @@ public class UnitOfMeasure extends AuditEntity {
         return baseQuantity.divide(conversionFactor, 4, java.math.RoundingMode.HALF_UP);
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (baseUnit == null) {

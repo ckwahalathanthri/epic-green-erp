@@ -117,7 +117,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
     /**
      * Check if customer code exists
      */
-    boolean existsByCustomerCode(String customerCode);
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Customer c WHERE c.customerCode = :customerCode")
+    boolean existsByCustomerCode(@Param("customerCode") String customerCode);
     
     /**
      * Check if customer name exists
@@ -132,7 +133,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
     /**
      * Check if customer code exists excluding specific customer ID
      */
-    boolean existsByCustomerCodeAndIdNot(String customerCode, Long id);
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Customer c WHERE c.customerCode = :customerCode AND c.id <> :id")
+    boolean existsByCustomerCodeAndIdNot(@Param("customerCode") String customerCode, Long id);
     
     /**
      * Check if email exists excluding specific customer ID
@@ -185,6 +187,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
     /**
      * Count active customers
      */
+    @Query("SELECT COUNT(c) FROM Customer c WHERE c.isActive = true")
     long countByIsActiveTrue();
     
     /**
@@ -346,36 +349,45 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
     /**
      * Find active customers ordered by name
      */
+    @Query("SELECT c FROM Customer c WHERE c.isActive = true ORDER BY c.customerName ASC")
     List<Customer> findByIsActiveTrueOrderByCustomerNameAsc();
 
     /*
        * Find customer by customer code excluding deleted records
      */
-    Optional<Customer> findByCustomerCodeAndDeletedAtIsNull(String customerCode);
+    @Query("SELECT c FROM Customer c WHERE c.deletedAt IS NULL AND c.customerCode = :customerCode")
+    Optional<Customer> findByCustomerCodeAndDeletedAtIsNull(@Param("customerCode") String customerCode);
 
     /**
      * Find customer by email excluding deleted records
      */
-    Optional<Customer> findByEmailAndDeletedAtIsNull(String email);
+    @Query("SELECT c FROM Customer c WHERE c.deletedAt IS NULL AND c.email = :email")
+    Optional<Customer> findByEmailAndDeletedAtIsNull(@Param("email") String email);
 
        /**
         * Find customer by phone number excluding deleted records
         */
+       @Query("SELECT c FROM Customer c WHERE c.deletedAt IS NULL AND (c.phone = :phoneNumber OR c.mobile = :phoneNumber)")
     Optional<Customer> findByPhoneNumberAndDeletedAtIsNull(String phoneNumber);
 
        /**
         * Find all customers excluding deleted records
         */
+       @Query("SELECT c FROM Customer c WHERE c.deletedAt IS NULL")
     Page<Customer> findByDeletedAtIsNull(Pageable pageable);
 
     /**
        * Find all active customers excluding deleted records
      **/
+
+    @Query("SELECT c FROM Customer c WHERE c.isActive = true AND c.deletedAt IS NULL")
     List<Customer> findByIsActiveTrueAndDeletedAtIsNull();
 
        /**
         * Find customers by type excluding deleted records
         */
+
+       @Query("SELECT c FROM Customer c WHERE c.customerType = :customerType AND c.deletedAt IS NULL")
     Page<Customer> findByCustomerTypeAndDeletedAtIsNull(String customerType, Pageable pageable);
 
     /**
@@ -401,62 +413,73 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
        /**
         * Search customers by keyword excluding deleted records
         */
-    Page<Customer> searchCustomers(String keyword, Pageable pageable);
+       @Query("SELECT c FROM Customer c WHERE c.deletedAt IS NULL AND " +
+              "(LOWER(c.customerCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+              "LOWER(c.customerName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+              "LOWER(c.email) LIKE LOWER(CONCAT('%', :keyword, '%')) )")
+    Page<Customer> searchCustomers(@Param("keyword") String keyword, Pageable pageable);
 
        /**
         * Find customers exceeding their credit limit
         */
+
+       @Query("SELECT c FROM Customer c WHERE c.currentBalance > c.creditLimit AND c.deletedAt IS NULL")
     List<Customer> findCustomersExceedingCreditLimit();
 
     /**
      * Find customer by ID excluding deleted records
      */
     Optional<Customer> findByIdAndDeletedAtIsNull(Long id);
-
+@Query("SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL")
     long countByDeletedAtIsNull();
-
+@Query("SELECT COUNT(c) FROM Customer c WHERE c.isActive = true AND c.deletedAt IS NULL")
     long countByIsActiveTrueAndDeletedAtIsNull();
-
+@Query("SELECT COUNT(c) FROM Customer c WHERE c.isActive = false AND c.deletedAt IS NULL")
     long countByIsActiveFalseAndDeletedAtIsNull();
-
+@Query("SELECT COUNT(c) FROM Customer c WHERE c.isBlacklisted = true AND c.deletedAt IS NULL")
     long countByIsBlacklistedTrueAndDeletedAtIsNull();
-
+@Query("SELECT COUNT(c) FROM Customer c WHERE c.hasCreditFacility = true AND c.deletedAt IS NULL")
     long countByHasCreditFacilityTrueAndDeletedAtIsNull();
 
+    @Query("SELECT c.customerType, COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.customerType")
     List<Object[]> countCustomersByType();
-
+@Query("SELECT c.status, COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.status")
     List<Object[]> countCustomersByStatus();
 
+@Query("SELECT c.creditStatus, COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.creditStatus")
     List<Object[]> countCustomersByCreditStatus();
 
+@Query("SELECT c.paymentTerms, COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.paymentTerms")
     List<Object[]> countCustomersByPaymentTerms();
-
+@Query("SELECT c.region, COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.region")
     List<Object[]> countCustomersByRoute();
-
+@Query("SELECT c.billingCity, COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.billingCity")
     List<Object[]> countCustomersByCity();
-
+@Query("SELECT c.billingState, COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.billingState")
     List<Object[]> countCustomersByProvince();
-
+@Query("SELECT FUNCTION('MONTH', c.createdAt), COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY FUNCTION('MONTH', c.createdAt)")
     List<Object[]> countMonthlyRegistrations();
-
+@Query("SELECT c.assignedSalesRepId, COUNT(c), SUM(c.currentBalance) FROM Customer c WHERE c.deletedAt IS NULL GROUP BY c.assignedSalesRepId")
     List<Object[]> findCustomersBySalesRepWithTotals();
 
+@Query("SELECT SUM(o.totalAmount) FROM SalesOrder o JOIN o.customer c WHERE c.deletedAt IS NULL")
     Double calculateTotalCustomerSales();
-
+@Query("SELECT SUM(c.currentBalance) FROM Customer c WHERE c.deletedAt IS NULL")
     Double calculateTotalOutstandingBalance();
-
+@Query("SELECT SUM(c.currentBalance) FROM Customer c WHERE c.currentBalance > 0 AND c.deletedAt IS NULL")
     Double calculateTotalOverdueAmount();
-
+@Query("SELECT SUM(c.creditLimit) FROM Customer c WHERE c.deletedAt IS NULL")
     Double calculateTotalCreditLimit();
-
+@Query("SELECT SUM(c.creditLimit - c.currentBalance) FROM Customer c WHERE c.deletedAt IS NULL")
     Double calculateTotalAvailableCredit();
 
+@Query("SELECT AVG(o.totalAmount) FROM SalesOrder o JOIN o.customer c WHERE c.deletedAt IS NULL")
     Double calculateAverageOrderValue();
-
+@Query("SELECT (SUM(c.currentBalance) / SUM(c.creditLimit)) * 100 FROM Customer c WHERE c.creditLimit > 0 AND c.deletedAt IS NULL")
     Double calculateCreditUtilizationRate();
-
+@Query("SELECT c FROM Customer c WHERE c.deletedAt IS NULL AND c.currentBalance > (c.creditLimit * 0.8)")
     List<Customer> findByDeletedAtIsNull();
-
+@Query("SELECT c FROM Customer c WHERE c.currentBalance > 0 AND c.deletedAt IS NULL")
     List<Customer> findCustomersWithOverdueBalance();
 
 

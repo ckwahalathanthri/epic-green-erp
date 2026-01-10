@@ -33,12 +33,13 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     /**
      * Find all wastage for a work order
      */
-    List<ProductionWastage> findByWoId(Long woId);
+    @Query("SELECT pw FROM ProductionWastage pw WHERE pw.id = :woId ORDER BY pw.wastageDate DESC")
+    List<ProductionWastage> findByWoId(@Param("woId") Long woId);
     
     /**
      * Find all wastage for a work order with pagination
      */
-    Page<ProductionWastage> findByWoId(Long woId, Pageable pageable);
+//    Page<ProductionWastage> findByWoId(Long woId, Pageable pageable);
     
     /**
      * Find all wastage for a product
@@ -53,7 +54,7 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     /**
      * Find wastage by wastage type
      */
-    List<ProductionWastage> findByWastageType(String wastageType);
+//    List<ProductionWastage> findByWastageType(String wastageType);
     
     /**
      * Find wastage by wastage type with pagination
@@ -63,7 +64,7 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     /**
      * Find wastage by wastage date
      */
-    List<ProductionWastage> findByWastageDate(LocalDate wastageDate);
+//    List<ProductionWastage> findByWastageDate(LocalDate wastageDate);
     
     /**
      * Find wastage by wastage date range
@@ -73,34 +74,34 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     /**
      * Find wastage by wastage date range with pagination
      */
-    Page<ProductionWastage> findByWastageDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
+//    Page<ProductionWastage> findByWastageDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
     
     /**
      * Find wastage by work order and wastage type
      */
-    List<ProductionWastage> findByWoIdAndWastageType(Long woId, String wastageType);
+//    List<ProductionWastage> findByWoIdAndWastageType(Long woId, String wastageType);
     
     // ==================== COUNT METHODS ====================
     
     /**
      * Count wastage for a work order
-     */
-    long countByWoId(Long woId);
-    
-    /**
-     * Count wastage for a product
-     */
-    long countByProductId(Long productId);
+//     */
+//    long countByWoId(Long woId);
+//
+//    /**
+//     * Count wastage for a product
+//     */
+//    long countByProductId(Long productId);
     
     /**
      * Count wastage by wastage type
      */
-    long countByWastageType(String wastageType);
-    
-    /**
-     * Count wastage in date range
-     */
-    long countByWastageDateBetween(LocalDate startDate, LocalDate endDate);
+//    long countByWastageType(String wastageType);
+//
+//    /**
+//     * Count wastage in date range
+//     */
+//    long countByWastageDateBetween(LocalDate startDate, LocalDate endDate);
     
     // ==================== CUSTOM QUERIES ====================
     
@@ -128,33 +129,33 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     /**
      * Get total quantity wasted for a product
      */
-    @Query("SELECT SUM(pw.quantity) FROM ProductionWastage pw WHERE pw.productId = :productId")
+    @Query("SELECT SUM(pw.quantity) FROM ProductionWastage pw WHERE pw.product.id = :productId")
     BigDecimal getTotalQuantityWastedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total value wasted for a product
      */
-    @Query("SELECT SUM(pw.totalValue) FROM ProductionWastage pw WHERE pw.productId = :productId")
+    @Query("SELECT SUM(pw.totalValue) FROM ProductionWastage pw WHERE pw.product.id = :productId")
     BigDecimal getTotalValueWastedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total quantity wasted for a work order
      */
-    @Query("SELECT SUM(pw.quantity) FROM ProductionWastage pw WHERE pw.woId = :woId")
+    @Query("SELECT SUM(pw.quantity) FROM ProductionWastage pw WHERE pw.id = :woId")
     BigDecimal getTotalQuantityWastedByWorkOrder(@Param("woId") Long woId);
     
     /**
      * Get total value wasted for a work order
      */
-    @Query("SELECT SUM(pw.totalValue) FROM ProductionWastage pw WHERE pw.woId = :woId")
+    @Query("SELECT SUM(pw.totalValue) FROM ProductionWastage pw WHERE pw.id = :woId")
     BigDecimal getTotalValueWastedByWorkOrder(@Param("woId") Long woId);
     
     /**
      * Get wastage statistics by product
      */
-    @Query("SELECT pw.productId, COUNT(pw) as wastageCount, " +
+    @Query("SELECT pw.product.id, COUNT(pw) as wastageCount, " +
            "SUM(pw.quantity) as totalQuantity, SUM(pw.totalValue) as totalValue " +
-           "FROM ProductionWastage pw GROUP BY pw.productId ORDER BY totalValue DESC")
+           "FROM ProductionWastage pw GROUP BY pw.product.id ORDER BY totalValue DESC")
     List<Object[]> getWastageStatisticsByProduct();
     
     /**
@@ -196,8 +197,8 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     /**
      * Get top wasted products
      */
-    @Query("SELECT pw.productId, SUM(pw.quantity) as totalQuantity, SUM(pw.totalValue) as totalValue " +
-           "FROM ProductionWastage pw GROUP BY pw.productId ORDER BY totalValue DESC")
+    @Query("SELECT pw.product.id, SUM(pw.quantity) as totalQuantity, SUM(pw.totalValue) as totalValue " +
+           "FROM ProductionWastage pw GROUP BY pw.product.id ORDER BY totalValue DESC")
     List<Object[]> getTopWastedProducts(Pageable pageable);
     
     /**
@@ -216,16 +217,16 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
     /**
      * Get wastage percentage by product
      */
-    @Query("SELECT pw.productId, pw.wastageType, " +
+    @Query("SELECT pw.product.id, pw.wastageType, " +
            "SUM(pw.quantity) as totalWasted " +
            "FROM ProductionWastage pw " +
-           "GROUP BY pw.productId, pw.wastageType ORDER BY totalWasted DESC")
+           "GROUP BY pw.product.id, pw.wastageType ORDER BY totalWasted DESC")
     List<Object[]> getWastageBreakdownByProduct();
     
     /**
      * Find all wastage ordered by work order
      */
-    @Query("SELECT pw FROM ProductionWastage pw ORDER BY pw.woId, pw.wastageDate DESC")
+    @Query("SELECT pw FROM ProductionWastage pw ORDER BY pw.id, pw.wastageDate DESC")
     List<ProductionWastage> findAllOrderedByWorkOrder();
     
     /**
@@ -235,11 +236,16 @@ public interface ProductionWastageRepository extends JpaRepository<ProductionWas
            "ORDER BY pw.totalValue DESC")
     List<ProductionWastage> findHighValueWastage(@Param("threshold") BigDecimal threshold);
 
-    Page<ProductionWastage> searchWastages(String keyword, Pageable pageable);
+    @Query("SELECT pw FROM ProductionWastage pw WHERE " +
+           "LOWER(pw.reason) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(pw.wastageType) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(pw.product.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<ProductionWastage> searchWastages(@Param("keyword") String keyword, Pageable pageable);
 
-    Optional<BigDecimal> sumQuantityByWoAndType(Long woId, String wastageType);
-
-    Optional<BigDecimal> sumTotalValueByWo(Long woId);
-
-    Optional<BigDecimal> sumQuantityByWo(Long woId);
+    @Query("SELECT SUM(pw.totalValue) FROM ProductionWastage pw WHERE pw.id = :woId AND pw.wastageType = :wastageType")
+    Optional<BigDecimal> sumQuantityByWoAndType(@Param("woId") Long woId,@Param("wastageType") String wastageType);
+@Query("SELECT SUM(pw.totalValue) FROM ProductionWastage pw WHERE pw.id = :woId")
+    Optional<BigDecimal> sumTotalValueByWo(@Param("woId") Long woId);
+@Query("SELECT SUM(pw.quantity) FROM ProductionWastage pw WHERE pw.id = :woId")
+    Optional<BigDecimal> sumQuantityByWo(@Param("woId") Long woId);
 }

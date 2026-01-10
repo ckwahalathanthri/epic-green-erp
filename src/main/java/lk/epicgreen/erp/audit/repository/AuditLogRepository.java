@@ -122,6 +122,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
 
     List<AuditLog> findByOrderByCreatedAtDesc(Pageable limit);
 
+    @Query("DELETE FROM AuditLog al WHERE al.createdAt < :cutodDate")
    long deleteAuditLogByCreatedAtBefore(LocalDateTime cutodDate);
 
 

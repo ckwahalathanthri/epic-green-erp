@@ -218,6 +218,22 @@ public interface SupplierService {
 
     Long countActiveSuppliers();
 
+    List<Supplier> getSuppliersByCreditLimitRange(Double minLimit, Double maxLimit);
+
+    List<Supplier> getSuppliersByBalanceRange(Double minBalance, Double maxBalance);
+
+    List<Supplier> createBulkSuppliers(List<SupplierRequest> requests);
+
+    int activateBulkSuppliers(List<Long> supplierIds);
+
+    int deactivateBulkSuppliers(List<Long> supplierIds);
+
+    int approveBulkSuppliers(List<Long> supplierIds, Long approvedByUserId);
+
+    int deleteBulkSuppliers(List<Long> supplierIds);
+
+    List<Map<String, Object>> getStatusDistribution();
+
 //    List<Map<String, Object>> getStatusDistribution();
 
 //    List<Map<String, Object>> getPaymentTermsDistribution();

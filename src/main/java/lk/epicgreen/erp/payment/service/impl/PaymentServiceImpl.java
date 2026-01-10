@@ -1147,7 +1147,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id);
+        return customerRepository.findByIdAndDeletedAtIsNull(id).get();
     }
 
     private Invoice findInvoiceById(Long id) {

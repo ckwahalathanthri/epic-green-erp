@@ -50,7 +50,8 @@ public class TrialBalance {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false, foreignKey = @ForeignKey(name = "fk_trial_balance_account"))
     private ChartOfAccounts account;
-    
+
+
     /**
      * Opening debit balance
      */

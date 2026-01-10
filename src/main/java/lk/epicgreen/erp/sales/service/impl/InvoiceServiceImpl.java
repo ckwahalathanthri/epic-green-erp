@@ -502,7 +502,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id);
+        return customerRepository.findByIdAndDeletedAtIsNull(id).get();
     }
 
     private CustomerAddress findCustomerAddressById(Long id) {
@@ -511,7 +511,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private Product findProductById(Long id) {
-        return productRepository.findByIdAndDeletedAtIsNull(id);
+        return productRepository.findByIdAndDeletedAtIsNull(id).get();
     }
 
     private UnitOfMeasure findUnitOfMeasureById(Long id) {

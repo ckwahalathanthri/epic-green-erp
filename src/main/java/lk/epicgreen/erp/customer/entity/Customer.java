@@ -1,7 +1,7 @@
 package lk.epicgreen.erp.customer.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
@@ -54,6 +54,18 @@ public class Customer extends AuditEntity {
     @Size(max = 200)
     @Column(name = "customer_name", nullable = false, length = 200)
     private String customerName;
+
+    @Column
+    private String Type;
+
+    @Column
+    private String status;
+
+    @Column
+    private String creditStatus;
+
+    @Column
+    private Long assignedSalesRepId;
     
     /**
      * Customer type (WHOLESALE, RETAIL, DISTRIBUTOR, DIRECT)
@@ -505,7 +517,7 @@ public class Customer extends AuditEntity {
         this.isActive = true;
     }
     
-    @PrePersist
+//    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (isActive == null) {

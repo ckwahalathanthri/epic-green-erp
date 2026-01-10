@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.report.service.impl;
 
 import lk.epicgreen.erp.report.dto.request.SavedReportRequest;
+import lk.epicgreen.erp.report.dto.response.ReportExecutionHistoryResponse;
 import lk.epicgreen.erp.report.dto.response.SavedReportResponse;
 import lk.epicgreen.erp.report.entity.SavedReport;
 import lk.epicgreen.erp.report.mapper.SavedReportMapper;
@@ -157,7 +158,7 @@ public class SavedReportServiceImpl implements SavedReportService {
         SavedReport report = findReportById(reportId);
 
         // Start execution tracking
-        var executionHistory = executionHistoryService.startExecution(reportId, executedBy, parameters);
+        ReportExecutionHistoryResponse executionHistory = executionHistoryService.startExecution(reportId, executedBy, parameters);
 
         try {
             long startTime = System.currentTimeMillis();

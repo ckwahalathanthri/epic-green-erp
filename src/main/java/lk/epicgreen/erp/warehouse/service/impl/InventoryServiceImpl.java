@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -279,7 +280,7 @@ public class InventoryServiceImpl implements InventoryService {
     public List<InventoryValuation> getInventoryValuation(Long warehouseId) {
         // This would typically involve complex calculations
         // For now, returning empty list - to be implemented based on business requirements
-        return List.of();
+        return Arrays.asList();
     }
 
     // ==================== PRIVATE HELPER METHODS ====================

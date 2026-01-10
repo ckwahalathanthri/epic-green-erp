@@ -1,4 +1,4 @@
-﻿package lk.epicgreen.erp.report.repository;
+package lk.epicgreen.erp.report.repository;
 
 import lk.epicgreen.erp.report.entity.SavedReport;
 import org.springframework.data.domain.Page;

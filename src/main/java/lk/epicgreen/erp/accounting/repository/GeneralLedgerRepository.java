@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for GeneralLedger entity
@@ -38,10 +39,10 @@ public interface GeneralLedgerRepository extends JpaRepository<GeneralLedger, Lo
     List<GeneralLedger> findByAccountId(Long accountId);
 
     List<GeneralLedger> findByAccountIdAndTransactionDateBetween(Long accountId,LocalDate startDate,LocalDate endDate);
-
-    List<GeneralLedger> findByJournalEntryId(Long journalEntryId);
-
-    List<GeneralLedger> findByIsPosted(Boolean value);
+@Query("SELECT gl FROM GeneralLedger gl WHERE gl.id = :journalEntryId")
+    List<GeneralLedger> findByJournalEntryId(@Param("journalEntryId") Long journalEntryId);
+@Query("SELECT gl FROM GeneralLedger gl WHERE gl.isPosted = :value")
+    List<GeneralLedger> findByIsPosted(@Param("value") Boolean value);
 
     /**
      * Find all entries for an account with pagination
@@ -111,7 +112,7 @@ public interface GeneralLedgerRepository extends JpaRepository<GeneralLedger, Lo
      * Get current balance for an account
      */
     @Query("SELECT gl.balance FROM GeneralLedger gl WHERE gl.account.id = :accountId " +
-           "ORDER BY gl.transactionDate DESC, gl.createdAt DESC LIMIT 1")
+           "ORDER BY gl.transactionDate DESC, gl.createdAt DESC")
     BigDecimal getCurrentBalanceByAccount(@Param("accountId") Long accountId);
     
     /**
@@ -185,4 +186,11 @@ public interface GeneralLedgerRepository extends JpaRepository<GeneralLedger, Lo
     @Query("SELECT gl FROM GeneralLedger gl WHERE gl.transactionDate = CURRENT_DATE " +
            "ORDER BY gl.createdAt DESC")
     List<GeneralLedger> findTodayEntries();
+@Query("SELECT SUM(gl.creditAmount) FROM GeneralLedger gl WHERE gl.account.id = :id " +
+           "AND gl.period.id = :periodId")
+    Optional<BigDecimal> sumDebitByAccountAndPeriod(@Param("id")Long id,@Param("periodId") Long periodId);
+
+@Query("SELECT SUM(gl.debitAmount) FROM GeneralLedger gl WHERE gl.account.id = :id " +
+           "AND gl.period.id = :periodId")
+    Optional<BigDecimal> sumCreditByAccountAndPeriod(@Param("id")Long id,@Param("periodId") Long periodId);
 }

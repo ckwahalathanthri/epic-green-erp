@@ -11,6 +11,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
@@ -78,7 +80,249 @@ public class AccountingServiceImpl implements AccountingService {
     public Page<ChartOfAccounts> getAllAccounts(Pageable pageable) {
         return accountRepository.findAll(pageable);
     }
-    
+
+    @Transactional
+    public List<ChartOfAccounts> getPostingAccounts(){
+        return accountRepository.findByAccountCategory("Posting");
+    }
+
+    @Transactional
+    public List<ChartOfAccounts> getReceivableAccounts(){
+        return accountRepository.findByAccountCategory("Receivable");
+    }
+
+    @Transactional
+    public boolean validateAccountHierarchy(Long id){
+        ChartOfAccounts account = getAccountById(id);
+        return account.getParentAccount() != null;
+    }
+
+    @Transactional
+    public boolean canDeleteAccount(Long id){
+        // An account can be deleted if it has no child accounts and no ledger entries
+        ChartOfAccounts account = getAccountById(id);
+        boolean hasChildren = !accountRepository.findByParentAccountId(id).isEmpty();
+        boolean hasLedgerEntries = !ledgerRepository.findByAccountId(id).isEmpty();
+        return !hasChildren && !hasLedgerEntries;
+    }
+
+//    @Transactional
+//    public boolean isAccountCodeAvailable(String code){
+//        return accountRepository.findByAccountCode(code).isEmpty();
+//    }
+
+    @Transactional
+    public List<Map<String, Object>> getTotalBalanceByAccountType(){
+        List<Object[]> results = accountRepository.getTotalBalanceByAccountType();
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Object[] result : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("accountType", result[0]);
+            map.put("totalBalance", result[1]);
+            list.add(map);
+        }
+        return list;
+    }
+
+    @Transactional
+    public void markAccountAsReconciled(Long id, LocalDate reconciliationDate){
+        ChartOfAccounts account = getAccountById(id);
+        account.setIsReconsiled(true);
+//        account.setLastReconciledAt(reconciliationDate);
+        accountRepository.save(account);
+    }
+
+    @Transactional
+    public void updateAccountBalances(Long id){
+        // Recalculate the balance for the account
+        BigDecimal balance = accountRepository.getAccountBalance(id);
+        ChartOfAccounts account = getAccountById(id);
+        account.setCurrentBalance(balance);
+        accountRepository.save(account);
+    }
+
+    @Transactional
+    public List<Map<String, Object>> getTrialBalance(){
+        List<Object[]> results = accountRepository.getTrialBalance();
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Object[] result : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("accountCode", result[0]);
+            map.put("accountName", result[1]);
+            map.put("debit", result[2]);
+            map.put("credit", result[3]);
+            list.add(map);
+        }
+        return list;
+    }
+
+    @Transactional
+    public List<Map<String, Object>> getTrialBalanceForFiscalYear(Integer year){
+        List<Object[]> results = accountRepository.getTrialBalanceForFiscalYear(year);
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Object[] result : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("accountCode", result[0]);
+            map.put("accountName", result[1]);
+            map.put("debit", result[2]);
+            map.put("credit", result[3]);
+            list.add(map);
+        }
+        return list;
+    }
+
+    @Transactional
+    public boolean hasAccountTransactions(Long id){
+        List<GeneralLedger> entries = ledgerRepository.findByAccountId(id);
+        return !entries.isEmpty();
+    }
+
+//    @Transactional
+//    public void closeFiscalYear(Integer year){
+//
+//    }
+
+    @Transactional
+    public @NotBlank(message = "Period code is required") @Size(max = 20) String getCurrentFiscalPeriod(){
+        FinancialPeriod period = periodRepository.findCurrentPeriod()
+            .orElseThrow(() -> new RuntimeException("No current fiscal period found"));
+        return period.getPeriodCode();
+    }
+
+    @Transactional
+    public Map<String, Object> generateIncomeStatement(LocalDate startDate, LocalDate endDate){
+        Map<String, Object> incomeStatement = new HashMap<>();
+        List<ChartOfAccounts> revenues = accountRepository.findRevenueAccounts();
+        List<ChartOfAccounts> expenses = accountRepository.findExpenseAccounts();
+
+        incomeStatement.put("revenues", revenues);
+        incomeStatement.put("expenses", expenses);
+
+        // Calculate totals
+        BigDecimal totalRevenue = revenues.stream()
+            .map(ChartOfAccounts::getCurrentBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpenses = expenses.stream()
+            .map(ChartOfAccounts::getCurrentBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal netIncome = totalRevenue.subtract(totalExpenses);
+
+        incomeStatement.put("totalRevenue", totalRevenue);
+        incomeStatement.put("totalExpenses", totalExpenses);
+        incomeStatement.put("netIncome", netIncome);
+
+        return incomeStatement;
+    }
+
+    @Transactional
+    public Map<String, Object> generateCashFlowStatement(LocalDate startDate, LocalDate endDate){
+        Map<String, Object> cashFlowStatement = new HashMap<>();
+        // For simplicity, we will just return empty lists here
+        List<ChartOfAccounts> operatingActivities = new ArrayList<>();
+        List<ChartOfAccounts> investingActivities = new ArrayList<>();
+        List<ChartOfAccounts> financingActivities = new ArrayList<>();
+
+        cashFlowStatement.put("operatingActivities", operatingActivities);
+        cashFlowStatement.put("investingActivities", investingActivities);
+        cashFlowStatement.put("financingActivities", financingActivities);
+
+        // Calculate totals (placeholders for now)
+        BigDecimal totalOperating = BigDecimal.ZERO;
+        BigDecimal totalInvesting = BigDecimal.ZERO;
+        BigDecimal totalFinancing = BigDecimal.ZERO;
+
+        cashFlowStatement.put("totalOperating", totalOperating);
+        cashFlowStatement.put("totalInvesting", totalInvesting);
+        cashFlowStatement.put("totalFinancing", totalFinancing);
+
+        return cashFlowStatement;
+    }
+
+    @Transactional
+    public Map<String, Object> generateEquityStatement(LocalDate startDate, LocalDate endDate){
+        Map<String, Object> equityStatement = new HashMap<>();
+        List<ChartOfAccounts> equityAccounts = accountRepository.findEquityAccounts();
+
+        equityStatement.put("equityAccounts", equityAccounts);
+
+        // Calculate total equity
+        BigDecimal totalEquity = equityAccounts.stream()
+            .map(ChartOfAccounts::getCurrentBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        equityStatement.put("totalEquity", totalEquity);
+
+        return equityStatement;
+    }
+
+    @Transactional
+    public Map<String, Object> generateBalanceSheet(LocalDate asOfDate){
+        Map<String, Object> balanceSheet = new HashMap<>();
+        List<ChartOfAccounts> assets = accountRepository.findAssetAccounts();
+        List<ChartOfAccounts> liabilities = accountRepository.findLiabilityAccounts();
+        List<ChartOfAccounts> equity = accountRepository.findEquityAccounts();
+
+        balanceSheet.put("assets", assets);
+        balanceSheet.put("liabilities", liabilities);
+        balanceSheet.put("equity", equity);
+
+        // Calculate totals
+        BigDecimal totalAssets = assets.stream()
+            .map(ChartOfAccounts::getCurrentBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalLiabilities = liabilities.stream()
+            .map(ChartOfAccounts::getCurrentBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalEquity = equity.stream()
+            .map(ChartOfAccounts::getCurrentBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        balanceSheet.put("totalAssets", totalAssets);
+        balanceSheet.put("totalLiabilities", totalLiabilities);
+        balanceSheet.put("totalEquity", totalEquity);
+
+        return balanceSheet;
+    }
+
+    @Transactional
+    public Integer getCurrentFiscalYear(){
+        FinancialPeriod period = periodRepository.findCurrentPeriod()
+            .orElseThrow(() -> new RuntimeException("No current fiscal period found"));
+        return period.getStartDate().getYear();
+    }
+
+    @Transactional
+    public  List<Map<String, Object>> getTrialBalanceForPeriod(LocalDate startDate, LocalDate endDate){
+        List<Object[]> results = accountRepository.getTrialBalanceForPeriod(startDate, endDate);
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Object[] result : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("accountCode", result[0]);
+            map.put("accountName", result[1]);
+            map.put("debit", result[2]);
+            map.put("credit", result[3]);
+            list.add(map);
+        }
+        return list;
+    }
+
+//    @Transactional
+//    public void reopenFiscalPeriod(Integer year, Integer period){
+//    }
+
+//    @Transactional
+//    public  List<ChartOfAccounts> getAccountsRequiringReconciliation(){
+//        return accountRepository.findByIsReconsiledFalse();
+//    }
+
+    @Transactional
+    public List<ChartOfAccounts> getCashAccounts(){
+        return accountRepository.findByAccountCategory("Cash");
+    }
     @Override
     @Transactional(readOnly = true)
     public List<ChartOfAccounts> getAllAccounts() {
@@ -445,7 +689,7 @@ public class AccountingServiceImpl implements AccountingService {
     // BANK ACCOUNTS
     // ===================================================================
     
-    @Override
+
     public BankAccount createBankAccount(BankAccount bankAccount) {
         log.info("Creating bank account: {}", bankAccount.getAccountNumber());
         return bankAccountRepository.save(bankAccount);

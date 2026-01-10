@@ -10,9 +10,10 @@ import org.springframework.data.domain.Pageable;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lk.epicgreen.erp.report.dto.request.ReportRequest;
 import lk.epicgreen.erp.report.dto.response.SavedReportResponse;
+import org.springframework.stereotype.Service;
 
 
-public interface ReportService {
+public interface ReportService  {
 
     SavedReportResponse generateReport(ReportRequest request);
 

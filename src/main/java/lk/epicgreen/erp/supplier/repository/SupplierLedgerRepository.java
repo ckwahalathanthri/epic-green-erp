@@ -167,7 +167,7 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
      * Get current balance for a supplier (from latest ledger entry)
      */
     @Query("SELECT sl.balance FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId " +
-           "ORDER BY sl.transactionDate DESC, sl.createdAt DESC LIMIT 1")
+           "ORDER BY sl.transactionDate DESC, sl.createdAt ")
     Optional<BigDecimal> getCurrentBalance(@Param("supplierId") Long supplierId);
     
     /**

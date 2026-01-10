@@ -645,7 +645,7 @@ public class ChequeServiceImpl implements ChequeService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id);
+        return customerRepository.findByIdAndDeletedAtIsNull(id).get();
     }
 
     private PageResponse<ChequeResponse> createPageResponse(Page<Cheque> chequePage) {

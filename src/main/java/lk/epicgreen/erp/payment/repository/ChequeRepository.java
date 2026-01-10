@@ -124,7 +124,7 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
      */
     @Query("SELECT c FROM Cheque c WHERE " +
            "(:chequeNumber IS NULL OR LOWER(c.chequeNumber) LIKE LOWER(CONCAT('%', :chequeNumber, '%'))) AND " +
-           "(:customerId IS NULL OR c.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR c.customer.id = :customerId) AND " +
            "(:status IS NULL OR c.status = :status) AND " +
            "(:bankName IS NULL OR LOWER(c.bankName) LIKE LOWER(CONCAT('%', :bankName, '%'))) AND " +
            "(:startDate IS NULL OR c.chequeDate >= :startDate) AND " +
@@ -195,7 +195,7 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
     @Query("SELECT c FROM Cheque c ORDER BY c.createdAt DESC")
     List<Cheque> findRecentCheques(Pageable page);
 
-    @Query("SELECT c FROM Cheque c WHERE c.customerId = :customerId " +
+    @Query("SELECT c FROM Cheque c WHERE c.customer.id = :customerId " +
            "ORDER BY c.createdAt DESC")
     List<Cheque> findRecentChequesByCustomer(@Param("customerId") Long customerId,Pageable page);
 
@@ -226,7 +226,7 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
            "ORDER BY c.chequeDate")
     List<Cheque> findDueCheques(LocalDate asOfDate);
 
-    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.customerId = :customerId")
+    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.customer.id = :customerId")
     BigDecimal sumChequeAmountByCustomer(Long customerId);
 
     @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.status = 'RECEIVED'")
@@ -267,14 +267,14 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
     /**
      * Get total cheque amount by customer
      */
-    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.customerId = :customerId " +
+    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.customer.id = :customerId " +
            "AND c.status = 'CLEARED'")
     BigDecimal getTotalChequeAmountByCustomer(@Param("customerId") Long customerId);
     
     /**
      * Get total bounced cheque amount by customer
      */
-    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.customerId = :customerId " +
+    @Query("SELECT SUM(c.chequeAmount) FROM Cheque c WHERE c.customer.id = :customerId " +
            "AND c.status = 'BOUNCED'")
     BigDecimal getTotalBouncedAmountByCustomer(@Param("customerId") Long customerId);
     
@@ -312,10 +312,10 @@ public interface ChequeRepository extends JpaRepository<Cheque, Long>, JpaSpecif
     /**
      * Get cheques grouped by customer
      */
-    @Query("SELECT c.customerId, COUNT(c) as chequeCount, " +
+    @Query("SELECT c.customer.id, COUNT(c) as chequeCount, " +
            "SUM(c.chequeAmount) as totalAmount, " +
            "SUM(CASE WHEN c.status = 'BOUNCED' THEN 1 ELSE 0 END) as bouncedCount " +
-           "FROM Cheque c GROUP BY c.customerId ORDER BY totalAmount DESC")
+           "FROM Cheque c GROUP BY c.customer.id ORDER BY totalAmount DESC")
     List<Object[]> getChequesByCustomer();
     
     /**
