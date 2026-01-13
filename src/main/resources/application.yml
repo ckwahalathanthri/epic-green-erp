@@ -1,21 +1,11 @@
-# =====================================================
-# Epic Green ERP - Application Configuration
-# =====================================================
-
 spring:
   application:
     name: epic-green-erp
-
-  # ===================================================
-  # DATABASE CONFIGURATION
-  # ===================================================
   datasource:
     url: jdbc:mysql://localhost:3306/epic_green_erp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-    # HikariCP Connection Pool
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -25,20 +15,16 @@ spring:
       pool-name: EpicGreenHikariCP
       auto-commit: true
       connection-test-query: SELECT 1
-
-  # ===================================================
-  # JPA / HIBERNATE CONFIGURATION
-  # ===================================================
   jpa:
     hibernate:
-      ddl-auto: create  # Use Flyway for schema management
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         use_sql_comments: true
         jdbc:
@@ -49,3 +35,9 @@ spring:
         query:
           in_clause_parameter_padding: true
         enable_lazy_load_no_trans: false
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.tool.schema: DEBUG
