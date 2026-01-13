@@ -10,9 +10,9 @@ spring:
   # DATABASE CONFIGURATION
   # ===================================================
   datasource:
-    url: jdbc:mysql://localhost:3306/epic_green_erp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/epic_green_erp?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: root
-    password: 1234
+    password: root@123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     # HikariCP Connection Pool
@@ -31,14 +31,14 @@ spring:
   # ===================================================
   jpa:
     hibernate:
-      ddl-auto: create  # Use Flyway for schema management
+      ddl-auto: update  # Use Flyway for schema management
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         use_sql_comments: true
         jdbc:
