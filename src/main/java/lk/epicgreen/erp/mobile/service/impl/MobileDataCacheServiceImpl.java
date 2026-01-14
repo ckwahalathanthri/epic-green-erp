@@ -69,8 +69,8 @@ public class MobileDataCacheServiceImpl implements MobileDataCacheService {
     public void deleteCacheByKey(Long userId, String cacheKey) {
         log.info("Deleting cache for user: {} key: {}", userId, cacheKey);
         
-        int deletedCount = cacheRepository.deleteByUserIdAndCacheKey(userId, cacheKey);
-        log.info("Deleted {} cache entries", deletedCount);
+        cacheRepository.deleteByUserIdAndCacheKey(userId, cacheKey);
+        log.info("Deleted {} cache entries");
     }
 
     @Override
@@ -78,8 +78,8 @@ public class MobileDataCacheServiceImpl implements MobileDataCacheService {
     public void deleteAllCacheForUser(Long userId) {
         log.info("Deleting all cache for user: {}", userId);
         
-        int deletedCount = cacheRepository.deleteByUserId(userId);
-        log.info("Deleted {} cache entries for user {}", deletedCount, userId);
+        cacheRepository.deleteByUserId(userId);
+        log.info("Deleted {} cache entries for user {}", userId);
     }
 
     @Override
@@ -141,9 +141,9 @@ public class MobileDataCacheServiceImpl implements MobileDataCacheService {
         log.info("Cleaning up expired caches");
 
         LocalDateTime now = LocalDateTime.now();
-        int deletedCount = cacheRepository.deleteByExpiresAtBefore(now);
+         cacheRepository.deleteByExpiresAtBefore(now);
 
-        log.info("Cleaned up {} expired caches", deletedCount);
+        log.info("Cleaned up {} expired caches");
     }
 
     @Override
@@ -156,7 +156,7 @@ public class MobileDataCacheServiceImpl implements MobileDataCacheService {
 
         if (existingCache.isPresent()) {
             MobileDataCache cache = existingCache.get();
-            cache.setDataSnapshot(newData);
+            cache.setDataSnapshot(newData.toString());
             cache.setLastSyncedAt(LocalDateTime.now());
             cacheRepository.save(cache);
             log.info("Cache refreshed successfully");

@@ -153,7 +153,7 @@ public class ChartOfAccountsServiceImpl implements ChartOfAccountsService {
 
     @Override
     public PageResponse<ChartOfAccountsResponse> searchAccounts(String keyword, Pageable pageable) {
-        Page<ChartOfAccounts> accountPage = accountRepository.searchAccounts(keyword, pageable);
+        Page<ChartOfAccounts> accountPage = accountRepository.searchAccounts(keyword,null,null,null,null,pageable);
         return createPageResponse(accountPage);
     }
 

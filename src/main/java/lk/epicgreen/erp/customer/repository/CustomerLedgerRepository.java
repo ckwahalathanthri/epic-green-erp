@@ -17,89 +17,91 @@ import java.util.Optional;
 /**
  * Repository interface for CustomerLedger entity
  * Based on ACTUAL database schema: customer_ledger table
- * 
+ *
  * Fields: customer_id (BIGINT), transaction_date,
  *         transaction_type (ENUM: SALE, PAYMENT, RETURN, CREDIT_NOTE, DEBIT_NOTE, ADJUSTMENT),
  *         reference_type, reference_id (BIGINT), reference_number,
  *         description, debit_amount, credit_amount, balance
- * 
+ *
  * NOTE: This is an IMMUTABLE ledger - no updates or deletes after creation
- * 
+ *
  * @author Epic Green Development Team
  * @version 1.0
  */
 @Repository
 public interface CustomerLedgerRepository extends JpaRepository<CustomerLedger, Long>, JpaSpecificationExecutor<CustomerLedger> {
-    
+
     // ==================== FINDER METHODS ====================
-    
+
     /**
      * Find all ledger entries for a customer
      */
     List<CustomerLedger> findByCustomerId(Long customerId);
-    
+
     /**
      * Find all ledger entries for a customer with pagination
      */
     Page<CustomerLedger> findByCustomerId(Long customerId, Pageable pageable);
-    
+
     /**
      * Find ledger entries by customer ordered by transaction date
      */
     List<CustomerLedger> findByCustomerIdOrderByTransactionDateAscCreatedAtAsc(Long customerId);
-    
+
     /**
      * Find ledger entries by transaction type
      */
-    List<CustomerLedger> findByTransactionType(String transactionType);
-    
+    Page<CustomerLedger> findByTransactionType(String transactionType, Pageable pageable);
+
     /**
      * Find ledger entries by customer and transaction type
      */
     List<CustomerLedger> findByCustomerIdAndTransactionType(Long customerId, String transactionType);
-    
+
     /**
      * Find ledger entries by transaction date
      */
     List<CustomerLedger> findByTransactionDate(LocalDate transactionDate);
-    
+
     /**
      * Find ledger entries by transaction date range
      */
     List<CustomerLedger> findByTransactionDateBetween(LocalDate startDate, LocalDate endDate);
-    
+
     /**
      * Find ledger entries by customer and date range
      */
+    @Query("SELECT cl FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate ORDER BY cl.transactionDate ASC, cl.createdAt ASC")
     List<CustomerLedger> findByCustomerIdAndTransactionDateBetween(
-            Long customerId, LocalDate startDate, LocalDate endDate);
-    
+            @Param("customerId") Long customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
     /**
      * Find ledger entries by reference
      */
     List<CustomerLedger> findByReferenceTypeAndReferenceId(String referenceType, Long referenceId);
-    
+
     /**
      * Find ledger entries by reference number
      */
     List<CustomerLedger> findByReferenceNumber(String referenceNumber);
-    
+
     /**
      * Find latest ledger entry for a customer
      */
     Optional<CustomerLedger> findFirstByCustomerIdOrderByTransactionDateDescCreatedAtDesc(Long customerId);
-    
+
     // ==================== SEARCH METHODS ====================
-    
+
     /**
      * Search ledger entries by multiple criteria
      */
     @Query("SELECT cl FROM CustomerLedger cl WHERE " +
-           "(:customerId IS NULL OR cl.customerId = :customerId) AND " +
-           "(:transactionType IS NULL OR cl.transactionType = :transactionType) AND " +
-           "(:startDate IS NULL OR cl.transactionDate >= :startDate) AND " +
-           "(:endDate IS NULL OR cl.transactionDate <= :endDate) AND " +
-           "(:referenceNumber IS NULL OR cl.referenceNumber = :referenceNumber)")
+            "(:customerId IS NULL OR cl.customer.id = :customerId) AND " +
+            "(:transactionType IS NULL OR cl.transactionType = :transactionType) AND " +
+            "(:startDate IS NULL OR cl.transactionDate >= :startDate) AND " +
+            "(:endDate IS NULL OR cl.transactionDate <= :endDate) AND " +
+            "(:referenceNumber IS NULL OR cl.referenceNumber = :referenceNumber)")
     Page<CustomerLedger> searchLedger(
             @Param("customerId") Long customerId,
             @Param("transactionType") String transactionType,
@@ -107,158 +109,200 @@ public interface CustomerLedgerRepository extends JpaRepository<CustomerLedger, 
             @Param("endDate") LocalDate endDate,
             @Param("referenceNumber") String referenceNumber,
             Pageable pageable);
-    
+
     // ==================== COUNT METHODS ====================
-    
+
     /**
      * Count ledger entries for a customer
      */
     long countByCustomerId(Long customerId);
-    
+
     /**
      * Count ledger entries by transaction type
      */
     long countByTransactionType(String transactionType);
-    
+
     /**
      * Count ledger entries in date range
      */
     long countByTransactionDateBetween(LocalDate startDate, LocalDate endDate);
-    
+
     // ==================== CUSTOM QUERIES ====================
-    
+
     /**
      * Find sale transactions
      */
     @Query("SELECT cl FROM CustomerLedger cl WHERE cl.transactionType = 'SALE' " +
-           "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
     List<CustomerLedger> findSaleTransactions();
-    
+
     /**
      * Find payment transactions
      */
     @Query("SELECT cl FROM CustomerLedger cl WHERE cl.transactionType = 'PAYMENT' " +
-           "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
     List<CustomerLedger> findPaymentTransactions();
-    
+
     /**
      * Find return transactions
      */
     @Query("SELECT cl FROM CustomerLedger cl WHERE cl.transactionType = 'RETURN' " +
-           "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
     List<CustomerLedger> findReturnTransactions();
-    
+
     /**
      * Find credit note transactions
      */
     @Query("SELECT cl FROM CustomerLedger cl WHERE cl.transactionType = 'CREDIT_NOTE' " +
-           "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
     List<CustomerLedger> findCreditNoteTransactions();
-    
+
     /**
      * Find debit note transactions
      */
     @Query("SELECT cl FROM CustomerLedger cl WHERE cl.transactionType = 'DEBIT_NOTE' " +
-           "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
     List<CustomerLedger> findDebitNoteTransactions();
-    
+
     /**
      * Get current balance for a customer (from latest ledger entry)
      */
-    @Query("SELECT cl.balance FROM CustomerLedger cl WHERE cl.customerId = :customerId " +
-           "ORDER BY cl.transactionDate DESC, cl.createdAt DESC LIMIT 1")
+    @Query("SELECT cl.balance FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC ")
     Optional<BigDecimal> getCurrentBalance(@Param("customerId") Long customerId);
-    
+
     /**
      * Get total debit amount for a customer
      */
-    @Query("SELECT SUM(cl.debitAmount) FROM CustomerLedger cl WHERE cl.customerId = :customerId")
+    @Query("SELECT SUM(cl.debitAmount) FROM CustomerLedger cl WHERE cl.customer.id = :customerId")
     BigDecimal getTotalDebitByCustomer(@Param("customerId") Long customerId);
-    
+
     /**
      * Get total credit amount for a customer
      */
-    @Query("SELECT SUM(cl.creditAmount) FROM CustomerLedger cl WHERE cl.customerId = :customerId")
+    @Query("SELECT SUM(cl.creditAmount) FROM CustomerLedger cl WHERE cl.customer.id = :customerId")
     BigDecimal getTotalCreditByCustomer(@Param("customerId") Long customerId);
-    
+
     /**
      * Get total sales for a customer
      */
     @Query("SELECT SUM(cl.debitAmount) FROM CustomerLedger cl " +
-           "WHERE cl.customerId = :customerId AND cl.transactionType = 'SALE'")
+            "WHERE cl.customer.id = :customerId AND cl.transactionType = 'SALE'")
     BigDecimal getTotalSalesByCustomer(@Param("customerId") Long customerId);
-    
+
     /**
      * Get total payments from a customer
      */
     @Query("SELECT SUM(cl.creditAmount) FROM CustomerLedger cl " +
-           "WHERE cl.customerId = :customerId AND cl.transactionType = 'PAYMENT'")
+            "WHERE cl.customer.id = :customerId AND cl.transactionType = 'PAYMENT'")
     BigDecimal getTotalPaymentsByCustomer(@Param("customerId") Long customerId);
-    
+
     /**
      * Get ledger summary by customer and date range
      */
     @Query("SELECT " +
-           "SUM(cl.debitAmount) as totalDebit, " +
-           "SUM(cl.creditAmount) as totalCredit, " +
-           "COUNT(cl) as transactionCount " +
-           "FROM CustomerLedger cl WHERE cl.customerId = :customerId " +
-           "AND cl.transactionDate BETWEEN :startDate AND :endDate")
+            "SUM(cl.debitAmount) as totalDebit, " +
+            "SUM(cl.creditAmount) as totalCredit, " +
+            "COUNT(cl) as transactionCount " +
+            "FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate")
     Object getLedgerSummary(
             @Param("customerId") Long customerId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
-    
+
     /**
      * Get transaction statistics by type
      */
     @Query("SELECT cl.transactionType, COUNT(cl) as transactionCount, " +
-           "SUM(cl.debitAmount) as totalDebit, SUM(cl.creditAmount) as totalCredit " +
-           "FROM CustomerLedger cl GROUP BY cl.transactionType ORDER BY transactionCount DESC")
+            "SUM(cl.debitAmount) as totalDebit, SUM(cl.creditAmount) as totalCredit " +
+            "FROM CustomerLedger cl GROUP BY cl.transactionType ORDER BY transactionCount DESC")
     List<Object[]> getTransactionStatisticsByType();
-    
+
     /**
      * Get daily transaction summary
      */
     @Query("SELECT cl.transactionDate, cl.transactionType, COUNT(cl) as transactionCount, " +
-           "SUM(cl.debitAmount) as totalDebit, SUM(cl.creditAmount) as totalCredit " +
-           "FROM CustomerLedger cl WHERE cl.transactionDate BETWEEN :startDate AND :endDate " +
-           "GROUP BY cl.transactionDate, cl.transactionType ORDER BY cl.transactionDate DESC")
+            "SUM(cl.debitAmount) as totalDebit, SUM(cl.creditAmount) as totalCredit " +
+            "FROM CustomerLedger cl WHERE cl.transactionDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY cl.transactionDate, cl.transactionType ORDER BY cl.transactionDate DESC")
     List<Object[]> getDailyTransactionSummary(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
-    
+
     /**
      * Find ledger entries for today
      */
     @Query("SELECT cl FROM CustomerLedger cl WHERE cl.transactionDate = CURRENT_DATE " +
-           "ORDER BY cl.createdAt DESC")
+            "ORDER BY cl.createdAt DESC")
     List<CustomerLedger> findTodayTransactions();
-    
+
     /**
      * Find recent transactions for a customer
      */
-    @Query("SELECT cl FROM CustomerLedger cl WHERE cl.customerId = :customerId " +
-           "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+    @Query("SELECT cl FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
     List<CustomerLedger> findRecentTransactionsByCustomer(@Param("customerId") Long customerId, Pageable pageable);
-    
+
     /**
      * Get customer account statement
      */
-    @Query("SELECT cl FROM CustomerLedger cl WHERE cl.customerId = :customerId " +
-           "AND cl.transactionDate BETWEEN :startDate AND :endDate " +
-           "ORDER BY cl.transactionDate ASC, cl.createdAt ASC")
+    @Query("SELECT cl FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY cl.transactionDate ASC, cl.createdAt ASC")
     List<CustomerLedger> getAccountStatement(
             @Param("customerId") Long customerId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
-    
+
     /**
      * Find customers with transactions in date range
      */
-    @Query("SELECT DISTINCT cl.customerId FROM CustomerLedger cl " +
-           "WHERE cl.transactionDate BETWEEN :startDate AND :endDate")
+    @Query("SELECT DISTINCT cl.customer.id FROM CustomerLedger cl " +
+            "WHERE cl.transactionDate BETWEEN :startDate AND :endDate")
     List<Long> findCustomersWithTransactions(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT cl.balance FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+    Optional<BigDecimal> getCustomerBalance(@Param("customerId") Long customerId);
+
+    @Query("SELECT cl.balance FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate <= :asOfDate " +
+            "ORDER BY cl.transactionDate DESC, cl.createdAt DESC")
+    Optional<BigDecimal> getCustomerBalanceAsOfDate(@Param("customerId") Long customerId, @Param("asOfDate") LocalDate asOfDate);
+
+    @Query("SELECT SUM(CASE WHEN cl.transactionType = :type THEN cl.debitAmount ELSE cl.creditAmount END) " +
+            "FROM CustomerLedger cl WHERE cl.customer.id = :customerId")
+    Optional<BigDecimal> getTotalByCustomerAndType(@Param("customerId") Long customerId, @Param("type") String string);
+
+    @Query("SELECT SUM(cl.debitAmount) FROM CustomerLedger cl " +
+            "WHERE cl.customer.id = :id")
+    Optional<BigDecimal> getTotalDebitsByCustomer(@Param("id") Long id);
+
+    @Query("SELECT SUM(cl.creditAmount) FROM CustomerLedger cl " +
+            "WHERE cl.customer.id = :id")
+    Optional<BigDecimal> getTotalCreditsByCustomer(@Param("id") Long id);
+
+    @Query("SELECT SUM(CASE WHEN cl.transactionType = :type THEN cl.debitAmount ELSE cl.creditAmount END) " +
+            "FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate")
+    Optional<BigDecimal> getTotalByCustomerAndTypeAndDateRange(@Param("customerId") Long customerId, @Param("type") String string, @Param("startDate") LocalDate startDate,
+                                                               @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT SUM(cl.debitAmount) FROM CustomerLedger cl " +
+            "WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate")
+    Optional<BigDecimal> getTotalDebitsByCustomerAndDateRange(@Param("customerId") Long customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT SUM(cl.creditAmount) FROM CustomerLedger cl " +
+            "WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate")
+    Optional<BigDecimal> getTotalCreditsByCustomerAndDateRange(@Param("customerId") Long customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COUNT(cl) FROM CustomerLedger cl " +
+            "WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate")
+    Integer countByCustomerIdAndTransactionDateBetween(@Param("customerId") Long customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

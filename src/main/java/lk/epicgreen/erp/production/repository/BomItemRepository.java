@@ -87,7 +87,7 @@ public interface BomItemRepository extends JpaRepository<BomItem, Long>, JpaSpec
      * Delete all items for a BOM
      */
     @Modifying
-    @Query("DELETE FROM BomItem bi WHERE bi.bomId = :bomId")
+    @Query("DELETE FROM BomItem bi WHERE bi.bom.id = :bomId")
     void deleteAllByBomId(@Param("bomId") Long bomId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -95,19 +95,19 @@ public interface BomItemRepository extends JpaRepository<BomItem, Long>, JpaSpec
     /**
      * Get total quantity required for a raw material across all BOMs
      */
-    @Query("SELECT SUM(bi.quantityRequired) FROM BomItem bi WHERE bi.rawMaterialId = :rawMaterialId")
+    @Query("SELECT SUM(bi.quantityRequired) FROM BomItem bi WHERE bi.rawMaterial.id = :rawMaterialId")
     BigDecimal getTotalQuantityRequiredByRawMaterial(@Param("rawMaterialId") Long rawMaterialId);
     
     /**
      * Get total cost for a BOM
      */
-    @Query("SELECT SUM(bi.standardCost * bi.quantityRequired) FROM BomItem bi WHERE bi.bomId = :bomId")
+    @Query("SELECT SUM(bi.standardCost * bi.quantityRequired) FROM BomItem bi WHERE bi.bom.id = :bomId")
     BigDecimal getTotalCostByBom(@Param("bomId") Long bomId);
     
     /**
      * Get total quantity for a BOM
      */
-    @Query("SELECT SUM(bi.quantityRequired) FROM BomItem bi WHERE bi.bomId = :bomId")
+    @Query("SELECT SUM(bi.quantityRequired) FROM BomItem bi WHERE bi.bom.id = :bomId")
     BigDecimal getTotalQuantityByBom(@Param("bomId") Long bomId);
     
     /**
@@ -119,7 +119,7 @@ public interface BomItemRepository extends JpaRepository<BomItem, Long>, JpaSpec
     /**
      * Find items with wastage for a BOM
      */
-    @Query("SELECT bi FROM BomItem bi WHERE bi.bomId = :bomId AND bi.wastagePercentage > 0")
+    @Query("SELECT bi FROM BomItem bi WHERE bi.bom.id = :bomId AND bi.wastagePercentage > 0")
     List<BomItem> findItemsWithWastageByBom(@Param("bomId") Long bomId);
     
     /**
@@ -131,30 +131,30 @@ public interface BomItemRepository extends JpaRepository<BomItem, Long>, JpaSpec
     /**
      * Get BOM item statistics by raw material
      */
-    @Query("SELECT bi.rawMaterialId, COUNT(bi) as bomCount, " +
+    @Query("SELECT bi.rawMaterial.id, COUNT(bi) as bomCount, " +
            "SUM(bi.quantityRequired) as totalQuantity, AVG(bi.wastagePercentage) as avgWastage " +
-           "FROM BomItem bi GROUP BY bi.rawMaterialId ORDER BY bomCount DESC")
+           "FROM BomItem bi GROUP BY bi.rawMaterial.id ORDER BY bomCount DESC")
     List<Object[]> getBomItemStatisticsByRawMaterial();
     
     /**
      * Get most used raw materials
      */
-    @Query("SELECT bi.rawMaterialId, COUNT(DISTINCT bi.bomId) as bomCount, " +
+    @Query("SELECT bi.rawMaterial.id, COUNT(DISTINCT bi.bom.id) as bomCount, " +
            "SUM(bi.quantityRequired) as totalQuantity " +
-           "FROM BomItem bi GROUP BY bi.rawMaterialId ORDER BY bomCount DESC")
+           "FROM BomItem bi GROUP BY bi.rawMaterial.id ORDER BY bomCount DESC")
     List<Object[]> getMostUsedRawMaterials(Pageable pageable);
     
     /**
      * Find items by BOM ordered by cost
      */
-    @Query("SELECT bi FROM BomItem bi WHERE bi.bomId = :bomId " +
+    @Query("SELECT bi FROM BomItem bi WHERE bi.bom.id = :bomId " +
            "ORDER BY (bi.standardCost * bi.quantityRequired) DESC")
     List<BomItem> findByBomOrderByCost(@Param("bomId") Long bomId);
     
     /**
      * Find all items ordered by BOM
      */
-    @Query("SELECT bi FROM BomItem bi ORDER BY bi.bomId, bi.sequenceNumber")
+    @Query("SELECT bi FROM BomItem bi ORDER BY bi.bom.id, bi.sequenceNumber")
     List<BomItem> findAllOrderedByBom();
     
     /**

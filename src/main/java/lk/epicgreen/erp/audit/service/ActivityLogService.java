@@ -2,7 +2,9 @@ package lk.epicgreen.erp.audit.service;
 
 import lk.epicgreen.erp.audit.dto.request.ActivityLogRequest;
 import lk.epicgreen.erp.audit.dto.response.ActivityLogResponse;
+import lk.epicgreen.erp.audit.entity.ActivityLog;
 import lk.epicgreen.erp.common.dto.PageResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
@@ -52,24 +54,33 @@ public interface ActivityLogService {
      * Get Activity Logs by device type
      */
     PageResponse<ActivityLogResponse> getActivityLogsByDeviceType(String deviceType, Pageable pageable);
+    Page<ActivityLog> getActivityLogsByUserId(Long userId,Pageable pageable);
+
+    Page<ActivityLog> getActivityLogsByType(String activityType,Pageable pageable);
+
+//    List<ActivityLog> getActivityLogsBySessionId(String sessionId);
+    List<ActivityLog> getLoginActivitiesByUserId(Long userId);
+
 
     /**
      * Get Activity Logs by date range
      */
-    List<ActivityLogResponse> getActivityLogsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
-
-    /**
-     * Get Activity Logs by reference
-     */
-    List<ActivityLogResponse> getActivityLogsByReference(String referenceType, Long referenceId);
-
-    /**
-     * Get user activity summary
-     */
-    List<ActivityLogResponse> getUserActivitySummary(Long userId, LocalDateTime startDate, LocalDateTime endDate);
-
-    /**
-     * Search Activity Logs
-     */
-    PageResponse<ActivityLogResponse> searchActivityLogs(String keyword, Pageable pageable);
-}
+    List<ActivityLogResponse> getActivityLogsByDateRange(LocalDateTime startDate, LocalDateTime endDate);}
+//    List<ActivityLog> getRecentActivityLogs(int limit);
+//
+//    void deleteOldActivityLogs(int daysToKeep);
+//    /**
+//     * Get Activity Logs by reference
+//     */
+//    List<ActivityLogResponse> getActivityLogsByReference(String referenceType, Long referenceId);
+//
+//    /**
+//     * Get user activity summary
+//     */
+//    List<ActivityLogResponse> getUserActivitySummary(Long userId, LocalDateTime startDate, LocalDateTime endDate);
+//
+//    /**
+//     * Search Activity Logs
+//     */
+//    PageResponse<ActivityLogResponse> searchActivityLogs(String keyword, Pageable pageable);
+//}

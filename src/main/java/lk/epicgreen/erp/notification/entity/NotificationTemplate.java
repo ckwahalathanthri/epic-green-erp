@@ -1,8 +1,7 @@
 package lk.epicgreen.erp.notification.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
@@ -77,6 +76,9 @@ public class NotificationTemplate extends AuditEntity {
      */
     @Column(name = "is_active")
     private Boolean isActive;
+
+    @Column(name = "category", length = 50)
+    private String category;
     
     /**
      * Notification type checks
@@ -177,7 +179,6 @@ public class NotificationTemplate extends AuditEntity {
         this.isActive = false;
     }
     
-    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (isActive == null) {

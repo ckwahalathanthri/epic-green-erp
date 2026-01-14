@@ -1,9 +1,10 @@
 package lk.epicgreen.erp.warehouse.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;
 
@@ -55,6 +56,9 @@ public class Inventory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false, foreignKey = @ForeignKey(name = "fk_inventory_product"))
     private Product product;
+
+    @Column
+    private double quantity;
     
     /**
      * Specific location within warehouse

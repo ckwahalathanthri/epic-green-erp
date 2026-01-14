@@ -1,11 +1,11 @@
-package lk.epicgreen.erp.reports.dto.request;
+package lk.epicgreen.erp.report.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.*;
 import java.util.Map;
 
 /**

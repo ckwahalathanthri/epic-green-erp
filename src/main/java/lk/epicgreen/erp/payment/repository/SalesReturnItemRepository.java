@@ -33,12 +33,12 @@ public interface SalesReturnItemRepository extends JpaRepository<SalesReturnItem
     /**
      * Find all items for a return
      */
-    List<SalesReturnItem> findByReturnId(Long returnId);
-    
-    /**
-     * Find all items for a return with pagination
-     */
-    Page<SalesReturnItem> findByReturnId(Long returnId, Pageable pageable);
+//    List<SalesReturnItem> findByReturnId(Long returnId);
+//
+//    /**
+//     * Find all items for a return with pagination
+//     */
+//    Page<SalesReturnItem> findByReturnId(Long returnId, Pageable pageable);
     
     /**
      * Find all items for a product
@@ -53,7 +53,7 @@ public interface SalesReturnItemRepository extends JpaRepository<SalesReturnItem
     /**
      * Find items by return and product
      */
-    List<SalesReturnItem> findByReturnIdAndProductId(Long returnId, Long productId);
+//    List<SalesReturnItem> findByReturnIdAndProductId(Long returnId, Long productId);
     
     /**
      * Find items by batch number
@@ -63,24 +63,24 @@ public interface SalesReturnItemRepository extends JpaRepository<SalesReturnItem
     /**
      * Find items by disposition
      */
-    List<SalesReturnItem> findByDisposition(String disposition);
+//    List<SalesReturnItem> findByDisposition(String disposition);
     
     // ==================== COUNT METHODS ====================
     
     /**
      * Count items for a return
      */
-    long countByReturnId(Long returnId);
-    
-    /**
-     * Count items for a product
-     */
-    long countByProductId(Long productId);
-    
-    /**
-     * Count items by disposition
-     */
-    long countByDisposition(String disposition);
+//    long countByReturnId(Long returnId);
+//
+//    /**
+//     * Count items for a product
+//     */
+//    long countByProductId(Long productId);
+//
+//    /**
+//     * Count items by disposition
+//     */
+//    long countByDisposition(String disposition);
     
     // ==================== DELETE METHODS ====================
     
@@ -88,7 +88,7 @@ public interface SalesReturnItemRepository extends JpaRepository<SalesReturnItem
      * Delete all items for a return
      */
     @Modifying
-    @Query("DELETE FROM SalesReturnItem sri WHERE sri.returnId = :returnId")
+    @Query("DELETE FROM SalesReturnItem sri WHERE sri.id = :returnId")
     void deleteAllByReturnId(@Param("returnId") Long returnId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -96,25 +96,25 @@ public interface SalesReturnItemRepository extends JpaRepository<SalesReturnItem
     /**
      * Get total quantity returned for a product
      */
-    @Query("SELECT SUM(sri.quantityReturned) FROM SalesReturnItem sri WHERE sri.productId = :productId")
+    @Query("SELECT SUM(sri.quantityReturned) FROM SalesReturnItem sri WHERE sri.product.id = :productId")
     BigDecimal getTotalQuantityReturnedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total value for a return
      */
-    @Query("SELECT SUM(sri.lineTotal) FROM SalesReturnItem sri WHERE sri.returnId = :returnId")
+    @Query("SELECT SUM(sri.lineTotal) FROM SalesReturnItem sri WHERE sri.id = :returnId")
     BigDecimal getTotalValueByReturn(@Param("returnId") Long returnId);
     
     /**
      * Get total quantity for a return
      */
-    @Query("SELECT SUM(sri.quantityReturned) FROM SalesReturnItem sri WHERE sri.returnId = :returnId")
+    @Query("SELECT SUM(sri.quantityReturned) FROM SalesReturnItem sri WHERE sri.id = :returnId")
     BigDecimal getTotalQuantityByReturn(@Param("returnId") Long returnId);
     
     /**
      * Get total tax for a return
      */
-    @Query("SELECT SUM(sri.taxAmount) FROM SalesReturnItem sri WHERE sri.returnId = :returnId")
+    @Query("SELECT SUM(sri.taxAmount) FROM SalesReturnItem sri WHERE sri.id = :returnId")
     BigDecimal getTotalTaxByReturn(@Param("returnId") Long returnId);
     
     /**
@@ -144,9 +144,9 @@ public interface SalesReturnItemRepository extends JpaRepository<SalesReturnItem
     /**
      * Get return item statistics by product
      */
-    @Query("SELECT sri.productId, COUNT(sri) as returnCount, " +
+    @Query("SELECT sri.product.id, COUNT(sri) as returnCount, " +
            "SUM(sri.quantityReturned) as totalQuantity, SUM(sri.lineTotal) as totalValue " +
-           "FROM SalesReturnItem sri GROUP BY sri.productId ORDER BY totalValue DESC")
+           "FROM SalesReturnItem sri GROUP BY sri.product.id ORDER BY totalValue DESC")
     List<Object[]> getReturnItemStatisticsByProduct();
     
     /**
@@ -160,24 +160,24 @@ public interface SalesReturnItemRepository extends JpaRepository<SalesReturnItem
     /**
      * Get top returned products
      */
-    @Query("SELECT sri.productId, SUM(sri.quantityReturned) as totalQuantity, SUM(sri.lineTotal) as totalValue " +
-           "FROM SalesReturnItem sri GROUP BY sri.productId ORDER BY totalValue DESC")
+    @Query("SELECT sri.product.id, SUM(sri.quantityReturned) as totalQuantity, SUM(sri.lineTotal) as totalValue " +
+           "FROM SalesReturnItem sri GROUP BY sri.product.id ORDER BY totalValue DESC")
     List<Object[]> getTopReturnedProducts(Pageable pageable);
     
     /**
      * Find items by return and batch
      */
-    List<SalesReturnItem> findByReturnIdAndBatchNumber(Long returnId, String batchNumber);
+//    List<SalesReturnItem> findByReturnIdAndBatchNumber(Long returnId, String batchNumber);
     
     /**
      * Find items by product and batch
      */
-    List<SalesReturnItem> findByProductIdAndBatchNumber(Long productId, String batchNumber);
+//    List<SalesReturnItem> findByProductIdAndBatchNumber(Long productId, String batchNumber);
     
     /**
      * Find all items ordered by return
      */
-    @Query("SELECT sri FROM SalesReturnItem sri ORDER BY sri.returnId, sri.productId")
+    @Query("SELECT sri FROM SalesReturnItem sri ORDER BY sri.id, sri.id")
     List<SalesReturnItem> findAllOrderedByReturn();
     
     /**

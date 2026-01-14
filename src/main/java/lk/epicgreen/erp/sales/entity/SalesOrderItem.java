@@ -1,12 +1,13 @@
 package lk.epicgreen.erp.sales.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.admin.entity.TaxRate;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 /**
@@ -54,6 +55,9 @@ public class SalesOrderItem {
     @Size(max = 50)
     @Column(name = "batch_number", length = 50)
     private String batchNumber;
+
+    @Column
+    private BigDecimal Discount;
     
     /**
      * Quantity ordered
@@ -77,6 +81,9 @@ public class SalesOrderItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uom_id", nullable = false, foreignKey = @ForeignKey(name = "fk_sales_order_item_uom"))
     private UnitOfMeasure uom;
+
+    @Column
+    private double quantity;
     
     /**
      * Unit price
@@ -100,6 +107,9 @@ public class SalesOrderItem {
     @PositiveOrZero(message = "Discount amount must be positive or zero")
     @Column(name = "discount_amount", precision = 15, scale = 2)
     private BigDecimal discountAmount;
+
+
+
     
     /**
      * Tax rate reference
@@ -235,4 +245,7 @@ public class SalesOrderItem {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+
+
 }

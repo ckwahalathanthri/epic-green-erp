@@ -25,7 +25,7 @@ public class TrialBalanceMapper {
             .closingDebit(balance.getClosingDebit())
             .closingCredit(balance.getClosingCredit())
             .generatedAt(balance.getGeneratedAt())
-            .generatedBy(balance.getGeneratedBy())
+            .generatedBy(balance.getGeneratedBy().getId())
             .build();
     }
 }

@@ -1,10 +1,11 @@
 package lk.epicgreen.erp.supplier.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,6 +59,9 @@ public class Supplier extends AuditEntity {
     @NotBlank(message = "Supplier type is required")
     @Column(name = "supplier_type", nullable = false, length = 20)
     private String supplierType;
+
+    @Column
+    private String Status;
     
     /**
      * Primary contact person name
@@ -80,6 +84,30 @@ public class Supplier extends AuditEntity {
     @Size(max = 20)
     @Column(name = "phone", length = 20)
     private String phone;
+
+    @Column
+    private String rejectionReason;
+
+    @Column
+    private String region;
+
+    @Column
+    private double balance;
+
+    @Column
+    private String taxNumber;
+
+    @Column
+    private boolean isApproved;
+
+    @Column
+    private boolean isBlocked;
+
+    @Column
+    private BigDecimal currentBalance;
+
+    @Column
+    private String status;
     
     /**
      * Mobile number
@@ -129,6 +157,8 @@ public class Supplier extends AuditEntity {
     @Size(max = 200)
     @Column(name = "address_line2", length = 200)
     private String addressLine2;
+
+
     
     /**
      * City
@@ -136,6 +166,13 @@ public class Supplier extends AuditEntity {
     @Size(max = 100)
     @Column(name = "city", length = 100)
     private String city;
+
+
+
+    @Column
+    private String ReviewComment;
+
+
     
     /**
      * State / Province
@@ -164,6 +201,24 @@ public class Supplier extends AuditEntity {
     @Size(max = 100)
     @Column(name = "bank_name", length = 100)
     private String bankName;
+
+
+    @Column
+    private Long approvedBy;
+
+    @Column
+    private String ApprovalNotes;
+
+    @Column
+    private LocalDateTime approvedAt;
+
+
+
+    @Column
+    private boolean IsBlocked;
+
+    @Column
+    private String BlockReason;
     
     /**
      * Bank account number
@@ -198,6 +253,9 @@ public class Supplier extends AuditEntity {
      */
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column
+    private Integer totalOrders;
     
     /**
      * Additional contacts
@@ -336,11 +394,11 @@ public class Supplier extends AuditEntity {
     /**
      * Check if supplier has good rating (>= 4.0)
      */
-    @Transient
-    public boolean hasGoodRating() {
-        return rating != null && rating.compareTo(new BigDecimal("4.0")) >= 0;
-    }
-    
+//    @Transient
+//    public boolean hasGoodRating() {
+//        return rating != null && rating.compareTo(new BigDecimal("4.0")) >= 0;
+//    }
+//
     /**
      * Soft delete supplier
      */
@@ -357,7 +415,7 @@ public class Supplier extends AuditEntity {
         this.isActive = true;
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (isActive == null) {
@@ -389,4 +447,30 @@ public class Supplier extends AuditEntity {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+    public Integer getTotalOrders() {
+
+        return totalOrders;
+    }
+
+    public boolean getIsBlocked() {
+        return this.IsBlocked;
+    }
+
+    public boolean getIsApproved() {
+        return this.isApproved;
+    }
+
+    public void setIsApproved(boolean b) {
+        this.isApproved = b;
+    }
+
+
+//    public boolean getIsBlocked() {
+//        return IsBlocked;
+//    }
+//
+//    public boolean getIsApproved() {
+//        return IsApproved;
+//    }
 }

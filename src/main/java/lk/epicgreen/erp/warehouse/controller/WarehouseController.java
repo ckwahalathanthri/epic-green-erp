@@ -1,7 +1,10 @@
 package lk.epicgreen.erp.warehouse.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.warehouse.dto.WarehouseRequest;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.warehouse.dto.request.StockMovementRequest;
+import lk.epicgreen.erp.warehouse.dto.request.WarehouseRequest;
+import lk.epicgreen.erp.warehouse.dto.response.WarehouseResponse;
 import lk.epicgreen.erp.warehouse.entity.Warehouse;
 import lk.epicgreen.erp.warehouse.service.WarehouseService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -35,17 +39,17 @@ public class WarehouseController {
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Warehouse>> createWarehouse(@Valid @RequestBody WarehouseRequest request) {
+    public ResponseEntity<ApiResponse<WarehouseResponse>> createWarehouse(@Valid @RequestBody WarehouseRequest request) {
         log.info("Creating warehouse: {}", request.getWarehouseName());
-        Warehouse created = warehouseService.createWarehouse(request);
+        WarehouseResponse created = warehouseService.createWarehouse(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Warehouse created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<Warehouse>> updateWarehouse(@PathVariable Long id, @Valid @RequestBody WarehouseRequest request) {
+    public ResponseEntity<ApiResponse<WarehouseResponse>> updateWarehouse(@PathVariable Long id, @Valid @RequestBody WarehouseRequest request) {
         log.info("Updating warehouse: {}", id);
-        Warehouse updated = warehouseService.updateWarehouse(id, request);
+        WarehouseResponse updated = warehouseService.updateWarehouse(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Warehouse updated successfully"));
     }
     
@@ -59,181 +63,181 @@ public class WarehouseController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Warehouse>> getWarehouseById(@PathVariable Long id) {
-        Warehouse warehouse = warehouseService.getWarehouseById(id);
+    public ResponseEntity<ApiResponse<WarehouseResponse>> getWarehouseById(@PathVariable Long id) {
+        WarehouseResponse warehouse = warehouseService.getWarehouseById(id);
         return ResponseEntity.ok(ApiResponse.success(warehouse, "Warehouse retrieved successfully"));
     }
     
     @GetMapping("/code/{warehouseCode}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Warehouse>> getWarehouseByCode(@PathVariable String warehouseCode) {
-        Warehouse warehouse = warehouseService.getWarehouseByCode(warehouseCode);
+    public ResponseEntity<ApiResponse<WarehouseResponse>> getWarehouseByCode(@PathVariable String warehouseCode) {
+        WarehouseResponse warehouse = warehouseService.getWarehouseByCode(warehouseCode);
         return ResponseEntity.ok(ApiResponse.success(warehouse, "Warehouse retrieved successfully"));
     }
     
     @GetMapping("/name/{warehouseName}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<Warehouse>> getWarehouseByName(@PathVariable String warehouseName) {
-        Warehouse warehouse = warehouseService.getWarehouseByName(warehouseName);
+    public ResponseEntity<ApiResponse<WarehouseResponse>> getWarehouseByName(@PathVariable String warehouseName) {
+        WarehouseResponse warehouse = warehouseService.getWarehouseByName(warehouseName);
         return ResponseEntity.ok(ApiResponse.success(warehouse, "Warehouse retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Warehouse>>> getAllWarehouses(Pageable pageable) {
-        Page<Warehouse> warehouses = warehouseService.getAllWarehouses(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<WarehouseResponse>>> getAllWarehouses(Pageable pageable) {
+        PageResponse<WarehouseResponse> warehouses = warehouseService.getAllWarehouses(pageable);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getAllWarehousesList() {
-        List<Warehouse> warehouses = warehouseService.getAllWarehouses();
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getAllWarehousesList() {
+        List<WarehouseResponse> warehouses = warehouseService.getAllWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Warehouse>>> searchWarehouses(@RequestParam String keyword, Pageable pageable) {
-        Page<Warehouse> warehouses = warehouseService.searchWarehouses(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<WarehouseResponse>>> searchWarehouses(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<WarehouseResponse> warehouses = warehouseService.searchWarehouses(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Search results retrieved successfully"));
     }
     
     // Status Operations
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<Warehouse>> activateWarehouse(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> activateWarehouse(@PathVariable Long id) {
         log.info("Activating warehouse: {}", id);
-        Warehouse activated = warehouseService.activateWarehouse(id);
-        return ResponseEntity.ok(ApiResponse.success(activated, "Warehouse activated successfully"));
+        warehouseService.activateWarehouse(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Warehouse activated successfully"));
     }
     
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<Warehouse>> deactivateWarehouse(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deactivateWarehouse(@PathVariable Long id) {
         log.info("Deactivating warehouse: {}", id);
-        Warehouse deactivated = warehouseService.deactivateWarehouse(id);
-        return ResponseEntity.ok(ApiResponse.success(deactivated, "Warehouse deactivated successfully"));
+        warehouseService.deactivateWarehouse(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Warehouse deactivated successfully"));
     }
     
     @PutMapping("/{id}/set-default")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Warehouse>> setAsDefault(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<WarehouseResponse>> setAsDefault(@PathVariable Long id) {
         log.info("Setting warehouse as default: {}", id);
-        Warehouse warehouse = warehouseService.setAsDefault(id);
+        WarehouseResponse warehouse = warehouseService.setAsDefault(id);
         return ResponseEntity.ok(ApiResponse.success(warehouse, "Warehouse set as default successfully"));
     }
     
     // Query Operations
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getActiveWarehouses() {
-        List<Warehouse> warehouses = warehouseService.getActiveWarehouses();
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getActiveWarehouses() {
+        List<WarehouseResponse> warehouses = warehouseService.getActiveWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Active warehouses retrieved successfully"));
     }
     
     @GetMapping("/inactive")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getInactiveWarehouses() {
-        List<Warehouse> warehouses = warehouseService.getInactiveWarehouses();
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getInactiveWarehouses() {
+        List<WarehouseResponse> warehouses = warehouseService.getInactiveWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Inactive warehouses retrieved successfully"));
     }
     
     @GetMapping("/default")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Warehouse>> getDefaultWarehouse() {
-        Warehouse warehouse = warehouseService.getDefaultWarehouse();
+    public ResponseEntity<ApiResponse<WarehouseResponse>> getDefaultWarehouse() {
+        WarehouseResponse warehouse = warehouseService.getDefaultWarehouse();
         return ResponseEntity.ok(ApiResponse.success(warehouse, "Default warehouse retrieved successfully"));
     }
     
     @GetMapping("/type/main")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getMainWarehouses() {
-        List<Warehouse> warehouses = warehouseService.getMainWarehouses();
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getMainWarehouses() {
+        List<WarehouseResponse> warehouses = warehouseService.getMainWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Main warehouses retrieved successfully"));
     }
     
     @GetMapping("/type/branch")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getBranchWarehouses() {
-        List<Warehouse> warehouses = warehouseService.getBranchWarehouses();
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getBranchWarehouses() {
+        List<WarehouseResponse> warehouses = warehouseService.getBranchWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Branch warehouses retrieved successfully"));
     }
     
     @GetMapping("/type/transit")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getTransitWarehouses() {
-        List<Warehouse> warehouses = warehouseService.getTransitWarehouses();
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getTransitWarehouses() {
+        List<WarehouseResponse> warehouses = warehouseService.getTransitWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Transit warehouses retrieved successfully"));
     }
     
     @GetMapping("/type/retail")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getRetailWarehouses() {
-        List<Warehouse> warehouses = warehouseService.getRetailWarehouses();
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getRetailWarehouses() {
+        List<WarehouseResponse> warehouses = warehouseService.getRetailWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Retail warehouses retrieved successfully"));
     }
     
     @GetMapping("/type/{warehouseType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesByType(@PathVariable String warehouseType) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesByType(warehouseType);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesByType(@PathVariable String warehouseType) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesByType(warehouseType);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses by type retrieved successfully"));
     }
     
     @GetMapping("/city/{city}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesByCity(@PathVariable String city) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesByCity(city);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesByCity(@PathVariable String city) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesByCity(city);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses by city retrieved successfully"));
     }
     
     @GetMapping("/state/{stateProvince}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesByState(@PathVariable String stateProvince) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesByState(stateProvince);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesByState(@PathVariable String stateProvince) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesByState(stateProvince);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses by state retrieved successfully"));
     }
     
     @GetMapping("/region/{region}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesByRegion(@PathVariable String region) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesByRegion(region);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesByRegion(@PathVariable String region) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesByRegion(region);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses by region retrieved successfully"));
     }
     
     @GetMapping("/capacity-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesByCapacityRange(@RequestParam Double minCapacity, @RequestParam Double maxCapacity) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesByCapacityRange(minCapacity, maxCapacity);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesByCapacityRange(@RequestParam Double minCapacity, @RequestParam Double maxCapacity) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesByCapacityRange(minCapacity, maxCapacity);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses by capacity range retrieved successfully"));
     }
     
     @GetMapping("/low-utilization")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesWithLowUtilization(@RequestParam(defaultValue = "0.3") Double threshold) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesWithLowUtilization(threshold);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesWithLowUtilization(@RequestParam(defaultValue = "0.3") Double threshold) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesWithLowUtilization(threshold);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Low utilization warehouses retrieved successfully"));
     }
     
     @GetMapping("/high-utilization")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesWithHighUtilization(@RequestParam(defaultValue = "0.9") Double threshold) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesWithHighUtilization(threshold);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesWithHighUtilization(@RequestParam(defaultValue = "0.9") Double threshold) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesWithHighUtilization(threshold);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "High utilization warehouses retrieved successfully"));
     }
     
     @GetMapping("/near-capacity")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehousesNearCapacity(@RequestParam(defaultValue = "0.95") Double threshold) {
-        List<Warehouse> warehouses = warehouseService.getWarehousesNearCapacity(threshold);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getWarehousesNearCapacity(@RequestParam(defaultValue = "0.95") Double threshold) {
+        List<WarehouseResponse> warehouses = warehouseService.getWarehousesNearCapacity(threshold);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses near capacity retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Warehouse>>> getRecentWarehouses(@RequestParam(defaultValue = "10") int limit) {
-        List<Warehouse> warehouses = warehouseService.getRecentWarehouses(limit);
+    public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getRecentWarehouses(@RequestParam(defaultValue = "10") int limit) {
+        List<WarehouseResponse> warehouses = warehouseService.getRecentWarehouses(limit);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Recent warehouses retrieved successfully"));
     }
     

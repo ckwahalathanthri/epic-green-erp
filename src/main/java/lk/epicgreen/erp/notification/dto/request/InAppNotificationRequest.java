@@ -1,11 +1,15 @@
-package lk.epicgreen.erp.notifications.dto.request;
+package lk.epicgreen.erp.notification.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 /**
@@ -31,7 +35,7 @@ public class InAppNotificationRequest {
     @Size(max = 5000, message = "Message must not exceed 5000 characters")
     private String notificationMessage;
 
-    @Pattern(regexp = "^(INFO|WARNING|ERROR|SUCCESS)$", 
+    @Pattern(regexp = "^(INFO|WARNING|ERROR|SUCCESS)$",
              message = "Notification type must be one of: INFO, WARNING, ERROR, SUCCESS")
     private String notificationType;
 

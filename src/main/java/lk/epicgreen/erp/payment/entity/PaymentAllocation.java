@@ -1,11 +1,11 @@
 package lk.epicgreen.erp.payment.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lk.epicgreen.erp.sales.entity.Invoice;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -81,6 +81,9 @@ public class PaymentAllocation {
      */
     @Column(name = "created_by")
     private Long createdBy;
+
+    @Column(name = "is_reversed", nullable = false)
+    private boolean isReversed = false;
     
     /**
      * Get allocation summary

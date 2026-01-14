@@ -46,7 +46,7 @@ public class FinancialPeriodMapper {
             .endDate(period.getEndDate())
             .fiscalYear(period.getFiscalYear())
             .isClosed(period.getIsClosed())
-            .closedBy(period.getClosedBy())
+            .closedBy(period.getClosedBy().getId())
             .closedAt(period.getClosedAt())
             .createdAt(period.getCreatedAt())
             .createdBy(period.getCreatedBy())

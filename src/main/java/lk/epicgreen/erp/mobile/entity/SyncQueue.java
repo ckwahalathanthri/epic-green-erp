@@ -1,10 +1,11 @@
 package lk.epicgreen.erp.mobile.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 /**

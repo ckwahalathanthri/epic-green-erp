@@ -1,7 +1,9 @@
-package lk.epicgreen.erp.notifications.service;
+package lk.epicgreen.erp.notification.service;
 
-import lk.epicgreen.erp.notifications.dto.request.NotificationTemplateRequest;
-import lk.epicgreen.erp.notifications.dto.response.NotificationTemplateResponse;
+import lk.epicgreen.erp.notification.dto.request.NotificationTemplateRequest;
+import lk.epicgreen.erp.notification.dto.response.NotificationTemplateResponse;
+import lk.epicgreen.erp.notification.entity.NotificationTemplate;
+
 import lk.epicgreen.erp.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 
@@ -75,4 +77,15 @@ public interface NotificationTemplateService {
      * Check if can delete
      */
     boolean canDelete(Long id);
+
+    List<NotificationTemplate> getTemplatesByCategory(String category);
+    NotificationTemplate activateTemplate(Long id);
+
+    NotificationTemplate deactivateTemplate(Long id);
+
+    String renderSubject(NotificationTemplateResponse template, Map<String, Object> variables);
+
+    String renderBody(NotificationTemplateResponse template, Map<String, Object> variables);
+
+    String renderHtmlBody(NotificationTemplateResponse template, Map<String, Object> variables);
 }

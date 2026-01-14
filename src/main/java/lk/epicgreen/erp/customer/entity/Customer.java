@@ -1,12 +1,13 @@
 package lk.epicgreen.erp.customer.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,18 @@ public class Customer extends AuditEntity {
     @Size(max = 200)
     @Column(name = "customer_name", nullable = false, length = 200)
     private String customerName;
+
+    @Column
+    private String Type;
+
+    @Column
+    private String status;
+
+    @Column
+    private String creditStatus;
+
+    @Column
+    private Long assignedSalesRepId;
     
     /**
      * Customer type (WHOLESALE, RETAIL, DISTRIBUTOR, DIRECT)
@@ -110,6 +123,24 @@ public class Customer extends AuditEntity {
     @PositiveOrZero(message = "Credit limit must be positive or zero")
     @Column(name = "credit_limit", precision = 15, scale = 2)
     private BigDecimal creditLimit;
+
+    /**
+     * Has credit limit currency
+     */
+    @Column(name = "has_credit_limit_currency")
+    private Boolean hasCreditLimitCurrency;
+
+    /**
+     * Total sales amount
+     */
+    @Column(name = "total_sales_amount")
+    private BigDecimal totalSalesAmount;
+
+    /**
+     * Has credit facility
+     */
+    @Column(name = "has_credit_facility")
+    private Boolean hasCreditFacility;
     
     /**
      * Credit days (payment terms in days)
@@ -123,6 +154,12 @@ public class Customer extends AuditEntity {
      */
     @Column(name = "current_balance", precision = 15, scale = 2)
     private BigDecimal currentBalance;
+
+    /**
+     * Has outstanding balance
+     */
+    @Column(name = "has_outstanding_balance")
+    private Boolean hasOutstandingBalance;
     
     /**
      * Billing address line 1
@@ -234,12 +271,42 @@ public class Customer extends AuditEntity {
      */
     @Column(name = "is_active")
     private Boolean isActive;
+
+    /**
+     * Verified by user
+     */
+    @Column(name = "verified_by_id")
+    private User verifiedBy;
+
+    /**
+     * Is blacklisted
+     */
+    @Column(name = "is_blacklisted")
+    private Boolean isBlacklisted;
+
+    /**
+     * Blacklist reason
+     */
+    @Column(name = "blacklist_reason", length = 255)
+    private String blacklistReason;
+
+    /**
+     * Is verified
+     */
+    @Column(name = "is_verified")
+    private Boolean isVerified;
     
     /**
      * Soft delete timestamp
      */
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "suspension_reason", length = 255)
+    private String suspensionReason;
+
+    @Column(name = "last_order_date")
+    private LocalDate lastOrderDate;
     
     /**
      * Additional contacts
@@ -450,7 +517,7 @@ public class Customer extends AuditEntity {
         this.isActive = true;
     }
     
-    @PrePersist
+//    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (isActive == null) {

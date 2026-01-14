@@ -1,7 +1,8 @@
-package lk.epicgreen.erp.notifications.service;
+package lk.epicgreen.erp.notification.service;
 
-import lk.epicgreen.erp.notifications.dto.request.NotificationQueueRequest;
-import lk.epicgreen.erp.notifications.dto.response.NotificationQueueResponse;
+import lk.epicgreen.erp.notification.dto.request.NotificationQueueRequest;
+import lk.epicgreen.erp.notification.dto.response.NotificationQueueResponse;
+import lk.epicgreen.erp.notification.entity.NotificationQueue;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 
@@ -41,7 +42,7 @@ public interface NotificationQueueService {
     /**
      * Send notification immediately
      */
-    void sendNotification(Long id);
+    NotificationQueue sendNotification(Long id);
 
     /**
      * Mark notification as sent
@@ -83,6 +84,45 @@ public interface NotificationQueueService {
      */
     PageResponse<NotificationQueueResponse> getNotificationsByStatus(String status, Pageable pageable);
 
+//    List<NotificationQueue> sendBulkNotifications(NotificationQueueRequest request);
+
+    NotificationQueue sendEmail(String to,String subject,String body, String htmlBody);
+    NotificationQueue sendEmail(String to,String subject,String body);
+
+    NotificationQueue sendSms(String to,String message);
+
+    NotificationQueue sendPush(String deviceToken,String title, String message);
+
+    NotificationQueue sendInAppNotification(Long userId,String title,String message);
+
+    NotificationQueue scheduleNotification(NotificationQueueRequest request, LocalDateTime scheduledTime);
+
+    List<NotificationQueue> scheduleBulkNotifications(NotificationQueueRequest request,LocalDateTime scheduledTime);
+
+    List<NotificationQueue> getNotificationsReadyToSend(Pageable limit);
+
+    List<NotificationQueue> getFailedNotificationsForRetry();
+    List<NotificationQueue> getNotificationsByUserId(Long userId);
+
+    List<NotificationQueue> getNotificationsByBatchId(String batchId);
+
+    void processNotificationQueue();
+
+    int processPendingNotifications(int limit);
+    boolean processNotification(Long id);
+
+    int retryFailedNotifications(int limit);
+
+    List<NotificationQueue> checkForStuckNotifications();
+    int  resetStuckNotifications();
+
+    int cancelBatchNotifications(String batchId);
+
+    Map<String,Object> getBatchProgress(String batchId);
+
+    Map<String,Object> getBatchStatistics(String batchId);
+
+    boolean isBatchComplete(String batchId);
     /**
      * Get Notifications by type
      */
@@ -127,6 +167,12 @@ public interface NotificationQueueService {
      * Check if can update
      */
     boolean canUpdate(Long id);
+
+    int deleteOldSentNotifications(int daysToKeep);
+
+    int deleteOldCancelledNotifications(int daysToKeep);
+
+    Map<String,Integer> cleanupOldNotifications(int daysToKeep);
 
     /**
      * Check if can delete

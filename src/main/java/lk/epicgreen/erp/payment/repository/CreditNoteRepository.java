@@ -37,7 +37,7 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Find credit note by credit note number
      */
-    Optional<CreditNote> findByCreditNoteNumber(String creditNoteNumber);
+//    Optional<CreditNote> findByCreditNoteNumber(String creditNoteNumber);
     
     /**
      * Find all credit notes for a customer
@@ -52,12 +52,12 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Find credit notes by return
      */
-    List<CreditNote> findByReturnId(Long returnId);
+//    List<CreditNote> findByReturnId(Long returnId);
     
     /**
      * Find credit notes by invoice
      */
-    List<CreditNote> findByInvoiceId(Long invoiceId);
+//    List<CreditNote> findByInvoiceId(Long invoiceId);
     
     /**
      * Find credit notes by status
@@ -72,58 +72,58 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Find credit notes by reason
      */
-    List<CreditNote> findByReason(String reason);
+//    List<CreditNote> findByReason(String reason);
     
     /**
      * Find credit notes by credit note date
      */
-    List<CreditNote> findByCreditNoteDate(LocalDate creditNoteDate);
-    
-    /**
-     * Find credit notes by credit note date range
-     */
-    List<CreditNote> findByCreditNoteDateBetween(LocalDate startDate, LocalDate endDate);
+//    List<CreditNote> findByCreditNoteDate(LocalDate creditNoteDate);
+//
+//    /**
+//     * Find credit notes by credit note date range
+//     */
+//    List<CreditNote> findByCreditNoteDateBetween(LocalDate startDate, LocalDate endDate);
     
     /**
      * Find credit notes by credit note date range with pagination
      */
-    Page<CreditNote> findByCreditNoteDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
+//    Page<CreditNote> findByCreditNoteDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
     
     /**
      * Find credit notes by expiry date
      */
-    List<CreditNote> findByExpiryDate(LocalDate expiryDate);
-    
-    /**
-     * Find credit notes by expiry date range
-     */
-    List<CreditNote> findByExpiryDateBetween(LocalDate startDate, LocalDate endDate);
+//    List<CreditNote> findByExpiryDate(LocalDate expiryDate);
+//
+//    /**
+//     * Find credit notes by expiry date range
+//     */
+//    List<CreditNote> findByExpiryDateBetween(LocalDate startDate, LocalDate endDate);
     
     // ==================== EXISTENCE CHECKS ====================
     
     /**
      * Check if credit note number exists
      */
-    boolean existsByCreditNoteNumber(String creditNoteNumber);
+//    boolean existsByCreditNoteNumber(String creditNoteNumber);
     
     /**
      * Check if credit note number exists excluding specific credit note ID
      */
-    boolean existsByCreditNoteNumberAndIdNot(String creditNoteNumber, Long id);
+//    boolean existsByCreditNoteNumberAndIdNot(String creditNoteNumber, Long id);
     
     // ==================== SEARCH METHODS ====================
     
     /**
      * Search credit notes by credit note number containing (case-insensitive)
      */
-    Page<CreditNote> findByCreditNoteNumberContainingIgnoreCase(String creditNoteNumber, Pageable pageable);
+//    Page<CreditNote> findByCreditNoteNumberContainingIgnoreCase(String creditNoteNumber, Pageable pageable);
     
     /**
      * Search credit notes by multiple criteria
      */
     @Query("SELECT cn FROM CreditNote cn WHERE " +
            "(:creditNoteNumber IS NULL OR LOWER(cn.creditNoteNumber) LIKE LOWER(CONCAT('%', :creditNoteNumber, '%'))) AND " +
-           "(:customerId IS NULL OR cn.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR cn.customer.id = :customerId) AND " +
            "(:status IS NULL OR cn.status = :status) AND " +
            "(:reason IS NULL OR cn.reason = :reason) AND " +
            "(:startDate IS NULL OR cn.creditNoteDate >= :startDate) AND " +
@@ -147,7 +147,7 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Count credit notes by reason
      */
-    long countByReason(String reason);
+//    long countByReason(String reason);
     
     /**
      * Count credit notes by customer
@@ -157,7 +157,7 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Count credit notes in date range
      */
-    long countByCreditNoteDateBetween(LocalDate startDate, LocalDate endDate);
+//    long countByCreditNoteDateBetween(LocalDate startDate, LocalDate endDate);
     
     // ==================== CUSTOM QUERIES ====================
     
@@ -216,12 +216,12 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Find credit notes by customer and status
      */
-    List<CreditNote> findByCustomerIdAndStatus(Long customerId, String status);
+//    List<CreditNote> findByCustomerIdAndStatus(Long customerId, String status);
     
     /**
      * Get total credit note amount for a customer
      */
-    @Query("SELECT SUM(cn.totalAmount) FROM CreditNote cn WHERE cn.customerId = :customerId " +
+    @Query("SELECT SUM(cn.totalAmount) FROM CreditNote cn WHERE cn.customer.id = :customerId " +
            "AND cn.status = 'ISSUED'")
     BigDecimal getTotalCreditNoteAmountByCustomer(@Param("customerId") Long customerId);
     
@@ -229,7 +229,7 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
      * Get total balance amount for a customer
      */
     @Query("SELECT SUM(cn.totalAmount - cn.utilizedAmount) FROM CreditNote cn " +
-           "WHERE cn.customerId = :customerId AND cn.status = 'ISSUED'")
+           "WHERE cn.customer.id = :customerId AND cn.status = 'ISSUED'")
     BigDecimal getTotalBalanceByCustomer(@Param("customerId") Long customerId);
     
     /**
@@ -264,10 +264,10 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Get credit notes grouped by customer
      */
-    @Query("SELECT cn.customerId, COUNT(cn) as noteCount, " +
+    @Query("SELECT cn.customer.id, COUNT(cn) as noteCount, " +
            "SUM(cn.totalAmount) as totalAmount, SUM(cn.totalAmount - cn.utilizedAmount) as totalBalance " +
            "FROM CreditNote cn WHERE cn.status = 'ISSUED' " +
-           "GROUP BY cn.customerId ORDER BY totalAmount DESC")
+           "GROUP BY cn.customer.id ORDER BY totalAmount DESC")
     List<Object[]> getCreditNotesByCustomer();
     
     /**
@@ -289,13 +289,13 @@ public interface CreditNoteRepository extends JpaRepository<CreditNote, Long>, J
     /**
      * Find all credit notes ordered by date
      */
-    List<CreditNote> findAllByOrderByCreditNoteDateDescCreatedAtDesc();
+//    List<CreditNote> findAllByOrderByCreditNoteDateDescCreatedAtDesc();
     
     /**
      * Get available credit for customer
      */
     @Query("SELECT SUM(cn.totalAmount - cn.utilizedAmount) FROM CreditNote cn " +
-           "WHERE cn.customerId = :customerId AND cn.status = 'ISSUED' " +
+           "WHERE cn.customer.id = :customerId AND cn.status = 'ISSUED' " +
            "AND (cn.expiryDate IS NULL OR cn.expiryDate >= CURRENT_DATE)")
     BigDecimal getAvailableCreditByCustomer(@Param("customerId") Long customerId);
 }

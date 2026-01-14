@@ -1,10 +1,14 @@
 package lk.epicgreen.erp.audit.controller;
 
+import lk.epicgreen.erp.audit.dto.response.ActivityLogResponse;
+import lk.epicgreen.erp.audit.mapper.ActivityLogMapper;
+import lk.epicgreen.erp.audit.service.impl.ActivityLogServiceImpl;
 import lk.epicgreen.erp.common.dto.ApiResponse;
 import lk.epicgreen.erp.audit.entity.ActivityLog;
-import lk.epicgreen.erp.audit.service.AuditService;
+import lk.epicgreen.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -26,28 +30,32 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ActivityLogController {
-    
-    private final AuditService auditService;
+
+    @Autowired
+    private final ActivityLogServiceImpl auditService;
+
+    @Autowired
+    private final ActivityLogMapper activityLogMapper;
     
     // Query Operations
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<ActivityLog>> getActivityLogById(@PathVariable Long id) {
-        ActivityLog activityLog = auditService.getActivityLogById(id);
+    public ResponseEntity<ApiResponse<ActivityLogResponse>> getActivityLogById(@PathVariable Long id) {
+        ActivityLogResponse activityLog = auditService.getActivityLogById(id);
         return ResponseEntity.ok(ApiResponse.success(activityLog, "Activity log retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<ActivityLog>>> getAllActivityLogs(Pageable pageable) {
-        Page<ActivityLog> activityLogs = auditService.getAllActivityLogs(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<ActivityLogResponse>>> getAllActivityLogs(Pageable pageable) {
+        PageResponse<ActivityLogResponse> activityLogs = auditService.getAllActivityLogs(pageable);
         return ResponseEntity.ok(ApiResponse.success(activityLogs, "Activity logs retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<List<ActivityLog>>> getAllActivityLogsList() {
-        List<ActivityLog> activityLogs = auditService.getAllActivityLogs();
+    public ResponseEntity<ApiResponse<PageResponse<ActivityLogResponse>>> getAllActivityLogsList(@PathVariable Pageable pageable) {
+        PageResponse<ActivityLogResponse> activityLogs = auditService.getAllActivityLogs(pageable);
         return ResponseEntity.ok(ApiResponse.success(activityLogs, "Activity logs list retrieved successfully"));
     }
     
@@ -65,12 +73,12 @@ public class ActivityLogController {
         return ResponseEntity.ok(ApiResponse.success(activityLogs, "Activity logs by type retrieved successfully"));
     }
     
-    @GetMapping("/session/{sessionId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<List<ActivityLog>>> getActivityLogsBySessionId(@PathVariable String sessionId) {
-        List<ActivityLog> activityLogs = auditService.getActivityLogsBySessionId(sessionId);
-        return ResponseEntity.ok(ApiResponse.success(activityLogs, "Activity logs by session retrieved successfully"));
-    }
+//    @GetMapping("/session/{sessionId}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
+//    public ResponseEntity<ApiResponse<List<ActivityLog>>> getActivityLogsBySessionId(@PathVariable String sessionId) {
+//        List<ActivityLog> activityLogs = auditService.getActivityLogsBySessionId(sessionId);
+//        return ResponseEntity.ok(ApiResponse.success(activityLogs, "Activity logs by session retrieved successfully"));
+//    }
     
     @GetMapping("/user/{userId}/logins")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR', 'USER')")
@@ -79,54 +87,54 @@ public class ActivityLogController {
         return ResponseEntity.ok(ApiResponse.success(logins, "Login activities retrieved successfully"));
     }
     
-    @GetMapping("/user/{userId}/last-login")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR', 'USER')")
-    public ResponseEntity<ApiResponse<ActivityLog>> getLastLoginByUserId(@PathVariable Long userId) {
-        ActivityLog lastLogin = auditService.getLastLoginByUserId(userId);
-        return ResponseEntity.ok(ApiResponse.success(lastLogin, "Last login retrieved successfully"));
-    }
+//    @GetMapping("/user/{userId}/last-login")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR', 'USER')")
+//    public ResponseEntity<ApiResponse<ActivityLog>> getLastLoginByUserId(@PathVariable Long userId) {
+//        ActivityLog lastLogin = auditService.getLastLoginByUserId(userId);
+//        return ResponseEntity.ok(ApiResponse.success(lastLogin, "Last login retrieved successfully"));
+//    }
     
-    @GetMapping("/failed-logins")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<ActivityLog>>> getFailedLoginAttempts(Pageable pageable) {
-        Page<ActivityLog> failedLogins = auditService.getFailedLoginAttempts(pageable);
-        return ResponseEntity.ok(ApiResponse.success(failedLogins, "Failed login attempts retrieved successfully"));
-    }
+//    @GetMapping("/failed-logins")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
+//    public ResponseEntity<ApiResponse<Page<ActivityLog>>> getFailedLoginAttempts(Pageable pageable) {
+//        Page<ActivityLog> failedLogins = auditService.getFailedLoginAttempts(pageable);
+//        return ResponseEntity.ok(ApiResponse.success(failedLogins, "Failed login attempts retrieved successfully"));
+//    }
     
-    @GetMapping("/user/{userId}/failed-logins")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<List<ActivityLog>>> getFailedLoginAttemptsByUserId(@PathVariable Long userId) {
-        List<ActivityLog> failedLogins = auditService.getFailedLoginAttemptsByUserId(userId);
-        return ResponseEntity.ok(ApiResponse.success(failedLogins, "Failed login attempts by user retrieved successfully"));
-    }
+//    @GetMapping("/user/{userId}/failed-logins")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
+//    public ResponseEntity<ApiResponse<List<ActivityLog>>> getFailedLoginAttemptsByUserId(@PathVariable Long userId) {
+//        List<ActivityLog> failedLogins = auditService.getFailedLoginAttemptsByUserId(userId);
+//        return ResponseEntity.ok(ApiResponse.success(failedLogins, "Failed login attempts by user retrieved successfully"));
+//    }
     
-    @GetMapping("/user/{userId}/page-views")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR', 'USER')")
-    public ResponseEntity<ApiResponse<Page<ActivityLog>>> getPageViewsByUserId(@PathVariable Long userId, Pageable pageable) {
-        Page<ActivityLog> pageViews = auditService.getPageViewsByUserId(userId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(pageViews, "Page views by user retrieved successfully"));
-    }
+//    @GetMapping("/user/{userId}/page-views")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR', 'USER')")
+//    public ResponseEntity<ApiResponse<Page<ActivityLog>>> getPageViewsByUserId(@PathVariable Long userId, Pageable pageable) {
+//        Page<ActivityLog> pageViews = auditService.getPageViewsByUserId(userId, pageable);
+//        return ResponseEntity.ok(ApiResponse.success(pageViews, "Page views by user retrieved successfully"));
+//    }
     
-    @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<ActivityLog>>> searchActivityLogs(@RequestParam String keyword, Pageable pageable) {
-        Page<ActivityLog> activityLogs = auditService.searchActivityLogs(keyword, pageable);
-        return ResponseEntity.ok(ApiResponse.success(activityLogs, "Search results retrieved successfully"));
-    }
+//    @GetMapping("/search")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
+//    public ResponseEntity<ApiResponse<PageResponse<ActivityLogResponse>>> searchActivityLogs(@RequestParam String keyword, Pageable pageable) {
+//        PageResponse<ActivityLogResponse> activityLogs = auditService.searchActivityLogs(keyword, pageable);
+//        return ResponseEntity.ok(ApiResponse.success(activityLogs, "Search results retrieved successfully"));
+//    }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<List<ActivityLog>>> getRecentActivityLogs(@RequestParam(defaultValue = "100") int limit) {
+    public ResponseEntity<ApiResponse<List<ActivityLog>>> getRecentActivityLogs(@RequestParam() Pageable limit) {
         List<ActivityLog> activityLogs = auditService.getRecentActivityLogs(limit);
         return ResponseEntity.ok(ApiResponse.success(activityLogs, "Recent activity logs retrieved successfully"));
     }
     
-    @GetMapping("/sessions/current")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<List<ActivityLog>>> getCurrentUserSessions() {
-        List<ActivityLog> sessions = auditService.getCurrentUserSessions();
-        return ResponseEntity.ok(ApiResponse.success(sessions, "Current user sessions retrieved successfully"));
-    }
+//    @GetMapping("/sessions/current")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
+//    public ResponseEntity<ApiResponse<List<ActivityLog>>> getCurrentUserSessions() {
+//        List<ActivityLog> sessions = auditService.getCurrentUserSessions();
+//        return ResponseEntity.ok(ApiResponse.success(sessions, "Current user sessions retrieved successfully"));
+//    }
     
     // Cleanup Operations
     @DeleteMapping("/cleanup")

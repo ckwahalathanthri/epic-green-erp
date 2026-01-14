@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 /**
@@ -36,7 +37,7 @@ public class BankAccountRequest {
     private String bankBranch;
 
     @NotBlank(message = "Account type is required")
-    @Pattern(regexp = "^(CURRENT|SAVINGS|OVERDRAFT|CASH)$", 
+    @Pattern(regexp = "^(CURRENT|SAVINGS|OVERDRAFT|CASH)$",
              message = "Account type must be one of: CURRENT, SAVINGS, OVERDRAFT, CASH")
     private String accountType;
 

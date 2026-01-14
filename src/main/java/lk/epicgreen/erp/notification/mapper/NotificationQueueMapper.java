@@ -1,8 +1,11 @@
-package lk.epicgreen.erp.notifications.mapper;
+package lk.epicgreen.erp.notification.mapper;
 
-import lk.epicgreen.erp.notifications.dto.request.NotificationQueueRequest;
-import lk.epicgreen.erp.notifications.dto.response.NotificationQueueResponse;
-import lk.epicgreen.erp.notifications.entity.NotificationQueue;
+
+import lk.epicgreen.erp.notification.dto.request.NotificationQueueRequest;
+import lk.epicgreen.erp.notification.dto.response.NotificationQueueResponse;
+import lk.epicgreen.erp.notification.entity.NotificationQueue;
+
+
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,7 +23,7 @@ public class NotificationQueueMapper {
         }
 
         return NotificationQueue.builder()
-            .recipientUserId(request.getRecipientUserId())
+            .RecipientUserId(request.getRecipientUserId())
             .recipientEmail(request.getRecipientEmail())
             .recipientMobile(request.getRecipientMobile())
             .notificationType(request.getNotificationType())
@@ -63,7 +66,7 @@ public class NotificationQueueMapper {
 
         return NotificationQueueResponse.builder()
             .id(notification.getId())
-            .recipientUserId(notification.getRecipientUserId())
+            .recipientUserId(notification.getRecipientUser().getId())
             .recipientEmail(notification.getRecipientEmail())
             .recipientMobile(notification.getRecipientMobile())
             .notificationType(notification.getNotificationType())

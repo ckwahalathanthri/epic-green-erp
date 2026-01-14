@@ -1,12 +1,16 @@
 package lk.epicgreen.erp.payment.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.admin.entity.TaxRate;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 /**

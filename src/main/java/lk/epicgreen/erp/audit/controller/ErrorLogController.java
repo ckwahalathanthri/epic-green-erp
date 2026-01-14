@@ -1,8 +1,8 @@
 package lk.epicgreen.erp.audit.controller;
 
+import lk.epicgreen.erp.audit.service.impl.AuditLogServiceImpl;
 import lk.epicgreen.erp.common.dto.ApiResponse;
 import lk.epicgreen.erp.audit.entity.ErrorLog;
-import lk.epicgreen.erp.audit.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,7 +27,7 @@ import java.util.List;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ErrorLogController {
     
-    private final AuditService auditService;
+    private final AuditLogServiceImpl auditService;
     
     // Query Operations
     @GetMapping("/{id}")
@@ -60,15 +60,15 @@ public class ErrorLogController {
     
     @GetMapping("/critical")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<ErrorLog>>> getCriticalErrors(Pageable pageable) {
-        Page<ErrorLog> criticalErrors = auditService.getCriticalErrors(pageable);
+    public ResponseEntity<ApiResponse<List<ErrorLog>>> getCriticalErrors(Pageable pageable) {
+        List<ErrorLog> criticalErrors = auditService.getCriticalErrors(pageable);
         return ResponseEntity.ok(ApiResponse.success(criticalErrors, "Critical errors retrieved successfully"));
     }
     
     @GetMapping("/unresolved")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<ErrorLog>>> getUnresolvedErrors(Pageable pageable) {
-        Page<ErrorLog> unresolvedErrors = auditService.getUnresolvedErrors(pageable);
+    public ResponseEntity<ApiResponse<List<ErrorLog>>> getUnresolvedErrors(Pageable pageable) {
+        List<ErrorLog> unresolvedErrors = auditService.getUnresolvedErrors(pageable);
         return ResponseEntity.ok(ApiResponse.success(unresolvedErrors, "Unresolved errors retrieved successfully"));
     }
     
@@ -81,19 +81,19 @@ public class ErrorLogController {
         return ResponseEntity.ok(ApiResponse.success(updated, "Error status updated successfully"));
     }
     
-    @PutMapping("/{errorId}/assign")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<ErrorLog>> assignError(@PathVariable Long errorId, @RequestParam Long userId) {
-        log.info("Assigning error {} to user {}", errorId, userId);
-        ErrorLog assigned = auditService.assignError(errorId, userId);
-        return ResponseEntity.ok(ApiResponse.success(assigned, "Error assigned successfully"));
-    }
+//    @PutMapping("/{errorId}/assign")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<ErrorLog>> assignError(@PathVariable Long errorId, @RequestParam Long userId) {
+//        log.info("Assigning error {} to user {}", errorId, userId);
+//        ErrorLog assigned = auditService.assignError(errorId, userId);
+//        return ResponseEntity.ok(ApiResponse.success(assigned, "Error assigned successfully"));
+//    }
     
-    @PutMapping("/{errorId}/resolve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<ErrorLog>> resolveError(@PathVariable Long errorId, @RequestParam String resolutionNotes) {
-        log.info("Resolving error: {}", errorId);
-        ErrorLog resolved = auditService.resolveError(errorId, resolutionNotes);
-        return ResponseEntity.ok(ApiResponse.success(resolved, "Error resolved successfully"));
-    }
+//    @PutMapping("/{errorId}/resolve")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<ErrorLog>> resolveError(@PathVariable Long errorId, @RequestParam String resolutionNotes) {
+//        log.info("Resolving error: {}", errorId);
+//        ErrorLog resolved = auditService.resolveError(errorId, resolutionNotes);
+//        return ResponseEntity.ok(ApiResponse.success(resolved, "Error resolved successfully"));
+//    }
 }

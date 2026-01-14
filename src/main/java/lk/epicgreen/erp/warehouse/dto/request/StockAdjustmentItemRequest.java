@@ -1,6 +1,6 @@
 package lk.epicgreen.erp.warehouse.dto.request;
 
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import javax.validation.ConstraintViolation;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
+import javax.persistence.EntityNotFoundException;
+import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;

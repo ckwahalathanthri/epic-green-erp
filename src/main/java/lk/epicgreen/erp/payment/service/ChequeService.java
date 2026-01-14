@@ -3,11 +3,13 @@ package lk.epicgreen.erp.payment.service;
 import lk.epicgreen.erp.payment.dto.request.ChequeRequest;
 import lk.epicgreen.erp.payment.dto.response.ChequeResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.payment.entity.Cheque;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for Cheque entity business logic (PDC tracking)
@@ -49,12 +51,12 @@ public interface ChequeService {
     /**
      * Return Cheque (any status → RETURNED)
      */
-    void returnCheque(Long id, String reason);
+    Cheque returnCheque(Long id, String reason);
 
     /**
      * Cancel Cheque (RECEIVED → CANCELLED)
      */
-    void cancelCheque(Long id, String reason);
+    Cheque cancelCheque(Long id, String reason);
 
     /**
      * Delete Cheque (only in RECEIVED status)
@@ -76,6 +78,58 @@ public interface ChequeService {
      */
     PageResponse<ChequeResponse> getAllCheques(Pageable pageable);
 
+    Cheque getChequeByNumber(String chequeNumber);
+
+    Cheque presentCheque(Long id,LocalDate presentationDate);
+
+    List<Cheque> getPendingCheques();
+
+    List<Cheque> getPresentedCheques();
+
+    List<Cheque> getClearedCheques();
+
+    List<Cheque> getCancelledCheques();
+
+    List<Cheque> getPostDatedCheques();
+
+    List<Cheque> getChequesDueForPresentation();
+
+    List<Cheque> getOverdueCheques();
+
+    List<Cheque> getChequesRequiringAction();
+
+    List<Cheque> getRecentCheques(Pageable pageable);
+
+    List<Cheque> getCustomerRecentCheques(Long customerId,Pageable page);
+
+    boolean canPresentCheque(Long id);
+
+    boolean canClearCheque(Long id);
+
+    boolean canBounceCheque(Long id);
+
+    List<Cheque> createBulkCheques(List<ChequeRequest> requests);
+
+    int presentBulkCheques(List<Long> chequeIds,LocalDate presentationDate);
+
+    int clearBulkCheques(List<Long>chequeIds,LocalDate clearanceDate);
+
+    int deleteBulkCheques(List<Long> chequeIds);
+
+    Map<String,Object> getChequeStatistics();
+
+    List<Map<String,Object>> getChequeStatusDistribution();
+    List<Map<String,Object>> getBankDistribution();
+
+    List<Map<String,Object>> getMonthlyChequeCount(LocalDate startDate,LocalDate endDate);
+
+    Map<String,Object> getDashboardStatistics();
+
+    double getTotalChequeAmount();
+
+    double getAverageChequeAmount();
+
+    double getChequeBounceRate();
     /**
      * Get Cheques by status
      */

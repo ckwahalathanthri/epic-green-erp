@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.accounting.controller;
 
 import lk.epicgreen.erp.accounting.dto.response.JournalEntryResponse;
+import lk.epicgreen.erp.accounting.mapper.JournalEntryMapper;
 import lk.epicgreen.erp.common.dto.ApiResponse;
 import lk.epicgreen.erp.accounting.dto.request.JournalEntryRequest;
 import lk.epicgreen.erp.accounting.entity.JournalEntry;
@@ -9,6 +10,7 @@ import lk.epicgreen.erp.accounting.service.JournalEntryService;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,9 @@ import java.util.Map;
 public class JournalEntryController {
     
     private final JournalEntryService journalEntryService;
+
+    @Autowired
+    private JournalEntryMapper journalEntryMapper;
     
     // CRUD Operations
     @PostMapping
@@ -85,16 +90,19 @@ public class JournalEntryController {
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<JournalEntry>>> getAllJournalEntriesList() {
-        List<JournalEntry> entries = journalEntryService.getAllJournalEntries();
+    public ResponseEntity<ApiResponse<PageResponse<JournalEntryResponse>>> getAllJournalEntriesList(Pageable pageable) {
+        PageResponse<JournalEntryResponse> entries = journalEntryService.getAllJournalEntries(pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Journal entries list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<Page<JournalEntry>>> searchJournalEntries(@RequestParam String keyword, Pageable pageable) {
-        Page<JournalEntry> entries = journalEntryService.searchJournalEntries(keyword, pageable);
-        return ResponseEntity.ok(ApiResponse.success(entries, "Search results retrieved successfully"));
+        PageResponse<JournalEntryResponse> entries = journalEntryService.searchJournalEntries(keyword, pageable);
+
+
+
+        return ResponseEntity.ok(ApiResponse.success((Page<JournalEntry>) entries, "Search results retrieved successfully"));
     }
     
     // Status Operations
@@ -126,7 +134,7 @@ public class JournalEntryController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<JournalEntry>> approveJournalEntry(@PathVariable Long id, @RequestParam Long approvedBy) {
         log.info("Approving journal entry: {}", id);
-        JournalEntry approved = journalEntryService.approveJournalEntry(id, approvedBy);
+        JournalEntry approved = journalEntryService.approveJournalEntry(id);
         return ResponseEntity.ok(ApiResponse.success(approved, "Journal entry approved successfully"));
     }
     
@@ -198,7 +206,7 @@ public class JournalEntryController {
     
     @GetMapping("/fiscal-period")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<JournalEntry>>> getEntriesByFiscalPeriod(@RequestParam Integer year, @RequestParam Integer period) {
+    public ResponseEntity<ApiResponse<List<JournalEntry>>> getEntriesByFiscalPeriod(@RequestParam Integer year, @RequestParam String period) {
         List<JournalEntry> entries = journalEntryService.getEntriesByFiscalPeriod(year, period);
         return ResponseEntity.ok(ApiResponse.success(entries, "Fiscal period entries retrieved successfully"));
     }

@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.mobile.repository;
 
 import lk.epicgreen.erp.mobile.entity.SyncConflict;
+import lk.epicgreen.erp.mobile.entity.SyncLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,6 +37,8 @@ public interface SyncConflictRepository extends JpaRepository<SyncConflict, Long
      * Find sync conflicts by user
      */
     List<SyncConflict> findByUserId(Long userId);
+
+    List<SyncConflict> findByDeviceId(String deviceId);
     
     /**
      * Find sync conflicts by user with pagination
@@ -126,6 +129,17 @@ public interface SyncConflictRepository extends JpaRepository<SyncConflict, Long
     void deleteResolvedBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
     
     // ==================== CUSTOM QUERIES ====================
+
+@Query("SELECT sc FROM SyncConflict sc WHERE " +
+           "CAST(sc.user.id AS string) LIKE %:keyword% OR " +
+           "sc.deviceId LIKE %:keyword% OR " +
+           "sc.entityType LIKE %:keyword% OR " +
+           "CAST(sc.entityId AS string) LIKE %:keyword% OR " +
+           "sc.conflictType LIKE %:keyword% OR " +
+           "sc.resolutionStrategy LIKE %:keyword% OR " +
+           "sc.status LIKE %:keyword% " +
+           "ORDER BY sc.detectedAt DESC")
+    Page<SyncConflict>searchSyncConflicts(@Param("keyword") String keyword, Pageable pageable);
     
     /**
      * Find detected sync conflicts
@@ -251,6 +265,6 @@ public interface SyncConflictRepository extends JpaRepository<SyncConflict, Long
      * Get oldest unresolved conflict
      */
     @Query("SELECT sc FROM SyncConflict sc WHERE sc.status = 'DETECTED' " +
-           "ORDER BY sc.detectedAt ASC LIMIT 1")
+           "ORDER BY sc.detectedAt ASC ")
     SyncConflict getOldestUnresolvedConflict();
 }

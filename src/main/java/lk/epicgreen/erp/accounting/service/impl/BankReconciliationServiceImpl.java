@@ -8,6 +8,7 @@ import lk.epicgreen.erp.accounting.mapper.BankReconciliationMapper;
 import lk.epicgreen.erp.accounting.repository.BankReconciliationRepository;
 import lk.epicgreen.erp.accounting.repository.BankAccountRepository;
 import lk.epicgreen.erp.accounting.service.BankReconciliationService;
+import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lk.epicgreen.erp.common.exception.InvalidOperationException;
@@ -104,7 +105,7 @@ public class BankReconciliationServiceImpl implements BankReconciliationService 
 
     @Override
     @Transactional
-    public void completeReconciliation(Long id, Long reconciledBy) {
+    public void completeReconciliation(Long id, User reconciledBy) {
         log.info("Completing Bank Reconciliation: {} by user: {}", id, reconciledBy);
 
         BankReconciliation reconciliation = findReconciliationById(id);
@@ -181,7 +182,7 @@ public class BankReconciliationServiceImpl implements BankReconciliationService 
 
     @Override
     public PageResponse<BankReconciliationResponse> searchReconciliations(String keyword, Pageable pageable) {
-        Page<BankReconciliation> reconciliationPage = reconciliationRepository.searchReconciliations(keyword, pageable);
+        Page<BankReconciliation> reconciliationPage = reconciliationRepository.searchReconciliations(keyword,null,null,null,null,pageable);
         return createPageResponse(reconciliationPage);
     }
 

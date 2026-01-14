@@ -1,11 +1,12 @@
 package lk.epicgreen.erp.accounting.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,6 +42,9 @@ public class GeneralLedger {
     @NotNull(message = "Transaction date is required")
     @Column(name = "transaction_date", nullable = false)
     private LocalDate transactionDate;
+
+    @Column
+    private boolean isPosted;
     
     /**
      * Financial period

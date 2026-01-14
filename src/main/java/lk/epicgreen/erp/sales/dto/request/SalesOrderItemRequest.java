@@ -1,11 +1,18 @@
 package lk.epicgreen.erp.sales.dto.request;
 
+import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+
+import javax.persistence.Column;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 /**
@@ -51,6 +58,11 @@ public class SalesOrderItemRequest {
 
     @DecimalMin(value = "0.0", message = "Tax amount must be >= 0")
     private BigDecimal taxAmount;
+//
+//
+//    private Long UnitOfMeasureId;
+//
+//    private UnitOfMeasure unitOfMeasure;
 
     @NotNull(message = "Line total is required")
     @DecimalMin(value = "0.0", message = "Line total must be >= 0")
@@ -58,4 +70,7 @@ public class SalesOrderItemRequest {
 
     @Size(max = 1000, message = "Remarks must not exceed 1000 characters")
     private String remarks;
+
+
+
 }

@@ -1,10 +1,11 @@
 package lk.epicgreen.erp.notification.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 /**
@@ -199,6 +200,7 @@ public class NotificationQueue {
         int maxRetry = maxRetries != null ? maxRetries : 3;
         return Math.max(0, maxRetry - retries);
     }
+    private Long RecipientUserId;
     
     /**
      * Check if high priority

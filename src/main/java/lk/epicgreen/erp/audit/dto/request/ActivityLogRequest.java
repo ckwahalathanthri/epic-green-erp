@@ -5,7 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 
 /**
  * DTO for creating Activity Log
@@ -42,7 +46,9 @@ public class ActivityLogRequest {
     private String ipAddress;
 
     @NotBlank(message = "Device type is required")
-    @Pattern(regexp = "^(WEB|MOBILE_ANDROID|MOBILE_IOS|API)$", 
+    @Pattern(regexp = "^(WEB|MOBILE_ANDROID|MOBILE_IOS|API)$",
              message = "Device type must be one of: WEB, MOBILE_ANDROID, MOBILE_IOS, API")
     private String deviceType;
+
+
 }

@@ -1,11 +1,12 @@
-package lk.epicgreen.erp.reports.dto.request;
+package lk.epicgreen.erp.report.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.*;
 import java.util.Map;
 
 /**
@@ -38,7 +39,7 @@ public class ReportExecutionHistoryRequest {
     private String outputFilePath;
 
     @NotBlank(message = "Status is required")
-    @Pattern(regexp = "^(RUNNING|COMPLETED|FAILED)$", 
+    @Pattern(regexp = "^(RUNNING|COMPLETED|FAILED)$",
              message = "Status must be one of: RUNNING, COMPLETED, FAILED")
     private String status;
 

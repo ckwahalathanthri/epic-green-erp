@@ -1,8 +1,10 @@
 package lk.epicgreen.erp.sales.mapper;
 
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.sales.dto.request.DispatchNoteRequest;
 import lk.epicgreen.erp.sales.dto.response.DispatchNoteResponse;
 import lk.epicgreen.erp.sales.entity.DispatchNote;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -18,8 +20,11 @@ public class DispatchNoteMapper {
 
     private final DispatchItemMapper dispatchItemMapper;
 
-    public DispatchNoteMapper(DispatchItemMapper dispatchItemMapper) {
+    private final UserRepository userRepository;
+
+    public DispatchNoteMapper(DispatchItemMapper dispatchItemMapper, UserRepository userRepository) {
         this.dispatchItemMapper = dispatchItemMapper;
+        this.userRepository = userRepository;
     }
 
     public DispatchNote toEntity(DispatchNoteRequest request) {
@@ -90,7 +95,7 @@ public class DispatchNoteMapper {
             .status(dispatch.getStatus())
             .dispatchTime(dispatch.getDispatchTime())
             .deliveryTime(dispatch.getDeliveryTime())
-            .deliveredBy(dispatch.getDeliveredBy())
+            .deliveredBy(dispatch.getDeliveredBy().getId())
             .receivedByName(dispatch.getReceivedByName())
             .receivedBySignature(dispatch.getReceivedBySignature())
             .deliveryPhotoUrl(dispatch.getDeliveryPhotoUrl())

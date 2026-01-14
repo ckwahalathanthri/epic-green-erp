@@ -115,7 +115,7 @@ public interface StockAdjustmentRepository extends JpaRepository<StockAdjustment
      */
     @Query("SELECT sa FROM StockAdjustment sa WHERE " +
            "(:adjustmentNumber IS NULL OR LOWER(sa.adjustmentNumber) LIKE LOWER(CONCAT('%', :adjustmentNumber, '%'))) AND " +
-           "(:warehouseId IS NULL OR sa.warehouseId = :warehouseId) AND " +
+           "(:warehouseId IS NULL OR sa.warehouse.id = :warehouseId) AND " +
            "(:adjustmentType IS NULL OR sa.adjustmentType = :adjustmentType) AND " +
            "(:status IS NULL OR sa.status = :status) AND " +
            "(:startDate IS NULL OR sa.adjustmentDate >= :startDate) AND " +
@@ -225,7 +225,7 @@ public interface StockAdjustmentRepository extends JpaRepository<StockAdjustment
      * Get adjustment statistics by warehouse
      */
     @Query("SELECT sa.adjustmentType, sa.status, COUNT(sa) as adjustmentCount " +
-           "FROM StockAdjustment sa WHERE sa.warehouseId = :warehouseId " +
+           "FROM StockAdjustment sa WHERE sa.warehouse.id = :warehouseId " +
            "GROUP BY sa.adjustmentType, sa.status ORDER BY adjustmentCount DESC")
     List<Object[]> getAdjustmentStatisticsByWarehouse(@Param("warehouseId") Long warehouseId);
     
@@ -246,7 +246,7 @@ public interface StockAdjustmentRepository extends JpaRepository<StockAdjustment
     /**
      * Find adjustments awaiting approval for a warehouse
      */
-    @Query("SELECT sa FROM StockAdjustment sa WHERE sa.warehouseId = :warehouseId " +
+    @Query("SELECT sa FROM StockAdjustment sa WHERE sa.warehouse.id = :warehouseId " +
            "AND sa.status = 'PENDING_APPROVAL' ORDER BY sa.adjustmentDate")
     List<StockAdjustment> findAwaitingApprovalByWarehouse(@Param("warehouseId") Long warehouseId);
     

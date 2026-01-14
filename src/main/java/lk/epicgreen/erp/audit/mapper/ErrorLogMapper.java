@@ -27,12 +27,12 @@ public class ErrorLogMapper {
             .requestUrl(request.getRequestUrl())
             .requestMethod(request.getRequestMethod())
             .requestBody(request.getRequestBody())
-            .userId(request.getUserId())
+//            .userId(request.getUserId())
             .ipAddress(request.getIpAddress())
             .userAgent(request.getUserAgent())
             .severity(request.getSeverity() != null ? request.getSeverity() : "MEDIUM")
             .isResolved(request.getIsResolved() != null ? request.getIsResolved() : false)
-            .resolvedBy(request.getResolvedBy())
+//            .resolvedBy(request.getResolvedBy())
             .build();
     }
 
@@ -48,12 +48,12 @@ public class ErrorLogMapper {
         errorLog.setRequestUrl(request.getRequestUrl());
         errorLog.setRequestMethod(request.getRequestMethod());
         errorLog.setRequestBody(request.getRequestBody());
-        errorLog.setUserId(request.getUserId());
+//        errorLog.setUserId(request.getUserId());
         errorLog.setIpAddress(request.getIpAddress());
         errorLog.setUserAgent(request.getUserAgent());
         errorLog.setSeverity(request.getSeverity());
         errorLog.setIsResolved(request.getIsResolved());
-        errorLog.setResolvedBy(request.getResolvedBy());
+//        errorLog.setResolvedBy(request.getResolvedBy());
     }
 
     public ErrorLogResponse toResponse(ErrorLog errorLog) {
@@ -70,12 +70,12 @@ public class ErrorLogMapper {
             .requestUrl(errorLog.getRequestUrl())
             .requestMethod(errorLog.getRequestMethod())
             .requestBody(errorLog.getRequestBody())
-            .userId(errorLog.getUserId())
+//            .userId(errorLog.getUserId())
             .ipAddress(errorLog.getIpAddress())
             .userAgent(errorLog.getUserAgent())
             .severity(errorLog.getSeverity())
             .isResolved(errorLog.getIsResolved())
-            .resolvedBy(errorLog.getResolvedBy())
+//            .resolvedBy(errorLog.getResolvedBy())
             .resolvedAt(errorLog.getResolvedAt())
             .createdAt(errorLog.getCreatedAt())
             .build();

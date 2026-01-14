@@ -100,7 +100,7 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
      * Search activity logs by multiple criteria
      */
     @Query("SELECT al FROM ActivityLog al WHERE " +
-           "(:userId IS NULL OR al.userId = :userId) AND " +
+           "(:userId IS NULL OR al.user.id = :userId) AND " +
            "(:activityType IS NULL OR LOWER(al.activityType) LIKE LOWER(CONCAT('%', :activityType, '%'))) AND " +
            "(:module IS NULL OR al.module = :module) AND " +
            "(:deviceType IS NULL OR al.deviceType = :deviceType) AND " +
@@ -131,7 +131,12 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
      * Count activity logs by device type
      */
     long countByDeviceType(String deviceType);
-    
+
+    long deleteActivityLogsByCreatedAtBefore(LocalDateTime cutodDate);
+
+    List<ActivityLog>  findByUserIdAndCreatedAtBetween(Long userId,LocalDateTime startDate,LocalDateTime endDate);
+
+
     /**
      * Count activity logs in time range
      */
@@ -150,7 +155,11 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
      */
     @Query("SELECT al FROM ActivityLog al WHERE al.deviceType = 'MOBILE_ANDROID' ORDER BY al.createdAt DESC")
     List<ActivityLog> findMobileAndroidActivityLogs();
-    
+
+    @Query("SELECT al FROM ActivityLog al ORDER BY al.createdAt DESC ")
+    List<ActivityLog> findLatest(Pageable pageable);
+
+
     /**
      * Find mobile iOS activity logs
      */
@@ -183,7 +192,7 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
      */
     @Query("SELECT " +
            "COUNT(al) as totalActivities, " +
-           "COUNT(DISTINCT al.userId) as uniqueUsers, " +
+           "COUNT(DISTINCT al.user.id) as uniqueUsers, " +
            "COUNT(DISTINCT al.module) as uniqueModules, " +
            "SUM(CASE WHEN al.deviceType = 'WEB' THEN 1 ELSE 0 END) as webActivities, " +
            "SUM(CASE WHEN al.deviceType = 'MOBILE_ANDROID' THEN 1 ELSE 0 END) as androidActivities, " +
@@ -216,17 +225,17 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
     /**
      * Get activity logs grouped by user
      */
-    @Query("SELECT al.userId, COUNT(al) as activityCount " +
-           "FROM ActivityLog al GROUP BY al.userId ORDER BY activityCount DESC")
+    @Query("SELECT al.user.id, COUNT(al) as activityCount " +
+           "FROM ActivityLog al GROUP BY al.user.id ORDER BY activityCount DESC")
     List<Object[]> getActivityLogsByUser();
     
     /**
      * Get daily activity log summary
      */
     @Query("SELECT DATE(al.createdAt) as activityDate, COUNT(al) as activityCount, " +
-           "COUNT(DISTINCT al.userId) as uniqueUsers " +
+           "COUNT(DISTINCT al.user.id) as uniqueUsers " +
            "FROM ActivityLog al WHERE al.createdAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY DATE(al.createdAt) ORDER BY activityDate DESC")
+           "GROUP BY DATE(al.createdAt) ORDER BY al.createdAt DESC")
     List<Object[]> getDailyActivityLogSummary(
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
@@ -234,10 +243,10 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
     /**
      * Get hourly activity log summary
      */
-    @Query("SELECT HOUR(al.createdAt) as activityHour, COUNT(al) as activityCount " +
-           "FROM ActivityLog al WHERE DATE(al.createdAt) = CURRENT_DATE " +
-           "GROUP BY HOUR(al.createdAt) ORDER BY activityHour")
-    List<Object[]> getHourlyActivityLogSummary();
+//    @Query("SELECT HOUR(al.createdAt) as activityHour, COUNT(al) as activityCount " +
+//           "FROM ActivityLog al WHERE DATE(al.createdAt) = CURRENT_DATE " +
+//           "GROUP BY HOUR(al.createdAt) ORDER BY activityHour")
+//    List<Object[]> getHourlyActivityLogSummary();
     
     /**
      * Find today's activity logs
@@ -254,7 +263,7 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
      * Get user activity summary
      */
     @Query("SELECT al.activityType, COUNT(al) as activityCount " +
-           "FROM ActivityLog al WHERE al.userId = :userId " +
+           "FROM ActivityLog al WHERE al.user.id = :userId " +
            "AND al.createdAt BETWEEN :startTime AND :endTime " +
            "GROUP BY al.activityType ORDER BY activityCount DESC")
     List<Object[]> getUserActivitySummary(
@@ -265,7 +274,7 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
     /**
      * Get module usage statistics
      */
-    @Query("SELECT al.module, COUNT(al) as usageCount, COUNT(DISTINCT al.userId) as uniqueUsers " +
+    @Query("SELECT al.module, COUNT(al) as usageCount, COUNT(DISTINCT al.user.id) as uniqueUsers " +
            "FROM ActivityLog al WHERE al.createdAt >= :sinceTime " +
            "GROUP BY al.module ORDER BY usageCount DESC")
     List<Object[]> getModuleUsageStatistics(@Param("sinceTime") LocalDateTime sinceTime);
@@ -273,9 +282,9 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
     /**
      * Find most active users
      */
-    @Query("SELECT al.userId, COUNT(al) as activityCount " +
+    @Query("SELECT al.user.id, COUNT(al) as activityCount " +
            "FROM ActivityLog al WHERE al.createdAt >= :sinceTime " +
-           "GROUP BY al.userId ORDER BY activityCount DESC")
+           "GROUP BY al.user.id ORDER BY activityCount DESC")
     List<Object[]> findMostActiveUsers(@Param("sinceTime") LocalDateTime sinceTime);
     
     /**

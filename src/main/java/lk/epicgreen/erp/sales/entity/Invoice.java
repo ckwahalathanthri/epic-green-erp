@@ -1,12 +1,16 @@
 package lk.epicgreen.erp.sales.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.customer.entity.Customer;
 import lk.epicgreen.erp.customer.entity.CustomerAddress;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -395,5 +399,9 @@ public class Invoice extends AuditEntity {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public void setDispatchNote(DispatchNote dispatch) {
+        this.dispatch=dispatch;
     }
 }

@@ -1,13 +1,14 @@
 package lk.epicgreen.erp.admin.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -83,6 +84,9 @@ public class TaxRate extends AuditEntity {
      */
     @Column(name = "is_active")
     private Boolean isActive;
+
+    @Column
+    private BigDecimal rate;
     
     /**
      * Check if active
@@ -136,8 +140,7 @@ public class TaxRate extends AuditEntity {
         }
         return baseAmount.add(calculateTaxAmount(baseAmount));
     }
-    
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (isActive == null) {

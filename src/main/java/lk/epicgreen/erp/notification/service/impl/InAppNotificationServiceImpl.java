@@ -1,11 +1,13 @@
-package lk.epicgreen.erp.notifications.service.impl;
+package lk.epicgreen.erp.notification.service.impl;
 
-import lk.epicgreen.erp.notifications.dto.request.InAppNotificationRequest;
-import lk.epicgreen.erp.notifications.dto.response.InAppNotificationResponse;
-import lk.epicgreen.erp.notifications.entity.InAppNotification;
-import lk.epicgreen.erp.notifications.mapper.InAppNotificationMapper;
-import lk.epicgreen.erp.notifications.repository.InAppNotificationRepository;
-import lk.epicgreen.erp.notifications.service.InAppNotificationService;
+import lk.epicgreen.erp.notification.dto.request.InAppNotificationRequest;
+import lk.epicgreen.erp.notification.dto.response.InAppNotificationResponse;
+import lk.epicgreen.erp.notification.entity.InAppNotification;
+import lk.epicgreen.erp.notification.mapper.InAppNotificationMapper;
+import lk.epicgreen.erp.notification.repository.InAppNotificationRepository;
+
+import lk.epicgreen.erp.notification.service.InAppNotificationService;
+
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Implementation of InAppNotificationService interface
- * 
+ *
  * @author Epic Green Development Team
  * @version 1.0
  */
@@ -34,7 +37,7 @@ public class InAppNotificationServiceImpl implements InAppNotificationService {
     private final InAppNotificationRepository notificationRepository;
     private final InAppNotificationMapper notificationMapper;
 
-    @Override
+
     @Transactional
     public InAppNotificationResponse createNotification(InAppNotificationRequest request) {
         log.info("Creating in-app notification for user: {}", request.getUserId());
@@ -47,7 +50,7 @@ public class InAppNotificationServiceImpl implements InAppNotificationService {
         return notificationMapper.toResponse(savedNotification);
     }
 
-    @Override
+
     @Transactional
     public InAppNotificationResponse updateNotification(Long id, InAppNotificationRequest request) {
         log.info("Updating in-app notification: {}", id);
@@ -111,7 +114,7 @@ public class InAppNotificationServiceImpl implements InAppNotificationService {
     public void deleteAllForUser(Long userId) {
         log.info("Deleting all notifications for user: {}", userId);
 
-        int deletedCount = notificationRepository.deleteByUserId(userId);
+        long deletedCount = notificationRepository.deleteByUserId(userId);
         log.info("Deleted {} notifications for user {}", deletedCount, userId);
     }
 
@@ -186,6 +189,11 @@ public class InAppNotificationServiceImpl implements InAppNotificationService {
     public PageResponse<InAppNotificationResponse> searchNotifications(String keyword, Pageable pageable) {
         Page<InAppNotification> notificationPage = notificationRepository.searchNotifications(keyword, pageable);
         return createPageResponse(notificationPage);
+    }
+
+    @Override
+    public Map<String, Object> getNotificationStatistics() {
+        return null;
     }
 
     // ==================== PRIVATE HELPER METHODS ====================

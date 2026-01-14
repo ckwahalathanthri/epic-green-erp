@@ -20,8 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -263,6 +265,62 @@ public class ProductServiceImpl implements ProductService {
             .collect(Collectors.toList());
     }
 
+    @Override
+    public ProductResponse unfeatureProduct(Long id) {
+        log.info("Unfeaturing product: {}", id);
+
+        Product product = findProductById(id);
+        product.setIsFeatured(false);
+        Product updatedProduct = productRepository.save(product);
+
+        log.info("Product unfeatured successfully: {}", id);
+        return productMapper.toResponse(updatedProduct);
+    }
+
+    @Override
+    public BigDecimal calculateDiscountedPrice(ProductResponse product){
+        BigDecimal discountAmount = product.getDiscountAmount() != null ? BigDecimal.valueOf(product.getDiscountAmount()) : BigDecimal.ZERO;
+        return product.getSellingPrice().subtract(discountAmount);
+    }
+
+    @Override
+    public Double getAverageMarginPercentage(){
+        Double averageMargin = productRepository.findAverageMarginPercentage();
+        return averageMargin != null ? averageMargin : 0.0;
+    }
+
+    @Override
+    public List<ProductResponse> getProductsByBrand(String brand){
+        List<Product> products = productRepository.findByBrandAndIsActiveTrueAndDeletedAtIsNull(brand);
+        return products.stream()
+            .map(productMapper::toResponse)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductsByBrand(){
+        return productRepository.findProductCountsByBrand();
+    }
+
+    @Override
+    public int activateBulkProducts(List<Long> productIds){
+        log.info("Activating bulk products: {}", productIds);
+        int updatedCount = productRepository.activateProductsByIds(productIds);
+        log.info("Bulk products activated successfully. Count: {}", updatedCount);
+        return updatedCount;
+    }
+    
+    @Override
+    public int updateBulkCategory(List<Long> productIds, Long categoryId){
+        log.info("Updating category for bulk products: {}", productIds);
+        ProductCategory category = productCategoryRepository.findById(categoryId)
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + categoryId));
+        int updatedCount = productRepository.updateCategoryForProducts(productIds, category);
+        log.info("Bulk product categories updated successfully. Count: {}", updatedCount);
+        return updatedCount;
+    }
+    
+
     // ==================== PRIVATE HELPER METHODS ====================
 
     private Product findProductById(Long id) {
@@ -322,4 +380,334 @@ public class ProductServiceImpl implements ProductService {
             .empty(productPage.isEmpty())
             .build();
     }
+
+	@Override
+	public List<ProductResponse> getAllProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getAllProducts'");
+	}
+
+	@Override
+	public ProductResponse discontinueProduct(Long id, String reason) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'discontinueProduct'");
+	}
+
+	@Override
+	public ProductResponse featureProduct(Long id) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'featureProduct'");
+	}
+
+	@Override
+	public PageResponse<ProductResponse> getActiveProducts(Pageable pageable) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getActiveProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getInactiveProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getInactiveProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getDiscontinuedProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getDiscontinuedProducts'");
+	}
+
+	@Override
+	public PageResponse<ProductResponse> getFeaturedProducts(Pageable pageable) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getFeaturedProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getSellableProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getSellableProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getPurchasableProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getPurchasableProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getTaxableProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getTaxableProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsByCategory(Long categoryId) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByCategory'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsByType(String productType) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByType'");
+	}
+
+	@Override
+	public List<ProductResponse> getRawMaterialProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getRawMaterialProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getFinishedGoodsProducts() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getFinishedGoodsProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsByManufacturer(String manufacturer) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByManufacturer'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsByPriceRange(Double minPrice, Double maxPrice) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByPriceRange'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsBelowPrice(Double maxPrice) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsBelowPrice'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsAbovePrice(Double minPrice) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsAbovePrice'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsByCostRange(Double minCost, Double maxCost) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByCostRange'");
+	}
+
+	@Override
+	public List<ProductResponse> getHighMarginProducts(Double marginPercentage) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getHighMarginProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getLowMarginProducts(Double marginPercentage) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getLowMarginProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsByWeightRange(Double minWeight, Double maxWeight) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByWeightRange'");
+	}
+
+	@Override
+	public List<ProductResponse> getRecentProducts(int limit) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getRecentProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getRecentlyUpdatedProducts(int limit) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getRecentlyUpdatedProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getProductsByCategoryTree(List<Long> categoryIds) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByCategoryTree'");
+	}
+
+	@Override
+	public List<ProductResponse> getHighestPricedProducts(int limit) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getHighestPricedProducts'");
+	}
+
+	@Override
+	public List<ProductResponse> getLowestPricedProducts(int limit) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getLowestPricedProducts'");
+	}
+
+	@Override
+	public void updateSellingPrice(Long id, Double newPrice) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'updateSellingPrice'");
+	}
+
+	@Override
+	public void updateCostPrice(Long id, Double newCost) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'updateCostPrice'");
+	}
+
+	@Override
+	public void updatePrices(Long id, Double sellingPrice, Double costPrice) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'updatePrices'");
+	}
+
+	@Override
+	public void applyDiscountPercentage(Long id, Double discountPercentage) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'applyDiscountPercentage'");
+	}
+
+	@Override
+	public void applyDiscountAmount(Long id, Double discountAmount) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'applyDiscountAmount'");
+	}
+
+	@Override
+	public void removeDiscount(Long id) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'removeDiscount'");
+	}
+
+	@Override
+	public void applyBulkPriceIncrease(List<Long> productIds, Double percentage) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'applyBulkPriceIncrease'");
+	}
+
+	@Override
+	public void applyBulkPriceDecrease(List<Long> productIds, Double percentage) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'applyBulkPriceDecrease'");
+	}
+
+	@Override
+	public boolean isProductCodeAvailable(String productCode) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'isProductCodeAvailable'");
+	}
+
+	@Override
+	public boolean isSkuAvailable(String sku) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'isSkuAvailable'");
+	}
+
+	@Override
+	public boolean isBarcodeAvailable(String barcode) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'isBarcodeAvailable'");
+	}
+
+	@Override
+	public boolean canDeleteProduct(Long id) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'canDeleteProduct'");
+	}
+
+	@Override
+	public boolean canSellProduct(Long id) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'canSellProduct'");
+	}
+
+	@Override
+	public boolean canPurchaseProduct(Long id) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'canPurchaseProduct'");
+	}
+
+	@Override
+	public Double calculateMargin(ProductResponse product) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'calculateMargin'");
+	}
+
+	@Override
+	public Double calculateMarginPercentage(ProductResponse product) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'calculateMarginPercentage'");
+	}
+
+	@Override
+	public Map<String, Object> calculateProductMetrics(Long id) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'calculateProductMetrics'");
+	}
+
+	@Override
+	public List<ProductResponse> createBulkProducts(List<ProductRequest> requests) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'createBulkProducts'");
+	}
+
+	@Override
+	public int deactivateBulkProducts(List<Long> productIds) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'deactivateBulkProducts'");
+	}
+
+	@Override
+	public int deleteBulkProducts(List<Long> productIds) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'deleteBulkProducts'");
+	}
+
+	@Override
+	public Map<String, Object> getProductStatistics() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductStatistics'");
+	}
+
+	@Override
+	public List<Map<String, Object>> getProductTypeDistribution() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductTypeDistribution'");
+	}
+
+	@Override
+	public List<Map<String, Object>> getStatusDistribution() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getStatusDistribution'");
+	}
+
+	@Override
+	public List<Map<String, Object>> getProductsByCategory() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getProductsByCategory'");
+	}
+
+	@Override
+	public Double getAverageSellingPrice() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getAverageSellingPrice'");
+	}
+
+	@Override
+	public Double getAverageCostPrice() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getAverageCostPrice'");
+	}
+
+	@Override
+	public Double getTotalProductValue() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getTotalProductValue'");
+	}
+
+	@Override
+	public Map<String, Object> getDashboardStatistics() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getDashboardStatistics'");
+	}
 }

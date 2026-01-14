@@ -1,7 +1,6 @@
 package lk.epicgreen.erp.sales.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.customer.entity.Customer;
@@ -9,6 +8,8 @@ import lk.epicgreen.erp.customer.entity.CustomerAddress;
 import lk.epicgreen.erp.warehouse.entity.Warehouse;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,6 +64,12 @@ public class SalesOrder extends AuditEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false, foreignKey = @ForeignKey(name = "fk_sales_order_customer"))
     private Customer customer;
+
+    @Column
+    private String DeliveryStatus;
+
+    @Column
+    private String PaymentStatus;
     
     /**
      * Customer PO number
@@ -70,7 +77,11 @@ public class SalesOrder extends AuditEntity {
     @Size(max = 50)
     @Column(name = "customer_po_number", length = 50)
     private String customerPoNumber;
-    
+
+    @Column
+    private String priority;
+
+
     /**
      * Customer PO date
      */
@@ -413,7 +424,7 @@ public class SalesOrder extends AuditEntity {
         this.status = "CANCELLED";
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (status == null) {

@@ -1,11 +1,12 @@
-package lk.epicgreen.erp.notifications.service.impl;
+package lk.epicgreen.erp.notification.service.impl;
 
-import lk.epicgreen.erp.notifications.dto.request.NotificationTemplateRequest;
-import lk.epicgreen.erp.notifications.dto.response.NotificationTemplateResponse;
-import lk.epicgreen.erp.notifications.entity.NotificationTemplate;
-import lk.epicgreen.erp.notifications.mapper.NotificationTemplateMapper;
-import lk.epicgreen.erp.notifications.repository.NotificationTemplateRepository;
-import lk.epicgreen.erp.notifications.service.NotificationTemplateService;
+import lk.epicgreen.erp.notification.dto.request.NotificationTemplateRequest;
+import lk.epicgreen.erp.notification.dto.response.NotificationTemplateResponse;
+import lk.epicgreen.erp.notification.entity.NotificationTemplate;
+import lk.epicgreen.erp.notification.mapper.NotificationTemplateMapper;
+import lk.epicgreen.erp.notification.repository.NotificationTemplateRepository;
+import lk.epicgreen.erp.notification.service.NotificationTemplateService;
+
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lk.epicgreen.erp.common.dto.PageResponse;
@@ -50,6 +51,76 @@ public class NotificationTemplateServiceImpl implements NotificationTemplateServ
         return templateMapper.toResponse(savedTemplate);
     }
 
+    @Transactional
+    public NotificationTemplate activateTemplate(Long id){
+        log.info("Activating Notification Template: {}", id);
+
+        NotificationTemplate template = findTemplateById(id);
+        template.setIsActive(true);
+        NotificationTemplate activatedTemplate = templateRepository.save(template);
+
+        log.info("Notification Template activated successfully: {}", activatedTemplate.getTemplateCode());
+
+        return activatedTemplate;
+    }
+
+    @Transactional
+    public NotificationTemplate deactivateTemplate(Long id){
+        log.info("Deactivating Notification Template: {}", id);
+
+        NotificationTemplate template = findTemplateById(id);
+        template.setIsActive(false);
+        NotificationTemplate deactivatedTemplate = templateRepository.save(template);
+
+        log.info("Notification Template deactivated successfully: {}", deactivatedTemplate.getTemplateCode());
+
+        return deactivatedTemplate;
+    }
+
+    public     String renderSubject(NotificationTemplateResponse template, Map<String, Object> variables){
+        String renderedSubject = template.getSubjectTemplate();
+
+        if (variables != null && !variables.isEmpty()) {
+            for (Map.Entry<String, Object> entry : variables.entrySet()) {
+                String placeholder = "{{" + entry.getKey() + "}}";
+                String value = entry.getValue() != null ? entry.getValue().toString() : "";
+                renderedSubject = renderedSubject.replace(placeholder, value);
+            }
+        }
+
+        log.debug("Subject rendered successfully");
+        return renderedSubject;
+    }
+
+    public     String renderBody(NotificationTemplateResponse template, Map<String, Object> variables){
+        String renderedBody = template.getBodyTemplate();
+
+        if (variables != null && !variables.isEmpty()) {
+            for (Map.Entry<String, Object> entry : variables.entrySet()) {
+                String placeholder = "{{" + entry.getKey() + "}}";
+                String value = entry.getValue() != null ? entry.getValue().toString() : "";
+                renderedBody = renderedBody.replace(placeholder, value);
+            }
+        }
+
+        log.debug("Body rendered successfully");
+        return renderedBody;
+    }
+
+    public String renderHtmlBody(NotificationTemplateResponse template, Map<String, Object> variables){
+        String renderedHtmlBody = template.getBodyTemplate();
+
+        if (variables != null && !variables.isEmpty()) {
+            for (Map.Entry<String, Object> entry : variables.entrySet()) {
+                String placeholder = "{{" + entry.getKey() + "}}";
+                String value = entry.getValue() != null ? entry.getValue().toString() : "";
+                renderedHtmlBody = renderedHtmlBody.replace(placeholder, value);
+            }
+        }
+
+        log.debug("HTML Body rendered successfully");
+        return renderedHtmlBody;
+    }
     @Override
     @Transactional
     public NotificationTemplateResponse updateTemplate(Long id, NotificationTemplateRequest request) {
@@ -81,6 +152,10 @@ public class NotificationTemplateServiceImpl implements NotificationTemplateServ
         templateRepository.deleteById(id);
         log.info("Notification Template deleted successfully: {}", id);
     }
+//    @Transactional
+//    public List<NotificationTemplate> getTemplatesByCategory(String category){
+//        return templateRepository.findByCategory(category);
+//    }
 
     @Override
     public NotificationTemplateResponse getTemplateById(Long id) {
@@ -159,6 +234,11 @@ public class NotificationTemplateServiceImpl implements NotificationTemplateServ
     @Override
     public boolean canDelete(Long id) {
         return true;
+    }
+
+    @Override
+    public List<NotificationTemplate> getTemplatesByCategory(String category) {
+        return null;
     }
 
     // ==================== PRIVATE HELPER METHODS ====================

@@ -2,6 +2,7 @@ package lk.epicgreen.erp.product.service.impl;
 
 import lk.epicgreen.erp.product.dto.request.ProductCategoryRequest;
 import lk.epicgreen.erp.product.dto.response.ProductCategoryResponse;
+import lk.epicgreen.erp.product.entity.Product;
 import lk.epicgreen.erp.product.entity.ProductCategory;
 import lk.epicgreen.erp.product.mapper.ProductCategoryMapper;
 import lk.epicgreen.erp.product.repository.ProductCategoryRepository;
@@ -17,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -229,5 +232,303 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             .first(categoryPage.isFirst())
             .empty(categoryPage.isEmpty())
             .build();
+    }
+
+    @Override
+    public ProductCategory createCategory(ProductCategoryRequest request) {
+        String categoryCode = request.getCategoryCode();
+        log.info("Creating new product category: {}", categoryCode);
+        validateUniqueCategoryCode(categoryCode, null);
+        ProductCategory category = productCategoryMapper.toEntity(request);
+        if (request.getParentCategoryId() != null) {
+            ProductCategory parentCategory = findProductCategoryById(request.getParentCategoryId());
+            category.setParentCategory(parentCategory);
+        }
+        ProductCategory savedCategory = productCategoryRepository.save(category);
+        log.info("Product category created successfully: {}", savedCategory.getCategoryCode());
+        return savedCategory;
+    }
+
+    @Override
+    public ProductCategory updateCategory(Long id, ProductCategoryRequest request) {
+        log.info("Updating product category: {}", id);
+        ProductCategory category = findProductCategoryById(id);
+        validateUniqueCategoryCode(request.getCategoryCode(), id);
+        productCategoryMapper.updateEntityFromRequest(request, category);
+        if (request.getParentCategoryId() != null) {
+            if (id.equals(request.getParentCategoryId())) {
+                throw new InvalidOperationException("Category cannot be its own parent");
+            }
+            ProductCategory parentCategory = findProductCategoryById(request.getParentCategoryId());
+            category.setParentCategory(parentCategory);
+        } else {
+            category.setParentCategory(null);
+        }
+        ProductCategory updatedCategory = productCategoryRepository.save(category);
+        log.info("Product category updated successfully: {}", updatedCategory.getCategoryCode());
+        return updatedCategory;
+    }
+
+    @Override
+    public void deleteCategory(Long id) {
+        log.info("Deleting product category: {}", id);
+        ProductCategory category = findProductCategoryById(id);
+        long childCount = productCategoryRepository.countByParentCategoryId(id);
+        if (childCount > 0) {
+            throw new InvalidOperationException(
+                "Cannot delete category. It has " + childCount + " child categories");
+        }
+        long productCount = productCategoryRepository.countProductsByCategoryId(id);
+        if (productCount > 0) {
+            throw new InvalidOperationException(
+                "Cannot delete category. It has " + productCount + " products");
+        }
+        productCategoryRepository.delete(category);
+        log.info("Product category deleted successfully: {}", id);
+    }
+
+    @Override
+    public ProductCategory getCategoryById(Long id) {
+        return findProductCategoryById(id);
+    }
+
+    @Override
+    public ProductCategory getCategoryByCode(String categoryCode) {
+        return findProductCategoryByCode(categoryCode);
+    }
+
+    private ProductCategory findProductCategoryByCode(String categoryCode) {
+        return productCategoryRepository.findByCategoryCode(categoryCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Product category not found: " + categoryCode));
+    }
+
+    @Override
+    public ProductCategory getCategoryByName(String categoryName) {
+        return findProductCategoryByName(categoryName);
+    }
+
+    private ProductCategory findProductCategoryByName(String categoryName) {
+        return productCategoryRepository.findByCategoryName(categoryName)
+            .orElseThrow(() -> new ResourceNotFoundException("Product category not found: " + categoryName));
+    }
+
+    @Override
+    public Page<ProductCategory> getAllCategories(Pageable pageable) {
+        return productCategoryRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<ProductCategory> getAllCategories() {
+        return productCategoryRepository.findAll();
+    }
+
+    @Override
+    public Page<ProductCategory> searchCategories(String keyword, Pageable pageable) {
+        return productCategoryRepository.searchCategories(keyword, pageable);
+    }
+
+    @Override
+    public ProductCategory activateCategory(Long id) {
+        ProductCategory category = findProductCategoryById(id);
+        category.setIsActive(true);
+        return productCategoryRepository.save(category);
+    }
+
+    @Override
+    public ProductCategory deactivateCategory(Long id) {
+        ProductCategory category = findProductCategoryById(id);
+        category.setIsActive(false);
+        return productCategoryRepository.save(category);
+    }
+
+    @Override
+    public void setParentCategory(Long categoryId, Long parentId) {
+        ProductCategory category = findProductCategoryById(categoryId);
+        ProductCategory parentCategory = findProductCategoryById(parentId);
+        category.setParentCategory(parentCategory);
+        productCategoryRepository.save(category);
+    }
+
+    @Override
+    public void removeParentCategory(Long categoryId) {
+        ProductCategory category = findProductCategoryById(categoryId);
+        category.setParentCategory(null);
+        productCategoryRepository.save(category);
+    }
+
+    @Override
+    public List<ProductCategory> getLeafCategories() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getLeafCategories'");
+    }
+
+    @Override
+    public List<ProductCategory> getCategoryPath(Long categoryId) {
+      ProductCategory category = findProductCategoryById(categoryId);
+        List<ProductCategory> path = new ArrayList<>();
+        while (category != null) {
+            path.add(0, category); // Add to the beginning to maintain order from root to leaf
+            category = category.getParentCategory();
+        }
+        return path;
+    }
+
+    @Override
+    public List<ProductCategory> getAllDescendants(Long categoryId) {
+        ProductCategory category = findProductCategoryById(categoryId);
+        List<ProductCategory> descendants = new ArrayList<>();
+        fetchDescendants(category, descendants);
+        return descendants;
+    }
+
+    private void fetchDescendants(ProductCategory category, List<ProductCategory> descendants) {
+        List<ProductCategory> children = productCategoryRepository.findByParentCategoryId(category.getId());
+        for (ProductCategory child : children) {
+            descendants.add(child);
+            fetchDescendants(child, descendants);
+        }
+    }
+
+    @Override
+    public List<ProductCategory> getCategoryTree() {
+        List<ProductCategory> roots = productCategoryRepository.findRootCategories();
+        for (ProductCategory root : roots) {
+            populateChildren(root);
+        }
+        return roots;
+    }
+
+    private void populateChildren(ProductCategory root) {
+        List<ProductCategory> children = productCategoryRepository.findByParentCategoryId(root.getId());
+        root.setChildren(children);
+        for (ProductCategory child : children) {
+            populateChildren(child);
+        }
+    }
+
+    @Override
+    public int getCategoryDepth(Long categoryId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCategoryDepth'");
+    }
+
+    @Override
+    public int getMaxDepth() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getMaxDepth'");
+    }
+
+    @Override
+    public List<ProductCategory> getActiveCategories() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getActiveCategories'");
+    }
+
+    @Override
+    public List<ProductCategory> getInactiveCategories() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getInactiveCategories'");
+    }
+
+    @Override
+    public List<ProductCategory> getCategoriesByLevel(Integer level) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCategoriesByLevel'");
+    }
+
+    @Override
+    public List<ProductCategory> getCategoriesWithProducts() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCategoriesWithProducts'");
+    }
+
+    @Override
+    public List<ProductCategory> getCategoriesWithoutProducts() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCategoriesWithoutProducts'");
+    }
+
+    @Override
+    public List<ProductCategory> getRecentCategories(int limit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRecentCategories'");
+    }
+
+    @Override
+    public boolean isCategoryCodeAvailable(String categoryCode) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isCategoryCodeAvailable'");
+    }
+
+    @Override
+    public boolean isCategoryNameAvailable(String categoryName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isCategoryNameAvailable'");
+    }
+
+    @Override
+    public boolean canDeleteCategory(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canDeleteCategory'");
+    }
+
+    @Override
+    public boolean hasProducts(Long categoryId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'hasProducts'");
+    }
+
+    @Override
+    public boolean hasChildren(Long categoryId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'hasChildren'");
+    }
+
+    @Override
+    public Map<String, Object> getCategoryStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCategoryStatistics'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getLevelDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getLevelDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getCategoriesByProductCount() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCategoriesByProductCount'");
+    }
+
+    @Override
+    public Long countProductsInCategory(Long categoryId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'countProductsInCategory'");
+    }
+
+    @Override
+    public List<ProductCategory> createBulkCategories(List<ProductCategoryRequest> requests) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createBulkCategories'");
+    }
+
+    @Override
+    public int activateBulkCategories(List<Long> categoryIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'activateBulkCategories'");
+    }
+
+    @Override
+    public int deactivateBulkCategories(List<Long> categoryIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deactivateBulkCategories'");
+    }
+
+    @Override
+    public int deleteBulkCategories(List<Long> categoryIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteBulkCategories'");
     }
 }

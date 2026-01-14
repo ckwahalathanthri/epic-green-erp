@@ -109,7 +109,7 @@ public class SalesOrderMapper {
             .discountAmount(order.getDiscountAmount())
             .freightCharges(order.getFreightCharges())
             .totalAmount(order.getTotalAmount())
-            .approvedBy(order.getApprovedBy())
+            .approvedBy(order.getApprovedBy().getId())
             .approvedAt(order.getApprovedAt())
             .remarks(order.getRemarks())
             .createdAt(order.getCreatedAt())

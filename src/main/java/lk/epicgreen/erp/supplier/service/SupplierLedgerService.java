@@ -3,11 +3,14 @@ package lk.epicgreen.erp.supplier.service;
 import lk.epicgreen.erp.supplier.dto.request.SupplierLedgerRequest;
 import lk.epicgreen.erp.supplier.dto.response.SupplierLedgerResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.supplier.entity.SupplierLedger;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for SupplierLedger entity business logic
@@ -92,6 +95,54 @@ public interface SupplierLedgerService {
      */
     SupplierLedgerSummary getLedgerSummaryForDateRange(
         Long supplierId, LocalDate startDate, LocalDate endDate);
+
+//    SupplierLedger updateLedgerEntry(Long id, SupplierLedgerRequest request);
+
+    SupplierLedger getLedgerEntryByReferenceNumber(String referenceNumber);
+
+    void deleteLedgerEntry(Long id);
+
+    SupplierLedger updateLedgerEntry(Long id, SupplierLedgerRequest request);
+
+    Page<SupplierLedger> searchLedgerEntries(String keyword, Pageable pageable);
+
+    SupplierLedger recordPurchase(Long supplierId, Double amount, String referenceType, Long referenceId, String description, LocalDate transactionDate);
+
+    SupplierLedger recordPayment(Long supplierId, Double amount, String paymentMethod, String referenceNumber, String description, LocalDate transactionDate);
+
+    SupplierLedger recordReturn(Long supplierId, Double amount, String referenceType, Long referenceId, String description, LocalDate transactionDate);
+
+    SupplierLedger recordAdjustment(Long supplierId, Double debitAmount, Double creditAmount, String description, String notes, LocalDate transactionDate);
+
+    List<SupplierLedger> getDebitEntriesBySupplier(Long supplierId);
+
+    List<SupplierLedger> getCreditEntriesBySupplier(Long supplierId);
+
+    List<SupplierLedger> getPurchaseEntries();
+
+    List<SupplierLedger> getPaymentEntries();
+
+    List<SupplierLedger> getReturnEntries();
+
+    List<SupplierLedger> getAdjustmentEntries();
+
+    List<SupplierLedger> getCashPayments();
+
+    Map<String, Object> getSupplierStatement(Long supplierId, LocalDate startDate, LocalDate endDate);
+
+    Map<String, Object> getLedgerStatistics();
+
+    List<Map<String, Object>> getTransactionTypeDistribution();
+
+    List<Map<String, Object>> getPaymentMethodDistribution();
+
+    Double getTotalPurchases();
+
+    Double getTotalPayments();
+
+    Double getTotalOutstanding();
+
+    Map<String, Object> getDashboardStatistics();
 
     /**
      * DTO for ledger summary

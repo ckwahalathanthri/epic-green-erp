@@ -1,12 +1,11 @@
 package lk.epicgreen.erp.accounting.entity;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 /**
@@ -55,6 +54,8 @@ public class BankAccount extends AuditEntity {
     @Size(max = 100)
     @Column(name = "bank_name", nullable = false, length = 100)
     private String bankName;
+
+
     
     /**
      * Bank branch

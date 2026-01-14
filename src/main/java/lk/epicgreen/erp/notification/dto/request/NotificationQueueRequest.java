@@ -1,11 +1,12 @@
-package lk.epicgreen.erp.notifications.dto.request;
+package lk.epicgreen.erp.notification.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 /**
@@ -30,7 +31,7 @@ public class NotificationQueueRequest {
     private String recipientMobile;
 
     @NotBlank(message = "Notification type is required")
-    @Pattern(regexp = "^(EMAIL|SMS|PUSH|IN_APP)$", 
+    @Pattern(regexp = "^(EMAIL|SMS|PUSH|IN_APP)$",
              message = "Notification type must be one of: EMAIL, SMS, PUSH, IN_APP")
     private String notificationType;
 
@@ -62,6 +63,11 @@ public class NotificationQueueRequest {
 
     private LocalDateTime sentAt;
 
+    private Long RecipientUserId;
+
+
     @Size(max = 1000, message = "Error message must not exceed 1000 characters")
     private String errorMessage;
+
+
 }

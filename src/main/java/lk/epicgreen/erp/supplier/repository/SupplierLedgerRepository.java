@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -95,7 +96,7 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
      * Search ledger entries by multiple criteria
      */
     @Query("SELECT sl FROM SupplierLedger sl WHERE " +
-           "(:supplierId IS NULL OR sl.supplierId = :supplierId) AND " +
+           "(:supplierId IS NULL OR sl.supplier.id = :supplierId) AND " +
            "(:transactionType IS NULL OR sl.transactionType = :transactionType) AND " +
            "(:startDate IS NULL OR sl.transactionDate >= :startDate) AND " +
            "(:endDate IS NULL OR sl.transactionDate <= :endDate) AND " +
@@ -165,34 +166,34 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
     /**
      * Get current balance for a supplier (from latest ledger entry)
      */
-    @Query("SELECT sl.balance FROM SupplierLedger sl WHERE sl.supplierId = :supplierId " +
-           "ORDER BY sl.transactionDate DESC, sl.createdAt DESC LIMIT 1")
+    @Query("SELECT sl.balance FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId " +
+           "ORDER BY sl.transactionDate DESC, sl.createdAt ")
     Optional<BigDecimal> getCurrentBalance(@Param("supplierId") Long supplierId);
     
     /**
      * Get total debit amount for a supplier
      */
-    @Query("SELECT SUM(sl.debitAmount) FROM SupplierLedger sl WHERE sl.supplierId = :supplierId")
+    @Query("SELECT SUM(sl.debitAmount) FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId")
     BigDecimal getTotalDebitBySupplier(@Param("supplierId") Long supplierId);
     
     /**
      * Get total credit amount for a supplier
      */
-    @Query("SELECT SUM(sl.creditAmount) FROM SupplierLedger sl WHERE sl.supplierId = :supplierId")
+    @Query("SELECT SUM(sl.creditAmount) FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId")
     BigDecimal getTotalCreditBySupplier(@Param("supplierId") Long supplierId);
     
     /**
      * Get total purchases from a supplier
      */
     @Query("SELECT SUM(sl.creditAmount) FROM SupplierLedger sl " +
-           "WHERE sl.supplierId = :supplierId AND sl.transactionType = 'PURCHASE'")
+           "WHERE sl.supplier.id = :supplierId AND sl.transactionType = 'PURCHASE'")
     BigDecimal getTotalPurchasesBySupplier(@Param("supplierId") Long supplierId);
     
     /**
      * Get total payments to a supplier
      */
     @Query("SELECT SUM(sl.debitAmount) FROM SupplierLedger sl " +
-           "WHERE sl.supplierId = :supplierId AND sl.transactionType = 'PAYMENT'")
+           "WHERE sl.supplier.id = :supplierId AND sl.transactionType = 'PAYMENT'")
     BigDecimal getTotalPaymentsBySupplier(@Param("supplierId") Long supplierId);
     
     /**
@@ -202,7 +203,7 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
            "SUM(sl.debitAmount) as totalDebit, " +
            "SUM(sl.creditAmount) as totalCredit, " +
            "COUNT(sl) as transactionCount " +
-           "FROM SupplierLedger sl WHERE sl.supplierId = :supplierId " +
+           "FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId " +
            "AND sl.transactionDate BETWEEN :startDate AND :endDate")
     Object getLedgerSummary(
             @Param("supplierId") Long supplierId,
@@ -238,14 +239,14 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
     /**
      * Find recent transactions for a supplier
      */
-    @Query("SELECT sl FROM SupplierLedger sl WHERE sl.supplierId = :supplierId " +
+    @Query("SELECT sl FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId " +
            "ORDER BY sl.transactionDate DESC, sl.createdAt DESC")
     List<SupplierLedger> findRecentTransactionsBySupplier(@Param("supplierId") Long supplierId, Pageable pageable);
     
     /**
      * Get supplier account statement
      */
-    @Query("SELECT sl FROM SupplierLedger sl WHERE sl.supplierId = :supplierId " +
+    @Query("SELECT sl FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId " +
            "AND sl.transactionDate BETWEEN :startDate AND :endDate " +
            "ORDER BY sl.transactionDate ASC, sl.createdAt ASC")
     List<SupplierLedger> getAccountStatement(
@@ -256,7 +257,7 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
     /**
      * Find suppliers with transactions in date range
      */
-    @Query("SELECT DISTINCT sl.supplierId FROM SupplierLedger sl " +
+    @Query("SELECT DISTINCT sl.supplier.id FROM SupplierLedger sl " +
            "WHERE sl.transactionDate BETWEEN :startDate AND :endDate")
     List<Long> findSuppliersWithTransactions(
             @Param("startDate") LocalDate startDate,
@@ -265,20 +266,20 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
     /**
      * Find suppliers with outstanding payables (credit balance)
      */
-    @Query("SELECT DISTINCT sl.supplierId FROM SupplierLedger sl " +
-           "WHERE sl.supplierId IN " +
-           "(SELECT sl2.supplierId FROM SupplierLedger sl2 " +
-           "WHERE sl2.id IN (SELECT MAX(sl3.id) FROM SupplierLedger sl3 GROUP BY sl3.supplierId) " +
+    @Query("SELECT DISTINCT sl.supplier.id FROM SupplierLedger sl " +
+           "WHERE sl.supplier.id IN " +
+           "(SELECT sl2.supplier.id FROM SupplierLedger sl2 " +
+           "WHERE sl2.id IN (SELECT MAX(sl3.id) FROM SupplierLedger sl3 GROUP BY sl3.supplier.id) " +
            "AND sl2.balance > 0)")
     List<Long> findSuppliersWithOutstandingPayables();
     
     /**
      * Get purchase value by supplier in date range
      */
-    @Query("SELECT sl.supplierId, SUM(sl.creditAmount) as totalPurchases " +
+    @Query("SELECT sl.supplier.id, SUM(sl.creditAmount) as totalPurchases " +
            "FROM SupplierLedger sl WHERE sl.transactionType = 'PURCHASE' " +
            "AND sl.transactionDate BETWEEN :startDate AND :endDate " +
-           "GROUP BY sl.supplierId ORDER BY totalPurchases DESC")
+           "GROUP BY sl.supplier.id ORDER BY totalPurchases DESC")
     List<Object[]> getPurchaseValueBySupplier(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
@@ -286,11 +287,89 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
     /**
      * Get payment value by supplier in date range
      */
-    @Query("SELECT sl.supplierId, SUM(sl.debitAmount) as totalPayments " +
+    @Query("SELECT sl.supplier.id, SUM(sl.debitAmount) as totalPayments " +
            "FROM SupplierLedger sl WHERE sl.transactionType = 'PAYMENT' " +
            "AND sl.transactionDate BETWEEN :startDate AND :endDate " +
-           "GROUP BY sl.supplierId ORDER BY totalPayments DESC")
+           "GROUP BY sl.supplier.id ORDER BY totalPayments DESC")
     List<Object[]> getPaymentValueBySupplier(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT sl FROM SupplierLedger sl WHERE " +
+           "CAST(sl.supplier.id AS string) LIKE %:keyword% OR " +
+           "sl.transactionType LIKE %:keyword% OR " +
+           "sl.referenceType LIKE %:keyword% OR " +
+           "sl.referenceNumber LIKE %:keyword% OR " +
+           "sl.description LIKE %:keyword%")
+    Page<SupplierLedger> searchLedgerEntries(String keyword, Pageable pageable);
+
+    @Query("SELECT sl FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId AND sl.debitAmount > :zero")
+
+    List<SupplierLedger> findBySupplierIdAndDebitAmountGreaterThan(@Param("supplierId") Long supplierId,@Param("zero") BigDecimal zero);
+@Query("SELECT sl FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId AND sl.creditAmount > :zero")
+    List<SupplierLedger> findBySupplierIdAndCreditAmountGreaterThan(@Param("supplierId")Long supplierId, @Param("zero")BigDecimal zero);
+@Query("SELECT sl FROM SupplierLedger sl WHERE sl.transactionType = 'PURCHASE'")
+    List<SupplierLedger> findByTransactionTypeAndReferenceType(String payment, String cash);
+
+@Query("SELECT SUM(sl.debitAmount) FROM SupplierLedger sl")
+    Optional<BigDecimal> getTotalDebits();
+
+@Query("SELECT SUM(sl.creditAmount) FROM SupplierLedger sl")
+    Optional<BigDecimal> getTotalCredits();
+
+@Query("SELECT sl.transactionType AS transactionType, COUNT(sl) AS count " +
+       "FROM SupplierLedger sl GROUP BY sl.transactionType")
+    List<Map<String, Object>> getTransactionTypeDistribution();
+
+@Query("SELECT sl.referenceType AS paymentMethod, COUNT(sl) AS count " +
+       "FROM SupplierLedger sl WHERE sl.transactionType = 'PAYMENT' " +
+       "GROUP BY sl.referenceType")
+    List<Map<String, Object>> getPaymentMethodDistribution();
+
+@Query("SELECT SUM(sl.creditAmount) FROM SupplierLedger sl WHERE sl.transactionType = 'PURCHASE'")
+    Optional<BigDecimal> getTotalPurchases();
+@Query("SELECT SUM(sl.debitAmount) FROM SupplierLedger sl WHERE sl.transactionType = 'PAYMENT'")
+    Optional<BigDecimal> getTotalPayments();
+@Query("SELECT SUM(sl.balance) FROM SupplierLedger sl WHERE sl.balance > 0")
+    Optional<BigDecimal> getTotalOutstanding();
+
+@Query("SELECT SUM(CASE WHEN sl.transactionType = :purchase THEN sl.creditAmount " +
+       "WHEN sl.transactionType = 'PAYMENT' THEN sl.debitAmount ELSE 0 END) " +
+       "FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId")
+    Optional<BigDecimal> getTotalBySupplierAndType(Long supplierId, String purchase);
+
+@Query("SELECT SUM(sl.debitAmount) FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId")
+    Optional<BigDecimal> getTotalDebitsBySupplier(Long supplierId);
+
+@Query("SELECT SUM(sl.creditAmount) FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId")
+    Optional<BigDecimal> getTotalCreditsBySupplier(Long supplierId);
+@Query("SELECT SUM(CASE WHEN sl.transactionType = :purchase THEN sl.creditAmount " +
+       "WHEN sl.transactionType = 'PAYMENT' THEN sl.debitAmount ELSE 0 END) " +
+       "FROM SupplierLedger sl WHERE sl.supplier.id = :supplierId " +
+       "AND sl.transactionDate BETWEEN :startDate AND :endDate")
+    Optional<BigDecimal> getTotalBySupplierAndTypeAndDateRange(Long supplierId, String purchase, LocalDate startDate, LocalDate endDate);
+@Query("SELECT SUM(sl.creditAmount) FROM SupplierLedger sl " +
+       "WHERE sl.supplier.id = :supplierId " +
+       "AND sl.transactionDate BETWEEN :startDate AND :endDate")
+    Optional<BigDecimal> getTotalDebitsBySupplierAndDateRange(Long supplierId, LocalDate startDate, LocalDate endDate);
+
+@Query("SELECT SUM(sl.debitAmount) FROM SupplierLedger sl " +
+       "WHERE sl.supplier.id = :supplierId " +
+       "AND sl.transactionDate BETWEEN :startDate AND :endDate")
+    Optional<BigDecimal> getTotalCreditsBySupplierAndDateRange(@Param("supplierId") Long supplierId,@Param("startDate") LocalDate startDate,@Param("endDate") LocalDate endDate);
+
+@Query("SELECT COUNT(sl) FROM SupplierLedger sl " +
+       "WHERE sl.supplier.id = :supplierId " +
+       "AND sl.transactionDate BETWEEN :startDate AND :endDate")
+    Integer countBySupplierIdAndTransactionDateBetween(@Param("supplierId") Long supplierId,@Param("startDate") LocalDate startDate,@Param("endDate") LocalDate endDate);
+@Query("SELECT sl.balance FROM SupplierLedger sl " +
+       "WHERE sl.supplier.id = :supplierId " +
+       "ORDER BY sl.transactionDate DESC, sl.createdAt DESC")
+    Optional<BigDecimal> getSupplierBalance(Long supplierId);
+
+@Query("SELECT sl.balance FROM SupplierLedger sl " +
+       "WHERE sl.supplier.id = :supplierId " +
+       "AND sl.transactionDate <= :asOfDate " +
+       "ORDER BY sl.transactionDate DESC, sl.createdAt DESC")
+    Optional<BigDecimal> getSupplierBalanceAsOfDate(Long supplierId, LocalDate asOfDate);
 }

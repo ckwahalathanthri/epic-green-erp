@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -33,6 +34,9 @@ public class ProductionOutputRequest {
     @NotBlank(message = "Batch number is required")
     @Size(max = 50, message = "Batch number must not exceed 50 characters")
     private String batchNumber;
+
+    @NotNull(message = "Work order ID is required")
+    private Long workOrderId;
 
     @NotNull(message = "Quantity produced is required")
     @DecimalMin(value = "0.001", message = "Quantity produced must be > 0")
@@ -63,7 +67,7 @@ public class ProductionOutputRequest {
     @DecimalMin(value = "0.0", message = "Unit cost must be >= 0")
     private BigDecimal unitCost;
 
-    @Pattern(regexp = "^(PENDING|PASSED|FAILED)$", 
+    @Pattern(regexp = "^(PENDING|PASSED|FAILED)$",
              message = "Quality status must be one of: PENDING, PASSED, FAILED")
     private String qualityStatus;
 

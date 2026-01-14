@@ -52,12 +52,12 @@ public interface CustomerLedgerService {
         private BigDecimal totalDebits;
         private BigDecimal totalCredits;
         private BigDecimal currentBalance;
-        private Integer transactionCount;
+        private long transactionCount;
 
         public CustomerLedgerSummary(Long customerId, String customerName, 
                                     BigDecimal totalSales, BigDecimal totalPayments,
                                     BigDecimal totalDebits, BigDecimal totalCredits,
-                                    BigDecimal currentBalance, Integer transactionCount) {
+                                    BigDecimal currentBalance, long transactionCount2) {
             this.customerId = customerId;
             this.customerName = customerName;
             this.totalSales = totalSales;
@@ -65,7 +65,7 @@ public interface CustomerLedgerService {
             this.totalDebits = totalDebits;
             this.totalCredits = totalCredits;
             this.currentBalance = currentBalance;
-            this.transactionCount = transactionCount;
+            this.transactionCount = transactionCount2;
         }
 
         public Long getCustomerId() { return customerId; }
@@ -75,6 +75,6 @@ public interface CustomerLedgerService {
         public BigDecimal getTotalDebits() { return totalDebits; }
         public BigDecimal getTotalCredits() { return totalCredits; }
         public BigDecimal getCurrentBalance() { return currentBalance; }
-        public Integer getTransactionCount() { return transactionCount; }
+        public long getTransactionCount() { return transactionCount; }
     }
 }

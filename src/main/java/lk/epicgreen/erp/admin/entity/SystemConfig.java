@@ -1,8 +1,7 @@
 package lk.epicgreen.erp.admin.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -73,10 +72,17 @@ public class SystemConfig {
     private Boolean isEncrypted;
     
     /**
+     * Created timestamp
+     */
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    /**
      * Last updated timestamp
      */
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false, updatable = true)
     private LocalDateTime updatedAt;
+    
     
     /**
      * Updated by (user ID)
@@ -152,6 +158,7 @@ public class SystemConfig {
         if (isEncrypted == null) {
             isEncrypted = false;
         }
+        createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
     

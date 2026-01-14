@@ -1,7 +1,9 @@
 package lk.epicgreen.erp.payment.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.payment.dto.ChequeRequest;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.payment.dto.request.ChequeRequest;
+import lk.epicgreen.erp.payment.dto.response.ChequeResponse;
 import lk.epicgreen.erp.payment.entity.Cheque;
 import lk.epicgreen.erp.payment.service.ChequeService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -37,17 +41,17 @@ public class ChequeController {
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER')")
-    public ResponseEntity<ApiResponse<Cheque>> createCheque(@Valid @RequestBody ChequeRequest request) {
+    public ResponseEntity<ApiResponse<ChequeResponse>> createCheque(@Valid @RequestBody ChequeRequest request) {
         log.info("Creating cheque for customer: {}", request.getCustomerId());
-        Cheque created = chequeService.createCheque(request);
+        ChequeResponse created = chequeService.createCheque(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Cheque created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Cheque>> updateCheque(@PathVariable Long id, @Valid @RequestBody ChequeRequest request) {
+    public ResponseEntity<ApiResponse<ChequeResponse>> updateCheque(@PathVariable Long id, @Valid @RequestBody ChequeRequest request) {
         log.info("Updating cheque: {}", id);
-        Cheque updated = chequeService.updateCheque(id, request);
+        ChequeResponse updated = chequeService.updateCheque(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Cheque updated successfully"));
     }
     
@@ -61,8 +65,8 @@ public class ChequeController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'USER')")
-    public ResponseEntity<ApiResponse<Cheque>> getChequeById(@PathVariable Long id) {
-        Cheque cheque = chequeService.getChequeById(id);
+    public ResponseEntity<ApiResponse<ChequeResponse>> getChequeById(@PathVariable Long id) {
+        ChequeResponse cheque = chequeService.getChequeById(id);
         return ResponseEntity.ok(ApiResponse.success(cheque, "Cheque retrieved successfully"));
     }
     
@@ -75,22 +79,22 @@ public class ChequeController {
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Cheque>>> getAllCheques(Pageable pageable) {
-        Page<Cheque> cheques = chequeService.getAllCheques(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<ChequeResponse>>> getAllCheques(Pageable pageable) {
+        PageResponse<ChequeResponse> cheques = chequeService.getAllCheques(pageable);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Cheques retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Cheque>>> getAllChequesList() {
-        List<Cheque> cheques = chequeService.getAllCheques();
+    public ResponseEntity<ApiResponse<PageResponse<ChequeResponse>>> getAllChequesList(Pageable pageable) {
+        PageResponse<ChequeResponse> cheques = chequeService.getAllCheques(pageable);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Cheques list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Cheque>>> searchCheques(@RequestParam String keyword, Pageable pageable) {
-        Page<Cheque> cheques = chequeService.searchCheques(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<ChequeResponse>>> searchCheques(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<ChequeResponse> cheques = chequeService.searchCheques(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Search results retrieved successfully"));
     }
     
@@ -113,16 +117,16 @@ public class ChequeController {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate clearanceDate
     ) {
         log.info("Clearing cheque: {}", id);
-        Cheque cleared = chequeService.clearCheque(id, clearanceDate);
-        return ResponseEntity.ok(ApiResponse.success(cleared, "Cheque cleared successfully"));
+        chequeService.clearCheque(id, clearanceDate);
+        return ResponseEntity.ok(ApiResponse.success( "Cheque cleared successfully"));
     }
     
     @PutMapping("/{id}/bounce")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Cheque>> bounceCheque(@PathVariable Long id, @RequestParam String bounceReason) {
+    public ResponseEntity<ApiResponse<Cheque>> bounceCheque(@PathVariable Long id, @RequestParam String bounceReason, @RequestParam BigDecimal bounceCharges) {
         log.info("Bouncing cheque: {}", id);
-        Cheque bounced = chequeService.bounceCheque(id, bounceReason);
-        return ResponseEntity.ok(ApiResponse.success(bounced, "Cheque bounced"));
+        chequeService.bounceCheque(id, bounceReason, bounceCharges);
+        return ResponseEntity.ok(ApiResponse.success("Cheque bounced"));
     }
     
     @PutMapping("/{id}/cancel")
@@ -165,8 +169,8 @@ public class ChequeController {
     
     @GetMapping("/bounced")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Cheque>>> getBouncedCheques() {
-        List<Cheque> cheques = chequeService.getBouncedCheques();
+    public ResponseEntity<ApiResponse<List<ChequeResponse>>> getBouncedCheques() {
+        List<ChequeResponse> cheques = chequeService.getBouncedCheques();
         return ResponseEntity.ok(ApiResponse.success(cheques, "Bounced cheques retrieved successfully"));
     }
     
@@ -207,46 +211,46 @@ public class ChequeController {
     
     @GetMapping("/customer/{customerId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Cheque>>> getChequesByCustomer(@PathVariable Long customerId, Pageable pageable) {
-        Page<Cheque> cheques = chequeService.getChequesByCustomer(customerId, pageable);
+    public ResponseEntity<ApiResponse<List<ChequeResponse>>> getChequesByCustomer(@PathVariable Long customerId, Pageable pageable) {
+        List<ChequeResponse> cheques = chequeService.getChequesByCustomer(customerId);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Customer cheques retrieved successfully"));
     }
     
     @GetMapping("/customer/{customerId}/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Cheque>>> getChequesByCustomerList(@PathVariable Long customerId) {
-        List<Cheque> cheques = chequeService.getChequesByCustomer(customerId);
+    public ResponseEntity<ApiResponse<List<ChequeResponse>>> getChequesByCustomerList(@PathVariable Long customerId) {
+        List<ChequeResponse> cheques = chequeService.getChequesByCustomer(customerId);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Customer cheques list retrieved successfully"));
     }
     
     @GetMapping("/bank/{bankName}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Cheque>>> getChequesByBank(@PathVariable String bankName) {
-        List<Cheque> cheques = chequeService.getChequesByBank(bankName);
+    public ResponseEntity<ApiResponse<List<ChequeResponse>>> getChequesByBank(@PathVariable String bankName) {
+        List<ChequeResponse> cheques = chequeService.getChequesByBank(bankName);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Cheques by bank retrieved successfully"));
     }
     
     @GetMapping("/date-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Cheque>>> getChequesByDateRange(
+    public ResponseEntity<ApiResponse<List<ChequeResponse>>> getChequesByDateRange(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<Cheque> cheques = chequeService.getChequesByDateRange(startDate, endDate);
+        List<ChequeResponse> cheques = chequeService.getChequesByDateRange(startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Cheques by date range retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'CASHIER')")
-    public ResponseEntity<ApiResponse<List<Cheque>>> getRecentCheques(@RequestParam(defaultValue = "10") int limit) {
-        List<Cheque> cheques = chequeService.getRecentCheques(limit);
+    public ResponseEntity<ApiResponse<List<Cheque>>> getRecentCheques(Pageable pageable) {
+        List<Cheque> cheques = chequeService.getRecentCheques(pageable);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Recent cheques retrieved successfully"));
     }
     
     @GetMapping("/customer/{customerId}/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<Cheque>>> getCustomerRecentCheques(@PathVariable Long customerId, @RequestParam(defaultValue = "10") int limit) {
-        List<Cheque> cheques = chequeService.getCustomerRecentCheques(customerId, limit);
+    public ResponseEntity<ApiResponse<List<Cheque>>> getCustomerRecentCheques(@PathVariable Long customerId, Pageable page) {
+        List<Cheque> cheques = chequeService.getCustomerRecentCheques(customerId, page);
         return ResponseEntity.ok(ApiResponse.success(cheques, "Customer recent cheques retrieved successfully"));
     }
     

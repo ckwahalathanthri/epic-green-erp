@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -48,7 +48,7 @@ public class ChequeRequest {
     @NotNull(message = "Customer ID is required")
     private Long customerId;
 
-    @Pattern(regexp = "^(RECEIVED|DEPOSITED|CLEARED|BOUNCED|RETURNED|CANCELLED)$", 
+    @Pattern(regexp = "^(RECEIVED|DEPOSITED|CLEARED|BOUNCED|RETURNED|CANCELLED)$",
              message = "Status must be one of: RECEIVED, DEPOSITED, CLEARED, BOUNCED, RETURNED, CANCELLED")
     private String status;
 

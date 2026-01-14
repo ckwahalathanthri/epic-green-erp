@@ -195,4 +195,10 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
      * Find all roles ordered by role name
      */
     List<Role> findAllByOrderByRoleNameAsc();
+
+     /**
+     * Count users assigned to a specific role using the UserRole join
+     */
+    @Query("SELECT COUNT(ur) FROM Role r JOIN r.userRoles ur WHERE r.id = :roleId")
+    long countUsersByRoleId(@Param("roleId") Long roleId);
 }

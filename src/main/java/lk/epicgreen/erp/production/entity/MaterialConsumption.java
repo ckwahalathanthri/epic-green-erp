@@ -1,7 +1,8 @@
 package lk.epicgreen.erp.production.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.product.entity.Product;
@@ -95,6 +96,8 @@ public class MaterialConsumption {
     @PositiveOrZero(message = "Unit cost must be positive or zero")
     @Column(name = "unit_cost", precision = 15, scale = 2)
     private BigDecimal unitCost;
+
+    
     
     /**
      * Total cost

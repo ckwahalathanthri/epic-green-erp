@@ -216,11 +216,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     List<User> findUsersWithoutRoles();
     
     /**
-     * Find users by status with pagination
-     */
-//    Page<User> findByStatus(String status, Pageable pageable);
-    
-    /**
      * Find top N recently created users
      */
     List<User> findTop10ByOrderByCreatedAtDesc();
@@ -242,4 +237,26 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @Query("SELECT u FROM User u WHERE u.passwordChangedAt < :date OR u.passwordChangedAt IS NULL")
     List<User> findUsersNeedingPasswordChange(@Param("date") LocalDateTime date);
+
+    /**
+     * Find users by status who are not soft-deleted
+     */
+    List<User> findByStatusAndDeletedAtIsNull(String status);
+
+    /**
+     * Find users by status who are not soft-deleted (paginated)
+     */
+    Page<User> findByStatusAndDeletedAtIsNull(String status, Pageable pageable);
+
+    /**
+     * Find all users who are not soft-deleted (paginated)
+     */
+    Page<User> findByDeletedAtIsNull(Pageable pageable);
+
+    @Query("SELECT u FROM User u JOIN u.userRoles ur WHERE ur.role.id = :roleId AND u.deletedAt IS NULL")
+    List<User> findByRolesId(@Param("roleId") Long roleId);
+
+    Optional<User> findByIdAndDeletedAtIsNull(Long id);
+
+    boolean existsByEmployeeCodeAndIdNot(String employeeCode, Long id);
 }

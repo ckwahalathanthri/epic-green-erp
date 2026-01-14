@@ -1,8 +1,10 @@
 package lk.epicgreen.erp.product.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
@@ -66,6 +68,12 @@ public class ProductCategory extends AuditEntity {
      */
     @Column(name = "is_active")
     private Boolean isActive;
+
+    /**
+     * Transient field for children categories (not persisted)
+     */
+    @Transient
+    private List<ProductCategory> children;
     
     /**
      * Child categories
@@ -143,7 +151,7 @@ public class ProductCategory extends AuditEntity {
         return parentCategory.getLevel() + 1;
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (isActive == null) {

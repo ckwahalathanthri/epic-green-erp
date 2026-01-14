@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,12 +57,90 @@ public class SyncLogServiceImpl implements SyncLogService {
         return syncLogMapper.toResponse(updatedSyncLog);
     }
 
+    @Transactional
+    public List<SyncLog> getSuccessfulSyncLogs(){
+        log.info("Fetching successful sync logs");
+        List<SyncLog> syncLogs = syncLogRepository.findBySyncStatus("COMPLETED");
+        log.info("Fetched {} successful sync logs", syncLogs.size());
+        return syncLogs;
+    }
+    @Transactional
+    public List<SyncLog> getFailedSyncLogs(){
+        log.info("Fetching failed sync logs");
+        List<SyncLog> syncLogs = syncLogRepository.findBySyncStatus("FAILED");
+        log.info("Fetched {} failed sync logs", syncLogs.size());
+        return syncLogs;
+    }
+
+    @Transactional
+    public List<SyncLog> getSyncLogsWithConflicts(){
+        log.info("Fetching sync logs with conflicts");
+        List<SyncLog> syncLogs = syncLogRepository.findByConflictsDetectedGreaterThan(0);
+        log.info("Fetched {} sync logs with conflicts", syncLogs.size());
+        return syncLogs;
+    }
+    public List<SyncLog> getUnresolvedConflicts(){
+        log.info("Fetching sync logs with unresolved conflicts");
+        List<SyncLog> syncLogs = syncLogRepository.findByConflictsResolvedLessThanConflictsDetected();
+        log.info("Fetched {} sync logs with unresolved conflicts", syncLogs.size());
+        return syncLogs;
+    }
+
     @Override
     @Transactional
     public void deleteSyncLog(Long id) {
+
         log.info("Deleting sync log: {}", id);
         syncLogRepository.deleteById(id);
         log.info("Sync log deleted successfully");
+
+    }
+
+    @Transactional
+    public List<SyncLog> getUserUnresolvedConflicts(Long userId){
+        log.info("Fetching unresolved conflicts for user: {}", userId);
+        List<SyncLog> syncLogs = syncLogRepository.findByUserIdAndConflictsResolvedLessThanConflictsDetected(userId);
+        log.info("Fetched {} unresolved conflicts for user: {}", syncLogs.size(), userId);
+        return syncLogs;
+    }
+
+    @Transactional
+    public boolean detectConflict(Long logId){
+        log.info("Detecting conflicts for sync log: {}", logId);
+        SyncLog syncLog = findSyncLogById(logId);
+        boolean hasConflict = syncLog.getConflictsDetected() != null && syncLog.getConflictsDetected() > 0;
+        log.info("Conflict detection result for sync log {}: {}", logId, hasConflict);
+        return hasConflict;
+    }
+
+    @Transactional
+    public SyncLogResponse resolveConflictServerWins(Long logId){
+        log.info("Resolving conflicts (server wins) for sync log: {}", logId);
+        SyncLog syncLog = findSyncLogById(logId);
+        syncLog.setConflictsResolved(syncLog.getConflictsDetected());
+        SyncLog updatedSyncLog = syncLogRepository.save(syncLog);
+        log.info("Conflicts resolved for sync log: {}", logId);
+        return syncLogMapper.toResponse(updatedSyncLog);
+    }
+
+    @Transactional
+    public SyncLogResponse resolveConflictClientWins(Long logId){
+        log.info("Resolving conflicts (client wins) for sync log: {}", logId);
+        SyncLog syncLog = findSyncLogById(logId);
+        syncLog.setConflictsResolved(syncLog.getConflictsDetected());
+        SyncLog updatedSyncLog = syncLogRepository.save(syncLog);
+        log.info("Conflicts resolved for sync log: {}", logId);
+        return syncLogMapper.toResponse(updatedSyncLog);
+    }
+
+    @Transactional
+    public SyncLogResponse resolveConflictManualMerge(Long logId, Map<String,Object> mergedData){
+        log.info("Resolving conflicts (manual merge) for sync log: {}", logId);
+        SyncLog syncLog = findSyncLogById(logId);
+        syncLog.setConflictsResolved(syncLog.getConflictsDetected());
+        SyncLog updatedSyncLog = syncLogRepository.save(syncLog);
+        log.info("Conflicts resolved for sync log: {}", logId);
+        return syncLogMapper.toResponse(updatedSyncLog);
     }
 
     @Override
@@ -123,7 +203,7 @@ public class SyncLogServiceImpl implements SyncLogService {
 
     @Override
     public List<SyncLogResponse> getActiveSyncs() {
-        List<SyncLog> syncLogs = syncLogRepository.findBySyncStatusIn(List.of("INITIATED", "IN_PROGRESS"));
+        List<SyncLog> syncLogs = syncLogRepository.findBySyncStatusIn(Arrays.asList("INITIATED", "IN_PROGRESS"));
         return syncLogs.stream()
             .map(syncLogMapper::toResponse)
             .collect(Collectors.toList());
@@ -195,7 +275,7 @@ public class SyncLogServiceImpl implements SyncLogService {
 
     @Override
     public PageResponse<SyncLogResponse> searchSyncLogs(String keyword, Pageable pageable) {
-        Page<SyncLog> syncLogPage = syncLogRepository.searchSyncLogs(keyword, pageable);
+        Page<SyncLog> syncLogPage = syncLogRepository.searchSyncLogs(null,null,keyword,null,null,null,null,pageable);
         return createPageResponse(syncLogPage);
     }
 

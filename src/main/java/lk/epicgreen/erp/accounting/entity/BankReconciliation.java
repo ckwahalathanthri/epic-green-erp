@@ -1,13 +1,12 @@
 package lk.epicgreen.erp.accounting.entity;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,7 +42,8 @@ public class BankReconciliation extends AuditEntity {
     @Size(max = 30)
     @Column(name = "reconciliation_number", nullable = false, unique = true, length = 30)
     private String reconciliationNumber;
-    
+
+
     /**
      * Bank account
      */
@@ -58,6 +58,9 @@ public class BankReconciliation extends AuditEntity {
     @NotNull(message = "Statement date is required")
     @Column(name = "statement_date", nullable = false)
     private LocalDate statementDate;
+
+    @Column(name = "is_reconciled")
+    private Boolean isReconciled;
     
     /**
      * Bank statement balance (as per bank)

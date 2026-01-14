@@ -1,7 +1,10 @@
 package lk.epicgreen.erp.supplier.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.supplier.dto.SupplierLedgerRequest;
+
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.supplier.dto.request.SupplierLedgerRequest;
+import lk.epicgreen.erp.supplier.dto.response.SupplierLedgerResponse;
 import lk.epicgreen.erp.supplier.entity.SupplierLedger;
 import lk.epicgreen.erp.supplier.service.SupplierLedgerService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +45,9 @@ public class SupplierLedgerController {
     
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<SupplierLedger>> createLedgerEntry(@Valid @RequestBody SupplierLedgerRequest request) {
+    public ResponseEntity<ApiResponse<SupplierLedgerResponse>> createLedgerEntry(@Valid @RequestBody SupplierLedgerRequest request) {
         log.info("Creating supplier ledger entry for supplier: {}", request.getSupplierId());
-        SupplierLedger created = ledgerService.createLedgerEntry(request);
+        SupplierLedgerResponse created = ledgerService.createLedgerEntry(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Ledger entry created successfully"));
     }
     
@@ -67,8 +72,8 @@ public class SupplierLedgerController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<SupplierLedger>> getLedgerEntryById(@PathVariable Long id) {
-        SupplierLedger ledger = ledgerService.getLedgerEntryById(id);
+    public ResponseEntity<ApiResponse<SupplierLedgerResponse>> getLedgerEntryById(@PathVariable Long id) {
+        SupplierLedgerResponse ledger = ledgerService.getLedgerEntryById(id);
         return ResponseEntity.ok(ApiResponse.success(ledger, "Ledger entry retrieved successfully"));
     }
     
@@ -81,15 +86,15 @@ public class SupplierLedgerController {
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Page<SupplierLedger>>> getAllLedgerEntries(Pageable pageable) {
-        Page<SupplierLedger> entries = ledgerService.getAllLedgerEntries(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<SupplierLedgerResponse>>> getAllLedgerEntries(Pageable pageable) {
+        PageResponse<SupplierLedgerResponse> entries = ledgerService.getAllLedgerEntries(pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<SupplierLedger>>> getAllLedgerEntriesList() {
-        List<SupplierLedger> entries = ledgerService.getAllLedgerEntries();
+    public ResponseEntity<ApiResponse<PageResponse<SupplierLedgerResponse>>> getAllLedgerEntriesList(Pageable pageable) {
+        PageResponse<SupplierLedgerResponse> entries = ledgerService.getAllLedgerEntries(pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries list retrieved successfully"));
     }
     
@@ -173,41 +178,41 @@ public class SupplierLedgerController {
     
     @GetMapping("/supplier/{supplierId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Page<SupplierLedger>>> getLedgerEntriesBySupplier(
+    public ResponseEntity<ApiResponse<PageResponse<SupplierLedgerResponse>>> getLedgerEntriesBySupplier(
         @PathVariable Long supplierId,
         Pageable pageable
     ) {
-        Page<SupplierLedger> entries = ledgerService.getLedgerEntriesBySupplier(supplierId, pageable);
+        PageResponse<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplier(supplierId, pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
     }
     
     @GetMapping("/supplier/{supplierId}/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<SupplierLedger>>> getLedgerEntriesBySupplierList(@PathVariable Long supplierId) {
-        List<SupplierLedger> entries = ledgerService.getLedgerEntriesBySupplier(supplierId);
+    public ResponseEntity<ApiResponse<PageResponse<SupplierLedgerResponse>>> getLedgerEntriesBySupplierList(@PathVariable Long supplierId,Pageable pageable) {
+        PageResponse<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplier(supplierId,pageable);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries list retrieved successfully"));
     }
     
     @GetMapping("/supplier/{supplierId}/date-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Page<SupplierLedger>>> getLedgerEntriesBySupplierAndDateRange(
+    public ResponseEntity<ApiResponse<List<SupplierLedgerResponse>>> getLedgerEntriesBySupplierAndDateRange(
         @PathVariable Long supplierId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
         Pageable pageable
     ) {
-        Page<SupplierLedger> entries = ledgerService.getLedgerEntriesBySupplierAndDateRange(supplierId, startDate, endDate, pageable);
+        List<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplierAndDateRange(supplierId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
     }
     
     @GetMapping("/supplier/{supplierId}/date-range/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<SupplierLedger>>> getLedgerEntriesBySupplierAndDateRangeList(
+    public ResponseEntity<ApiResponse<List<SupplierLedgerResponse>>> getLedgerEntriesBySupplierAndDateRangeList(
         @PathVariable Long supplierId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<SupplierLedger> entries = ledgerService.getLedgerEntriesBySupplierAndDateRange(supplierId, startDate, endDate);
+        List<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplierAndDateRange(supplierId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries list retrieved successfully"));
     }
     
@@ -266,8 +271,8 @@ public class SupplierLedgerController {
     
     @GetMapping("/supplier/{supplierId}/balance")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getSupplierBalance(@PathVariable Long supplierId) {
-        Map<String, Object> balance = ledgerService.getSupplierBalance(supplierId);
+    public ResponseEntity<ApiResponse<BigDecimal>> getSupplierBalance(@PathVariable Long supplierId) {
+        BigDecimal balance = ledgerService.getSupplierBalance(supplierId);
         return ResponseEntity.ok(ApiResponse.success(balance, "Supplier balance retrieved successfully"));
     }
     
@@ -307,12 +312,12 @@ public class SupplierLedgerController {
         return ResponseEntity.ok(ApiResponse.success(distribution, "Payment method distribution retrieved successfully"));
     }
     
-    @GetMapping("/statistics/monthly-summary")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getMonthlySummary() {
-        List<Map<String, Object>> summary = ledgerService.getMonthlySummary();
-        return ResponseEntity.ok(ApiResponse.success(summary, "Monthly summary retrieved successfully"));
-    }
+//    @GetMapping("/statistics/monthly-summary")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getMonthlySummary() {
+//        List<Map<String, Object>> summary = ledgerService.getMonthlySummary();
+//        return ResponseEntity.ok(ApiResponse.success(summary, "Monthly summary retrieved successfully"));
+//    }
     
     @GetMapping("/statistics/total-purchases")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")

@@ -20,10 +20,10 @@ public class MobileDataCacheMapper {
         }
 
         return MobileDataCache.builder()
-            .userId(request.getUserId())
+                .UserId(request.getUserId())
             .cacheKey(request.getCacheKey())
             .cacheType(request.getCacheType())
-            .dataSnapshot(request.getDataSnapshot())
+            .dataSnapshot(request.getDataSnapshot().toString())
             .lastSyncedAt(request.getLastSyncedAt())
             .expiresAt(request.getExpiresAt())
             .build();
@@ -37,7 +37,7 @@ public class MobileDataCacheMapper {
         cache.setUserId(request.getUserId());
         cache.setCacheKey(request.getCacheKey());
         cache.setCacheType(request.getCacheType());
-        cache.setDataSnapshot(request.getDataSnapshot());
+        cache.setDataSnapshot(request.getDataSnapshot().toString());
         cache.setLastSyncedAt(request.getLastSyncedAt());
         cache.setExpiresAt(request.getExpiresAt());
     }
@@ -52,7 +52,7 @@ public class MobileDataCacheMapper {
             .userId(cache.getUserId())
             .cacheKey(cache.getCacheKey())
             .cacheType(cache.getCacheType())
-            .dataSnapshot(cache.getDataSnapshot())
+//            .dataSnapshot(cache.getDataSnapshot())
             .lastSyncedAt(cache.getLastSyncedAt())
             .expiresAt(cache.getExpiresAt())
             .build();

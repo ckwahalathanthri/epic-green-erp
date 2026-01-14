@@ -298,7 +298,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse<UserResponse> searchUsers(String keyword, Pageable pageable) {
-        Page<User> userPage = userRepository.searchUsers(keyword, pageable);
+        Page<User> userPage = userRepository.searchUsers(keyword,null,null,null,null, pageable);
         return createPageResponse(userPage);
     }
 

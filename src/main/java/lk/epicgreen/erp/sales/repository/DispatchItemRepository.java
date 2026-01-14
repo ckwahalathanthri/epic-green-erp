@@ -92,7 +92,7 @@ public interface DispatchItemRepository extends JpaRepository<DispatchItem, Long
      * Delete all items for a dispatch note
      */
     @Modifying
-    @Query("DELETE FROM DispatchItem di WHERE di.dispatchId = :dispatchId")
+    @Query("DELETE FROM DispatchItem di WHERE di.dispatch.id = :dispatchId")
     void deleteAllByDispatchId(@Param("dispatchId") Long dispatchId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -100,36 +100,36 @@ public interface DispatchItemRepository extends JpaRepository<DispatchItem, Long
     /**
      * Get total quantity dispatched for a product
      */
-    @Query("SELECT SUM(di.quantityDispatched) FROM DispatchItem di WHERE di.productId = :productId")
+    @Query("SELECT SUM(di.quantityDispatched) FROM DispatchItem di WHERE di.product.id = :productId")
     BigDecimal getTotalQuantityDispatchedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total quantity dispatched for an order item
      */
-    @Query("SELECT SUM(di.quantityDispatched) FROM DispatchItem di WHERE di.orderItemId = :orderItemId")
+    @Query("SELECT SUM(di.quantityDispatched) FROM DispatchItem di WHERE di.orderItem.id = :orderItemId")
     BigDecimal getTotalQuantityDispatchedByOrderItem(@Param("orderItemId") Long orderItemId);
     
     /**
      * Get total quantity for a dispatch
      */
-    @Query("SELECT SUM(di.quantityDispatched) FROM DispatchItem di WHERE di.dispatchId = :dispatchId")
+    @Query("SELECT SUM(di.quantityDispatched) FROM DispatchItem di WHERE di.dispatch.id = :dispatchId")
     BigDecimal getTotalQuantityByDispatch(@Param("dispatchId") Long dispatchId);
     
     /**
      * Get dispatch item statistics by product
      */
-    @Query("SELECT di.productId, COUNT(di) as dispatchCount, " +
+    @Query("SELECT di.product.id, COUNT(di) as dispatchCount, " +
            "SUM(di.quantityDispatched) as totalQuantity " +
-           "FROM DispatchItem di GROUP BY di.productId ORDER BY totalQuantity DESC")
+           "FROM DispatchItem di GROUP BY di.product.id ORDER BY totalQuantity DESC")
     List<Object[]> getDispatchItemStatisticsByProduct();
     
     /**
      * Get dispatch item statistics by location
      */
-    @Query("SELECT di.locationId, COUNT(di) as dispatchCount, " +
+    @Query("SELECT di.location.id, COUNT(di) as dispatchCount, " +
            "SUM(di.quantityDispatched) as totalQuantity " +
-           "FROM DispatchItem di WHERE di.locationId IS NOT NULL " +
-           "GROUP BY di.locationId ORDER BY totalQuantity DESC")
+           "FROM DispatchItem di WHERE di.location.id IS NOT NULL " +
+           "GROUP BY di.location.id ORDER BY totalQuantity DESC")
     List<Object[]> getDispatchItemStatisticsByLocation();
     
     /**
@@ -145,19 +145,19 @@ public interface DispatchItemRepository extends JpaRepository<DispatchItem, Long
     /**
      * Find items with null location
      */
-    @Query("SELECT di FROM DispatchItem di WHERE di.locationId IS NULL")
+    @Query("SELECT di FROM DispatchItem di WHERE di.location.id IS NULL")
     List<DispatchItem> findItemsWithoutLocation();
     
     /**
      * Find all items ordered by dispatch
      */
-    @Query("SELECT di FROM DispatchItem di ORDER BY di.dispatchId, di.productId")
+    @Query("SELECT di FROM DispatchItem di ORDER BY di.dispatch.id, di.product.id")
     List<DispatchItem> findAllOrderedByDispatch();
     
     /**
      * Get top dispatched products
      */
-    @Query("SELECT di.productId, SUM(di.quantityDispatched) as totalQuantity " +
-           "FROM DispatchItem di GROUP BY di.productId ORDER BY totalQuantity DESC")
+    @Query("SELECT di.product.id, SUM(di.quantityDispatched) as totalQuantity " +
+           "FROM DispatchItem di GROUP BY di.product.id ORDER BY totalQuantity DESC")
     List<Object[]> getTopDispatchedProducts(Pageable pageable);
 }

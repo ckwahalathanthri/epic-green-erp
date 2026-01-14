@@ -37,4 +37,5 @@ public class CustomerLedgerResponse {
     private LocalDateTime createdAt;
     private Long createdBy;
     private String createdByName;
+    private String message;
 }

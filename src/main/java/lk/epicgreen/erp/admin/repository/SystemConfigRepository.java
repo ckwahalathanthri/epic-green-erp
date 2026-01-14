@@ -193,4 +193,6 @@ public interface SystemConfigRepository extends JpaRepository<SystemConfig, Long
      * Find configs by group and encryption status
      */
     List<SystemConfig> findByConfigGroupAndIsEncrypted(String configGroup, boolean isEncrypted);
+
+    
 }

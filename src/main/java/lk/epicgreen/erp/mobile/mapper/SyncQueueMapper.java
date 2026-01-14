@@ -1,8 +1,10 @@
 package lk.epicgreen.erp.mobile.mapper;
 
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.mobile.dto.request.SyncQueueRequest;
 import lk.epicgreen.erp.mobile.dto.response.SyncQueueResponse;
 import lk.epicgreen.erp.mobile.entity.SyncQueue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SyncQueueMapper {
+    @Autowired
+    private UserRepository userRepository;
 
     public SyncQueue toEntity(SyncQueueRequest request) {
         if (request == null) {
@@ -20,12 +24,12 @@ public class SyncQueueMapper {
         }
 
         return SyncQueue.builder()
-            .userId(request.getUserId())
+            .user(userRepository.findById(request.getUserId()).orElse(null))
             .deviceId(request.getDeviceId())
             .entityType(request.getEntityType())
             .entityId(request.getEntityId())
             .operationType(request.getOperationType())
-            .dataSnapshot(request.getDataSnapshot())
+            .dataSnapshot(request.getDataSnapshot().toString())
             .syncStatus(request.getSyncStatus() != null ? request.getSyncStatus() : "PENDING")
             .priority(request.getPriority() != null ? request.getPriority() : 5)
             .retryCount(request.getRetryCount() != null ? request.getRetryCount() : 0)
@@ -40,12 +44,12 @@ public class SyncQueueMapper {
             return;
         }
 
-        syncQueue.setUserId(request.getUserId());
+        syncQueue.setUser(userRepository.findById(request.getUserId()).orElse(null));
         syncQueue.setDeviceId(request.getDeviceId());
         syncQueue.setEntityType(request.getEntityType());
         syncQueue.setEntityId(request.getEntityId());
         syncQueue.setOperationType(request.getOperationType());
-        syncQueue.setDataSnapshot(request.getDataSnapshot());
+        syncQueue.setDataSnapshot(request.getDataSnapshot().toString());
         syncQueue.setSyncStatus(request.getSyncStatus());
         syncQueue.setPriority(request.getPriority());
         syncQueue.setRetryCount(request.getRetryCount());
@@ -61,12 +65,12 @@ public class SyncQueueMapper {
 
         return SyncQueueResponse.builder()
             .id(syncQueue.getId())
-            .userId(syncQueue.getUserId())
+            .userId(syncQueue.getUser().getId())
             .deviceId(syncQueue.getDeviceId())
             .entityType(syncQueue.getEntityType())
             .entityId(syncQueue.getEntityId())
             .operationType(syncQueue.getOperationType())
-            .dataSnapshot(syncQueue.getDataSnapshot())
+//            .dataSnapshot(syncQueue.getDataSnapshot())
             .syncStatus(syncQueue.getSyncStatus())
             .priority(syncQueue.getPriority())
             .retryCount(syncQueue.getRetryCount())

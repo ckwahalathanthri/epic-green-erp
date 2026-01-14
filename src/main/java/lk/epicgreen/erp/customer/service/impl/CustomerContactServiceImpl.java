@@ -121,9 +121,15 @@ public class CustomerContactServiceImpl implements CustomerContactService {
 
     @Override
     public CustomerContactResponse getPrimaryContactByCustomer(Long customerId) {
-        CustomerContact contact = customerContactRepository.findByCustomerIdAndIsPrimaryTrue(customerId)
-            .orElse(null);
-        return contact != null ? customerContactMapper.toResponse(contact) : null;
+        // CustomerContact contact = customerContactRepository.findByCustomerIdAndIsPrimaryTrue(customerId)
+        //     .orElse(null);
+        // return contact != null ? customerContactMapper.toResponse(contact) : null;
+
+        List<CustomerContact> contacts = customerContactRepository.findByCustomerIdAndIsPrimaryTrue(customerId);
+        if (contacts.isEmpty()) {
+            return null;
+        }
+        return customerContactMapper.toResponse(contacts.get(0));
     }
 
     @Override

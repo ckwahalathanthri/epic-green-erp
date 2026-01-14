@@ -1,7 +1,7 @@
 package lk.epicgreen.erp.report.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.report.entity.SavedReport;
+import lk.epicgreen.erp.report.dto.response.SavedReportResponse;
 import lk.epicgreen.erp.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,7 +109,7 @@ public class ReportStatisticsController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'REPORT_GENERATOR')")
     public ResponseEntity<byte[]> exportToPdf(@PathVariable Long id) {
         log.info("Exporting report to PDF: {}", id);
-        SavedReport report = reportService.getSavedReportById(id);
+        SavedReportResponse report = reportService.getSavedReportById(id);
         byte[] data = reportService.exportToPdf(report);
         return ResponseEntity.ok()
             .header("Content-Disposition", "attachment; filename=" + report.getReportCode() + ".pdf")
@@ -120,7 +120,7 @@ public class ReportStatisticsController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'REPORT_GENERATOR')")
     public ResponseEntity<byte[]> exportToExcel(@PathVariable Long id) {
         log.info("Exporting report to Excel: {}", id);
-        SavedReport report = reportService.getSavedReportById(id);
+        SavedReportResponse report = reportService.getSavedReportById(id);
         byte[] data = reportService.exportToExcel(report);
         return ResponseEntity.ok()
             .header("Content-Disposition", "attachment; filename=" + report.getReportCode() + ".xlsx")
@@ -131,7 +131,7 @@ public class ReportStatisticsController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'REPORT_GENERATOR')")
     public ResponseEntity<byte[]> exportToCsv(@PathVariable Long id) {
         log.info("Exporting report to CSV: {}", id);
-        SavedReport report = reportService.getSavedReportById(id);
+        SavedReportResponse report = reportService.getSavedReportById(id);
         byte[] data = reportService.exportToCsv(report);
         return ResponseEntity.ok()
             .header("Content-Disposition", "attachment; filename=" + report.getReportCode() + ".csv")
@@ -142,7 +142,7 @@ public class ReportStatisticsController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'REPORT_GENERATOR')")
     public ResponseEntity<String> exportToHtml(@PathVariable Long id) {
         log.info("Exporting report to HTML: {}", id);
-        SavedReport report = reportService.getSavedReportById(id);
+        SavedReportResponse report = reportService.getSavedReportById(id);
         String html = reportService.exportToHtml(report);
         return ResponseEntity.ok(html);
     }

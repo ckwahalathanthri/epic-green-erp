@@ -1,7 +1,9 @@
 package lk.epicgreen.erp.warehouse.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.warehouse.dto.StockMovementRequest;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.warehouse.dto.request.StockMovementRequest;
+import lk.epicgreen.erp.warehouse.dto.response.StockMovementResponse;
 import lk.epicgreen.erp.warehouse.entity.StockMovement;
 import lk.epicgreen.erp.warehouse.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -37,17 +40,17 @@ public class StockMovementController {
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> createStockMovement(@Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> createStockMovement(@Valid @RequestBody StockMovementRequest request) {
         log.info("Creating stock movement for product: {}", request.getProductId());
-        StockMovement created = stockMovementService.createStockMovement(request);
+        StockMovementResponse created = stockMovementService.createStockMovement(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Stock movement created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> updateStockMovement(@PathVariable Long id, @Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> updateStockMovement(@PathVariable Long id, @Valid @RequestBody StockMovementRequest request) {
         log.info("Updating stock movement: {}", id);
-        StockMovement updated = stockMovementService.updateStockMovement(id, request);
+        StockMovementResponse updated = stockMovementService.updateStockMovement(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Stock movement updated successfully"));
     }
     
@@ -61,255 +64,255 @@ public class StockMovementController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<StockMovement>> getStockMovementById(@PathVariable Long id) {
-        StockMovement movement = stockMovementService.getStockMovementById(id);
+    public ResponseEntity<ApiResponse<StockMovementResponse>> getStockMovementById(@PathVariable Long id) {
+        StockMovementResponse movement = stockMovementService.getStockMovementById(id);
         return ResponseEntity.ok(ApiResponse.success(movement, "Stock movement retrieved successfully"));
     }
     
     @GetMapping("/number/{movementNumber}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<StockMovement>> getStockMovementByNumber(@PathVariable String movementNumber) {
-        StockMovement movement = stockMovementService.getStockMovementByNumber(movementNumber);
+    public ResponseEntity<ApiResponse<StockMovementResponse>> getStockMovementByNumber(@PathVariable String movementNumber) {
+        StockMovementResponse movement = stockMovementService.getStockMovementByNumber(movementNumber);
         return ResponseEntity.ok(ApiResponse.success(movement, "Stock movement retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<StockMovement>>> getAllStockMovements(Pageable pageable) {
-        Page<StockMovement> movements = stockMovementService.getAllStockMovements(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<StockMovementResponse>>> getAllStockMovements(Pageable pageable) {
+        PageResponse<StockMovementResponse> movements = stockMovementService.getAllStockMovements(pageable);
         return ResponseEntity.ok(ApiResponse.success(movements, "Stock movements retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getAllStockMovementsList() {
-        List<StockMovement> movements = stockMovementService.getAllStockMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getAllStockMovementsList() {
+        List<StockMovementResponse> movements = stockMovementService.getAllStockMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Stock movements list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<StockMovement>>> searchStockMovements(@RequestParam String keyword, Pageable pageable) {
-        Page<StockMovement> movements = stockMovementService.searchStockMovements(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<StockMovementResponse>>> searchStockMovements(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<StockMovementResponse> movements = stockMovementService.searchStockMovements(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(movements, "Search results retrieved successfully"));
     }
     
     // Status Operations
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> approveStockMovement(
+    public ResponseEntity<ApiResponse<StockMovementResponse>> approveStockMovement(
         @PathVariable Long id,
         @RequestParam Long approvedByUserId,
         @RequestParam(required = false) String approvalNotes
     ) {
         log.info("Approving stock movement: {}", id);
-        StockMovement approved = stockMovementService.approveStockMovement(id, approvedByUserId, approvalNotes);
+        StockMovementResponse approved = stockMovementService.approveStockMovement(id, approvedByUserId, approvalNotes);
         return ResponseEntity.ok(ApiResponse.success(approved, "Stock movement approved successfully"));
     }
     
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> completeStockMovement(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> completeStockMovement(@PathVariable Long id) {
         log.info("Completing stock movement: {}", id);
-        StockMovement completed = stockMovementService.completeStockMovement(id);
+        StockMovementResponse completed = stockMovementService.completeStockMovement(id);
         return ResponseEntity.ok(ApiResponse.success(completed, "Stock movement completed successfully"));
     }
     
     @PutMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> cancelStockMovement(@PathVariable Long id, @RequestParam String cancellationReason) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> cancelStockMovement(@PathVariable Long id, @RequestParam String cancellationReason) {
         log.info("Cancelling stock movement: {}", id);
-        StockMovement cancelled = stockMovementService.cancelStockMovement(id, cancellationReason);
+        StockMovementResponse cancelled = stockMovementService.cancelStockMovement(id, cancellationReason);
         return ResponseEntity.ok(ApiResponse.success(cancelled, "Stock movement cancelled successfully"));
     }
     
     // Movement Operations
     @PostMapping("/record-stock-in")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> recordStockIn(@Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> recordStockIn(@Valid @RequestBody StockMovementRequest request) {
         log.info("Recording stock in for product: {}", request.getProductId());
-        StockMovement movement = stockMovementService.recordStockIn(request);
+        StockMovementResponse movement = stockMovementService.recordStockIn(request);
         return ResponseEntity.ok(ApiResponse.success(movement, "Stock in recorded successfully"));
     }
     
     @PostMapping("/record-stock-out")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> recordStockOut(@Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> recordStockOut(@Valid @RequestBody StockMovementRequest request) {
         log.info("Recording stock out for product: {}", request.getProductId());
-        StockMovement movement = stockMovementService.recordStockOut(request);
+        StockMovementResponse movement = stockMovementService.recordStockOut(request);
         return ResponseEntity.ok(ApiResponse.success(movement, "Stock out recorded successfully"));
     }
     
     @PostMapping("/record-transfer")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> recordTransfer(@Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> recordTransfer(@Valid @RequestBody StockMovementRequest request) {
         log.info("Recording transfer for product: {}", request.getProductId());
-        StockMovement movement = stockMovementService.recordTransfer(request);
+        StockMovementResponse movement = stockMovementService.recordTransfer(request);
         return ResponseEntity.ok(ApiResponse.success(movement, "Transfer recorded successfully"));
     }
     
     @PostMapping("/record-adjustment")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> recordAdjustment(@Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> recordAdjustment(@Valid @RequestBody StockMovementRequest request) {
         log.info("Recording adjustment for product: {}", request.getProductId());
-        StockMovement movement = stockMovementService.recordAdjustment(request);
+        StockMovementResponse movement = stockMovementService.recordAdjustment(request);
         return ResponseEntity.ok(ApiResponse.success(movement, "Adjustment recorded successfully"));
     }
     
     @PostMapping("/record-return")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> recordReturn(@Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> recordReturn(@Valid @RequestBody StockMovementRequest request) {
         log.info("Recording return for product: {}", request.getProductId());
-        StockMovement movement = stockMovementService.recordReturn(request);
+        StockMovementResponse movement = stockMovementService.recordReturn(request);
         return ResponseEntity.ok(ApiResponse.success(movement, "Return recorded successfully"));
     }
     
     @PostMapping("/record-damage")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<StockMovement>> recordDamage(@Valid @RequestBody StockMovementRequest request) {
+    public ResponseEntity<ApiResponse<StockMovementResponse>> recordDamage(@Valid @RequestBody StockMovementRequest request) {
         log.info("Recording damage for product: {}", request.getProductId());
-        StockMovement movement = stockMovementService.recordDamage(request);
+        StockMovementResponse movement = stockMovementService.recordDamage(request);
         return ResponseEntity.ok(ApiResponse.success(movement, "Damage recorded successfully"));
     }
     
     // Query Operations
     @GetMapping("/stock-in")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getStockInMovements() {
-        List<StockMovement> movements = stockMovementService.getStockInMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getStockInMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getStockInMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Stock in movements retrieved successfully"));
     }
     
     @GetMapping("/stock-out")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getStockOutMovements() {
-        List<StockMovement> movements = stockMovementService.getStockOutMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getStockOutMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getStockOutMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Stock out movements retrieved successfully"));
     }
     
     @GetMapping("/transfers")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getTransferMovements() {
-        List<StockMovement> movements = stockMovementService.getTransferMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getTransferMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getTransferMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Transfer movements retrieved successfully"));
     }
     
     @GetMapping("/adjustments")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getAdjustmentMovements() {
-        List<StockMovement> movements = stockMovementService.getAdjustmentMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getAdjustmentMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getAdjustmentMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Adjustment movements retrieved successfully"));
     }
     
     @GetMapping("/returns")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getReturnMovements() {
-        List<StockMovement> movements = stockMovementService.getReturnMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getReturnMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getReturnMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Return movements retrieved successfully"));
     }
     
     @GetMapping("/damages")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getDamageMovements() {
-        List<StockMovement> movements = stockMovementService.getDamageMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getDamageMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getDamageMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Damage movements retrieved successfully"));
     }
     
     @GetMapping("/pending")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getPendingMovements() {
-        List<StockMovement> movements = stockMovementService.getPendingMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getPendingMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getPendingMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Pending movements retrieved successfully"));
     }
     
     @GetMapping("/approved")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getApprovedMovements() {
-        List<StockMovement> movements = stockMovementService.getApprovedMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getApprovedMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getApprovedMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Approved movements retrieved successfully"));
     }
     
     @GetMapping("/completed")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getCompletedMovements() {
-        List<StockMovement> movements = stockMovementService.getCompletedMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getCompletedMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getCompletedMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Completed movements retrieved successfully"));
     }
     
     @GetMapping("/pending-approval")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getMovementsPendingApproval() {
-        List<StockMovement> movements = stockMovementService.getMovementsPendingApproval();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getMovementsPendingApproval() {
+        List<StockMovementResponse> movements = stockMovementService.getMovementsPendingApproval();
         return ResponseEntity.ok(ApiResponse.success(movements, "Movements pending approval retrieved successfully"));
     }
     
     @GetMapping("/today")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getTodaysMovements() {
-        List<StockMovement> movements = stockMovementService.getTodaysMovements();
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getTodaysMovements() {
+        List<StockMovementResponse> movements = stockMovementService.getTodaysMovements();
         return ResponseEntity.ok(ApiResponse.success(movements, "Today's movements retrieved successfully"));
     }
     
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getMovementsByProduct(@PathVariable Long productId) {
-        List<StockMovement> movements = stockMovementService.getMovementsByProduct(productId);
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getMovementsByProduct(@PathVariable Long productId) {
+        List<StockMovementResponse> movements = stockMovementService.getMovementsByProduct(productId);
         return ResponseEntity.ok(ApiResponse.success(movements, "Movements by product retrieved successfully"));
     }
     
     @GetMapping("/warehouse/{warehouseId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getMovementsByWarehouse(@PathVariable Long warehouseId) {
-        List<StockMovement> movements = stockMovementService.getMovementsByWarehouse(warehouseId);
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getMovementsByWarehouse(@PathVariable Long warehouseId) {
+        List<StockMovementResponse> movements = stockMovementService.getMovementsByWarehouse(warehouseId);
         return ResponseEntity.ok(ApiResponse.success(movements, "Movements by warehouse retrieved successfully"));
     }
     
     @GetMapping("/date-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getMovementsByDateRange(
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getMovementsByDateRange(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<StockMovement> movements = stockMovementService.getMovementsByDateRange(startDate, endDate);
+        List<StockMovementResponse> movements = stockMovementService.getMovementsByDateRange(startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(movements, "Movements by date range retrieved successfully"));
     }
     
     @GetMapping("/transfer/{fromWarehouseId}/{toWarehouseId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getTransfersBetweenWarehouses(
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getTransfersBetweenWarehouses(
         @PathVariable Long fromWarehouseId,
         @PathVariable Long toWarehouseId
     ) {
-        List<StockMovement> movements = stockMovementService.getTransfersBetweenWarehouses(fromWarehouseId, toWarehouseId);
+        List<StockMovementResponse> movements = stockMovementService.getTransfersBetweenWarehouses(fromWarehouseId, toWarehouseId);
         return ResponseEntity.ok(ApiResponse.success(movements, "Transfers between warehouses retrieved successfully"));
     }
     
     @GetMapping("/product/{productId}/history")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getProductMovementHistory(
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getProductMovementHistory(
         @PathVariable Long productId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<StockMovement> movements = stockMovementService.getProductMovementHistory(productId, startDate, endDate);
+        List<StockMovementResponse> movements = stockMovementService.getProductMovementHistory(productId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(movements, "Product movement history retrieved successfully"));
     }
     
     @GetMapping("/warehouse/{warehouseId}/history")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getWarehouseMovementHistory(
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getWarehouseMovementHistory(
         @PathVariable Long warehouseId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<StockMovement> movements = stockMovementService.getWarehouseMovementHistory(warehouseId, startDate, endDate);
+        List<StockMovementResponse> movements = stockMovementService.getWarehouseMovementHistory(warehouseId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(movements, "Warehouse movement history retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<StockMovement>>> getRecentMovements(@RequestParam(defaultValue = "10") int limit) {
-        List<StockMovement> movements = stockMovementService.getRecentMovements(limit);
+    public ResponseEntity<ApiResponse<List<StockMovementResponse>>> getRecentMovements(@RequestParam(defaultValue = "10") int limit) {
+        List<StockMovementResponse> movements = stockMovementService.getRecentMovements(limit);
         return ResponseEntity.ok(ApiResponse.success(movements, "Recent movements retrieved successfully"));
     }
     
