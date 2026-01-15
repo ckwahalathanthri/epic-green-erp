@@ -81,6 +81,14 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(savedUser);
     }
 
+    @Transactional
+    public List<UserResponse> getAllUsers(){
+        List<User> users=userRepository.findAllUsers();
+        return users.stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Override
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {

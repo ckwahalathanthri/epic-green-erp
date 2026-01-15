@@ -36,7 +36,7 @@ public class UserController {
     
     // Create User
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
+//    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody UserCreateRequest request) {
         log.info("Creating user: {}", request.getUsername());
         UserResponse response = userService.createUser(request);
@@ -45,7 +45,7 @@ public class UserController {
     
     // Update User
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
         @PathVariable Long id,
         @Valid @RequestBody UserUpdateRequest request
@@ -153,7 +153,7 @@ public class UserController {
     
     // Get User by ID
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         UserResponse response = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.success(response, "User retrieved successfully"));
@@ -182,10 +182,16 @@ public class UserController {
         List<UserResponse> response = userService.getAllActiveUsers();
         return ResponseEntity.ok(ApiResponse.success(response, "Active users retrieved successfully"));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers(){
+        List<UserResponse> response=userService.getAllUsers();
+        return ResponseEntity.ok(ApiResponse.success(response,"All users retrieved successfully"));
+    }
     
     // Get All Users with Pagination
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(Pageable pageable) {
         PageResponse<UserResponse> response = userService.getAllUsers(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, "Users retrieved successfully"));

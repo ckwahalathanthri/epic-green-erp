@@ -32,7 +32,7 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(req -> req
-                .antMatchers("/api/auth/**","/api/accounting/accounts/hello","/api/admin/users").permitAll() // Allow all auth endpoints
+                .antMatchers("/api/auth/**","/api/accounting/accounts/hello","/api/admin/users","/api/admin/roles","/api/admin/users/**","/api/users/export").permitAll() // Allow all auth endpoints
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

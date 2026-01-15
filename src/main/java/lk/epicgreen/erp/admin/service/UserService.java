@@ -41,6 +41,7 @@ public interface UserService {
      * Activate user
      */
     void activateUser(Long id);
+    List<UserResponse> getAllUsers();
 
     /**
      * Deactivate user

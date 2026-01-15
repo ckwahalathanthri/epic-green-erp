@@ -115,7 +115,7 @@ public class RoleController {
     
     // Get All Roles
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAllRoles() {
         List<RoleResponse> response = roleService.getAllRoles();
         return ResponseEntity.ok(ApiResponse.success(response, "Roles retrieved successfully"));

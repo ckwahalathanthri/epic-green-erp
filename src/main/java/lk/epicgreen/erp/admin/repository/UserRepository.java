@@ -50,6 +50,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @Query("SELECT u FROM User u WHERE u.status = 'ACTIVE'")
     List<User> findActiveUsers();
+
+    @Query("SELECT u FROM User u")
+    List<User> findAllUsers();
     
     /**
      * Find all active users with pagination
