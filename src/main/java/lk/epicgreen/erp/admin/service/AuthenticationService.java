@@ -29,6 +29,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
+
    @Autowired
 
    private final AuthenticationManager authenticationManager;

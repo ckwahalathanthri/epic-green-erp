@@ -241,7 +241,7 @@ public class User extends AuditEntity {
         this.status = "ACTIVE";
     }
     
-    @PrePersist
+//    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (status == null) {
