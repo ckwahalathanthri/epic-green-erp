@@ -1,11 +1,21 @@
+# =====================================================
+# Epic Green ERP - Application Configuration
+# =====================================================
+
 spring:
   application:
     name: epic-green-erp
+
+  # ===================================================
+  # DATABASE CONFIGURATION
+  # ===================================================
   datasource:
     url: jdbc:mysql://localhost:3306/epic_green_erp?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: root
-    password: 1234
+    password: root@123
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+    # HikariCP Connection Pool
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -15,13 +25,17 @@ spring:
       pool-name: EpicGreenHikariCP
       auto-commit: true
       connection-test-query: SELECT 1
+
+  # ===================================================
+  # JPA / HIBERNATE CONFIGURATION
+  # ===================================================
   jpa:
     hibernate:
       ddl-auto: update  # Use Flyway for schema management
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
@@ -36,8 +50,29 @@ spring:
           in_clause_parameter_padding: true
         enable_lazy_load_no_trans: false
 
-#logging:
-#  level:
-#    org.hibernate.SQL: DEBUG
-#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-#    org.hibernate.tool.schema: DEBUG
+  # ===================================================
+  # SECURITY & JWT CONFIGURATION
+  # ===================================================
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Issuer URI (optional, for validation)
+          issuer-uri: ${application.security.jwt.issuer}
+
+# ===================================================
+# APPLICATION-SPECIFIC CONFIGURATION
+# ===================================================
+application:
+  security:
+    jwt:
+      # Base64-encoded secret key (minimum 256 bits for HS256)
+      # This is: "your-super-secret-key-at-least-32-chars-long!" in base64
+      secret-key: ${JWT_SECRET_KEY:eW91ci1zdXBlci1zZWNyZXQta2V5LWF0LWxlYXN0LTMyLWNoYXJzLWxvbmch}
+      
+      # Token expiration times (in seconds)
+      token-expiration: ${JWT_EXPIRATION:864000000}        # 24 hours (1 day)
+      refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
+      
+      # JWT Issuer
+      issuer: ${JWT_ISSUER:epic-green-erp}
