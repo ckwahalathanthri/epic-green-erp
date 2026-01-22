@@ -1,9 +1,9 @@
 package lk.epicgreen.erp.production.controller;
 
-import jakarta.validation.Valid;
+
 import lk.epicgreen.erp.common.dto.ApiResponse;
 import lk.epicgreen.erp.production.dto.request.ProductionOutputRequest;
-import lk.epicgreen.erp.production.entity.ProductionOutput;
+import lk.epicgreen.erp.production.dto.response.ProductionOutputResponse;
 import lk.epicgreen.erp.production.service.ProductionOutputService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -37,17 +39,17 @@ public class ProductionOutputController {
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<ProductionOutput>> createProductionOutput(@Valid @RequestBody ProductionOutputRequest request) {
+    public ResponseEntity<ApiResponse<ProductionOutputResponse>> createProductionOutput(@Valid @RequestBody ProductionOutputRequest request) {
         log.info("Creating production output for work order: {}", request.getWorkOrderId());
-        ProductionOutput created = productionService.createProductionOutput(request);
+        ProductionOutputResponse created = productionService.createProductionOutput(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Production output created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<ProductionOutput>> updateProductionOutput(@PathVariable Long id, @Valid @RequestBody ProductionOutputRequest request) {
+    public ResponseEntity<ApiResponse<ProductionOutputResponse>> updateProductionOutput(@PathVariable Long id, @Valid @RequestBody ProductionOutputRequest request) {
         log.info("Updating production output: {}", id);
-        ProductionOutput updated = productionService.updateProductionOutput(id, request);
+        ProductionOutputResponse updated = productionService.updateProductionOutput(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Production output updated successfully"));
     }
     
@@ -61,65 +63,65 @@ public class ProductionOutputController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<ProductionOutput>> getProductionOutputById(@PathVariable Long id) {
-        ProductionOutput output = productionService.getProductionOutputById(id);
+    public ResponseEntity<ApiResponse<ProductionOutputResponse>> getProductionOutputById(@PathVariable Long id) {
+        ProductionOutputResponse output = productionService.getProductionOutputById(id);
         return ResponseEntity.ok(ApiResponse.success(output, "Production output retrieved successfully"));
     }
     
     @GetMapping("/number/{outputNumber}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<ProductionOutput>> getProductionOutputByNumber(@PathVariable String outputNumber) {
-        ProductionOutput output = productionService.getProductionOutputByNumber(outputNumber);
+    public ResponseEntity<ApiResponse<ProductionOutputResponse>> getProductionOutputByNumber(@PathVariable String outputNumber) {
+        ProductionOutputResponse output = productionService.getProductionOutputByNumber(outputNumber);
         return ResponseEntity.ok(ApiResponse.success(output, "Production output retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<ProductionOutput>>> getAllProductionOutputs(Pageable pageable) {
-        Page<ProductionOutput> outputs = productionService.getAllProductionOutputs(pageable);
+    public ResponseEntity<ApiResponse<Page<ProductionOutputResponse>>> getAllProductionOutputs(Pageable pageable) {
+        Page<ProductionOutputResponse> outputs = productionService.getAllProductionOutputs(pageable);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Production outputs retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getAllProductionOutputsList() {
-        List<ProductionOutput> outputs = productionService.getAllProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getAllProductionOutputsList() {
+        List<ProductionOutputResponse> outputs = productionService.getAllProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Production outputs list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'USER')")
-    public ResponseEntity<ApiResponse<Page<ProductionOutput>>> searchProductionOutputs(@RequestParam String keyword, Pageable pageable) {
-        Page<ProductionOutput> outputs = productionService.searchProductionOutputs(keyword, pageable);
+    public ResponseEntity<ApiResponse<Page<ProductionOutputResponse>>> searchProductionOutputs(@RequestParam String keyword, Pageable pageable) {
+        Page<ProductionOutputResponse> outputs = productionService.searchProductionOutputs(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Search results retrieved successfully"));
     }
     
     // Status Operations
     @PutMapping("/{id}/verify")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<ProductionOutput>> verifyProductionOutput(
+    public ResponseEntity<ApiResponse<ProductionOutputResponse>> verifyProductionOutput(
         @PathVariable Long id,
         @RequestParam Long verifiedByUserId,
         @RequestParam(required = false) String verificationNotes
     ) {
         log.info("Verifying production output: {}", id);
-        ProductionOutput verified = productionService.verifyProductionOutput(id, verifiedByUserId, verificationNotes);
+        ProductionOutputResponse verified = productionService.verifyProductionOutput(id, verifiedByUserId, verificationNotes);
         return ResponseEntity.ok(ApiResponse.success(verified, "Production output verified successfully"));
     }
     
     @PutMapping("/{id}/post-to-inventory")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<ProductionOutput>> postToInventory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ProductionOutputResponse>> postToInventory(@PathVariable Long id) {
         log.info("Posting production output to inventory: {}", id);
-        ProductionOutput posted = productionService.postToInventory(id);
+        ProductionOutputResponse posted = productionService.postToInventory(id);
         return ResponseEntity.ok(ApiResponse.success(posted, "Production output posted to inventory successfully"));
     }
     
     @PutMapping("/{id}/reject")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<ProductionOutput>> rejectProductionOutput(@PathVariable Long id, @RequestParam String rejectionReason) {
+    public ResponseEntity<ApiResponse<ProductionOutputResponse>> rejectProductionOutput(@PathVariable Long id, @RequestParam String rejectionReason) {
         log.info("Rejecting production output: {}", id);
-        ProductionOutput rejected = productionService.rejectProductionOutput(id, rejectionReason);
+        ProductionOutputResponse rejected = productionService.rejectProductionOutput(id, rejectionReason);
         return ResponseEntity.ok(ApiResponse.success(rejected, "Production output rejected"));
     }
     
@@ -147,102 +149,102 @@ public class ProductionOutputController {
     // Query Operations
     @GetMapping("/pending")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getPendingProductionOutputs() {
-        List<ProductionOutput> outputs = productionService.getPendingProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getPendingProductionOutputs() {
+        List<ProductionOutputResponse> outputs = productionService.getPendingProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Pending production outputs retrieved successfully"));
     }
     
     @GetMapping("/verified")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getVerifiedProductionOutputs() {
-        List<ProductionOutput> outputs = productionService.getVerifiedProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getVerifiedProductionOutputs() {
+        List<ProductionOutputResponse> outputs = productionService.getVerifiedProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Verified production outputs retrieved successfully"));
     }
     
     @GetMapping("/posted")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getPostedProductionOutputs() {
-        List<ProductionOutput> outputs = productionService.getPostedProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getPostedProductionOutputs() {
+        List<ProductionOutputResponse> outputs = productionService.getPostedProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Posted production outputs retrieved successfully"));
     }
     
     @GetMapping("/rejected")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getRejectedProductionOutputs() {
-        List<ProductionOutput> outputs = productionService.getRejectedProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getRejectedProductionOutputs() {
+        List<ProductionOutputResponse> outputs = productionService.getRejectedProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Rejected production outputs retrieved successfully"));
     }
     
     @GetMapping("/unverified")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getUnverifiedProductionOutputs() {
-        List<ProductionOutput> outputs = productionService.getUnverifiedProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getUnverifiedProductionOutputs() {
+        List<ProductionOutputResponse> outputs = productionService.getUnverifiedProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Unverified production outputs retrieved successfully"));
     }
     
     @GetMapping("/unposted")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getUnpostedProductionOutputs() {
-        List<ProductionOutput> outputs = productionService.getUnpostedProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getUnpostedProductionOutputs() {
+        List<ProductionOutputResponse> outputs = productionService.getUnpostedProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Unposted production outputs retrieved successfully"));
     }
     
     @GetMapping("/todays")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getTodaysProductionOutputs() {
-        List<ProductionOutput> outputs = productionService.getTodaysProductionOutputs();
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getTodaysProductionOutputs() {
+        List<ProductionOutputResponse> outputs = productionService.getTodaysProductionOutputs();
         return ResponseEntity.ok(ApiResponse.success(outputs, "Today's production outputs retrieved successfully"));
     }
     
     @GetMapping("/work-order/{workOrderId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getProductionOutputsByWorkOrder(@PathVariable Long workOrderId) {
-        List<ProductionOutput> outputs = productionService.getProductionOutputsByWorkOrder(workOrderId);
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getProductionOutputsByWorkOrder(@PathVariable Long workOrderId) {
+        List<ProductionOutputResponse> outputs = productionService.getProductionOutputsByWorkOrder(workOrderId);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Production outputs by work order retrieved successfully"));
     }
     
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getProductionOutputsByProduct(@PathVariable Long productId) {
-        List<ProductionOutput> outputs = productionService.getProductionOutputsByProduct(productId);
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getProductionOutputsByProduct(@PathVariable Long productId) {
+        List<ProductionOutputResponse> outputs = productionService.getProductionOutputsByProduct(productId);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Production outputs by product retrieved successfully"));
     }
     
     @GetMapping("/production-line/{productionLineId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getProductionOutputsByProductionLine(@PathVariable Long productionLineId) {
-        List<ProductionOutput> outputs = productionService.getProductionOutputsByProductionLine(productionLineId);
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getProductionOutputsByProductionLine(@PathVariable Long productionLineId) {
+        List<ProductionOutputResponse> outputs = productionService.getProductionOutputsByProductionLine(productionLineId);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Production outputs by production line retrieved successfully"));
     }
     
     @GetMapping("/supervisor/{supervisorId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getProductionOutputsBySupervisor(@PathVariable Long supervisorId) {
-        List<ProductionOutput> outputs = productionService.getProductionOutputsBySupervisor(supervisorId);
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getProductionOutputsBySupervisor(@PathVariable Long supervisorId) {
+        List<ProductionOutputResponse> outputs = productionService.getProductionOutputsBySupervisor(supervisorId);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Production outputs by supervisor retrieved successfully"));
     }
     
     @GetMapping("/date-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getProductionOutputsByDateRange(
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getProductionOutputsByDateRange(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<ProductionOutput> outputs = productionService.getProductionOutputsByDateRange(startDate, endDate);
+        List<ProductionOutputResponse> outputs = productionService.getProductionOutputsByDateRange(startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Production outputs by date range retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> getRecentProductionOutputs(@RequestParam(defaultValue = "10") int limit) {
-        List<ProductionOutput> outputs = productionService.getRecentProductionOutputs(limit);
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> getRecentProductionOutputs(@RequestParam(defaultValue = "10") int limit) {
+        List<ProductionOutputResponse> outputs = productionService.getRecentProductionOutputs(limit);
         return ResponseEntity.ok(ApiResponse.success(outputs, "Recent production outputs retrieved successfully"));
     }
     
     @GetMapping("/work-order/{workOrderId}/total")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR', 'USER')")
-    public ResponseEntity<ApiResponse<Double>> getTotalOutputByWorkOrder(@PathVariable Long workOrderId) {
-        Double total = productionService.getTotalOutputByWorkOrder(workOrderId);
+    public ResponseEntity<ApiResponse<BigDecimal>> getTotalOutputByWorkOrder(@PathVariable Long workOrderId) {
+        BigDecimal total = productionService.getTotalOutputByWorkOrder(workOrderId);
         return ResponseEntity.ok(ApiResponse.success(total, "Total output by work order retrieved successfully"));
     }
     
@@ -307,9 +309,9 @@ public class ProductionOutputController {
     // Batch Operations
     @PostMapping("/bulk")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCTION_MANAGER', 'PRODUCTION_SUPERVISOR')")
-    public ResponseEntity<ApiResponse<List<ProductionOutput>>> createBulkProductionOutputs(@Valid @RequestBody List<ProductionOutputRequest> requests) {
+    public ResponseEntity<ApiResponse<List<ProductionOutputResponse>>> createBulkProductionOutputs(@Valid @RequestBody List<ProductionOutputRequest> requests) {
         log.info("Creating {} production outputs in bulk", requests.size());
-        List<ProductionOutput> outputs = productionService.createBulkProductionOutputs(requests);
+        List<ProductionOutputResponse> outputs = productionService.createBulkProductionOutputs(requests);
         return ResponseEntity.ok(ApiResponse.success(outputs, outputs.size() + " production outputs created successfully"));
     }
     

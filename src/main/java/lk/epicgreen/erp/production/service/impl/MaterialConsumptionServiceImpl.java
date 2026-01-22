@@ -2,6 +2,7 @@ package lk.epicgreen.erp.production.service.impl;
 
 import lk.epicgreen.erp.production.dto.request.MaterialConsumptionRequest;
 import lk.epicgreen.erp.production.dto.response.MaterialConsumptionResponse;
+import lk.epicgreen.erp.production.dto.response.WorkOrderResponse;
 import lk.epicgreen.erp.production.entity.MaterialConsumption;
 import lk.epicgreen.erp.production.entity.WorkOrder;
 import lk.epicgreen.erp.production.entity.WorkOrderItem;
@@ -15,7 +16,9 @@ import lk.epicgreen.erp.product.repository.ProductRepository;
 import lk.epicgreen.erp.warehouse.entity.Warehouse;
 import lk.epicgreen.erp.warehouse.repository.WarehouseRepository;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
+import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.admin.repository.UnitOfMeasureRepository;
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +51,7 @@ public class MaterialConsumptionServiceImpl implements MaterialConsumptionServic
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
+    private final UserRepository userRepository;
     private final MaterialConsumptionMapper materialConsumptionMapper;
 
     @Override
@@ -73,6 +77,13 @@ public class MaterialConsumptionServiceImpl implements MaterialConsumptionServic
         consumption.setRawMaterial(rawMaterial);
         consumption.setWarehouse(warehouse);
         consumption.setUom(uom);
+
+        // Set consumed by user if provided
+        if (request.getConsumedBy() != null) {
+            User user = userRepository.findById(request.getConsumedBy())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.getConsumedBy()));
+            consumption.setConsumedBy(user);
+        }
 
         // Set work order item if provided
         if (request.getWoItemId() != null) {
@@ -182,8 +193,11 @@ public class MaterialConsumptionServiceImpl implements MaterialConsumptionServic
     }
 
     private WorkOrder findWorkOrderById(Long id) {
-        return workOrderRepository.findById(id)
+        WorkOrder workOrderResponse = workOrderRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Work Order not found: " + id));
+        WorkOrder workOrder = new WorkOrder();
+        workOrder.setId(workOrderResponse.getId());
+        return workOrder;
     }
 
     private WorkOrderItem findWorkOrderItemById(Long id) {

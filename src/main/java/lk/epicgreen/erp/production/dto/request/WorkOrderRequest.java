@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -57,6 +58,8 @@ public class WorkOrderRequest {
     private LocalDate expectedCompletionDate;
 
     private LocalDate actualCompletionDate;
+
+    private Long productId;
 
     @Pattern(regexp = "^(DRAFT|RELEASED|IN_PROGRESS|COMPLETED|CANCELLED)$", 
              message = "Status must be one of: DRAFT, RELEASED, IN_PROGRESS, COMPLETED, CANCELLED")

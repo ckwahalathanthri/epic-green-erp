@@ -20,17 +20,17 @@ public class SyncConflictMapper {
         }
 
         return SyncConflict.builder()
-            .userId(request.getUserId())
+//            .userId(request.getUserId())
             .deviceId(request.getDeviceId())
             .entityType(request.getEntityType())
             .entityId(request.getEntityId())
-            .serverData(request.getServerData())
-            .clientData(request.getClientData())
+            .serverData(request.getServerData().toString())
+            .clientData(request.getClientData().toString())
             .conflictType(request.getConflictType())
             .resolutionStrategy(request.getResolutionStrategy() != null ? request.getResolutionStrategy() : "MANUAL")
             .status(request.getStatus() != null ? request.getStatus() : "DETECTED")
-            .resolvedData(request.getResolvedData())
-            .resolvedBy(request.getResolvedBy())
+            .resolvedData(request.getResolvedData().toString())
+//            .resolvedBy(request.getResolvedBy())
             .build();
     }
 
@@ -39,17 +39,17 @@ public class SyncConflictMapper {
             return;
         }
 
-        syncConflict.setUserId(request.getUserId());
+//        syncConflict.setUserId(request.getUserId());
         syncConflict.setDeviceId(request.getDeviceId());
         syncConflict.setEntityType(request.getEntityType());
         syncConflict.setEntityId(request.getEntityId());
-        syncConflict.setServerData(request.getServerData());
-        syncConflict.setClientData(request.getClientData());
+        syncConflict.setServerData(request.getServerData().toString());
+        syncConflict.setClientData(request.getClientData().toString());
         syncConflict.setConflictType(request.getConflictType());
         syncConflict.setResolutionStrategy(request.getResolutionStrategy());
         syncConflict.setStatus(request.getStatus());
-        syncConflict.setResolvedData(request.getResolvedData());
-        syncConflict.setResolvedBy(request.getResolvedBy());
+        syncConflict.setResolvedData(request.getResolvedData().toString());
+//        syncConflict.setResolvedBy(request.getResolvedBy());
     }
 
     public SyncConflictResponse toResponse(SyncConflict syncConflict) {
@@ -59,17 +59,17 @@ public class SyncConflictMapper {
 
         return SyncConflictResponse.builder()
             .id(syncConflict.getId())
-            .userId(syncConflict.getUserId())
+//            .userId(syncConflict.getUserId())
             .deviceId(syncConflict.getDeviceId())
             .entityType(syncConflict.getEntityType())
             .entityId(syncConflict.getEntityId())
-            .serverData(syncConflict.getServerData())
-            .clientData(syncConflict.getClientData())
+//            .serverData(syncConflict.getServerData())
+//            .clientData(syncConflict.getClientData())
             .conflictType(syncConflict.getConflictType())
             .resolutionStrategy(syncConflict.getResolutionStrategy())
             .status(syncConflict.getStatus())
-            .resolvedData(syncConflict.getResolvedData())
-            .resolvedBy(syncConflict.getResolvedBy())
+//            .resolvedData(syncConflict.getResolvedData())
+//            .resolvedBy(syncConflict.getResolvedBy())
             .resolvedAt(syncConflict.getResolvedAt())
             .detectedAt(syncConflict.getDetectedAt())
             .build();

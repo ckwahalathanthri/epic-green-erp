@@ -34,7 +34,8 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLog, Long>, JpaSp
      * Find error logs by error type
      */
     List<ErrorLog> findByErrorType(String errorType);
-    
+    List<ErrorLog> findBySeverityAndIsResolvedFalse(String severity);
+
     /**
      * Find error logs by error type with pagination
      */
@@ -120,7 +121,7 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLog, Long>, JpaSp
            "(:errorCode IS NULL OR el.errorCode = :errorCode) AND " +
            "(:severity IS NULL OR el.severity = :severity) AND " +
            "(:isResolved IS NULL OR el.isResolved = :isResolved) AND " +
-           "(:userId IS NULL OR el.userId = :userId) AND " +
+           "(:userId IS NULL OR el.user.id = :userId) AND " +
            "(:startTime IS NULL OR el.createdAt >= :startTime) AND " +
            "(:endTime IS NULL OR el.createdAt <= :endTime)")
     Page<ErrorLog> searchErrorLogs(
@@ -265,14 +266,14 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLog, Long>, JpaSp
     /**
      * Get daily error log summary
      */
-    @Query("SELECT DATE(el.createdAt) as errorDate, COUNT(el) as errorCount, " +
-           "SUM(CASE WHEN el.severity = 'CRITICAL' THEN 1 ELSE 0 END) as criticalCount, " +
-           "SUM(CASE WHEN el.isResolved = true THEN 1 ELSE 0 END) as resolvedCount " +
-           "FROM ErrorLog el WHERE el.createdAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY DATE(el.createdAt) ORDER BY errorDate DESC")
-    List<Object[]> getDailyErrorLogSummary(
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime);
+//    @Query("SELECT DATE(el.createdAt) as errorDate, COUNT(el) as errorCount, " +
+//           "SUM(CASE WHEN el.severity = 'CRITICAL' THEN 1 ELSE 0 END) as criticalCount, " +
+//           "SUM(CASE WHEN el.isResolved = true THEN 1 ELSE 0 END) as resolvedCount " +
+//           "FROM ErrorLog el WHERE el.createdAt BETWEEN :startTime AND :endTime " +
+//           "GROUP BY DATE(el.createdAt) ORDER BY errorDate DESC")
+//    List<Object[]> getDailyErrorLogSummary(
+//            @Param("startTime") LocalDateTime startTime,
+//            @Param("endTime") LocalDateTime endTime);
     
     /**
      * Find today's error logs
@@ -288,11 +289,11 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLog, Long>, JpaSp
     /**
      * Find recent errors by type
      */
-    @Query("SELECT el FROM ErrorLog el WHERE el.errorType = :errorType " +
-           "ORDER BY el.createdAt DESC LIMIT :limit")
-    List<ErrorLog> findRecentErrorsByType(
-            @Param("errorType") String errorType, 
-            @Param("limit") int limit);
+//    @Query("SELECT el FROM ErrorLog el WHERE el.errorType = :errorType " +
+//           "ORDER BY el.createdAt DESC LIMIT :limit")
+//    List<ErrorLog> findRecentErrorsByType(
+//            @Param("errorType") String errorType,
+//            @Param("limit") int limit);
     
     /**
      * Get most common errors

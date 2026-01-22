@@ -25,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -231,7 +233,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public List<InventoryResponse> getLowStockItems() {
-        List<Inventory> inventories = inventoryRepository.findLowStockItems();
+        List<Inventory> inventories = inventoryRepository.findLowStockInventory();
         return inventories.stream()
             .map(inventoryMapper::toResponse)
             .collect(Collectors.toList());
@@ -239,7 +241,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public List<InventoryResponse> getExpiredStock() {
-        List<Inventory> inventories = inventoryRepository.findExpiredStock(LocalDate.now());
+        List<Inventory> inventories = inventoryRepository.findExpiredInventory();
         return inventories.stream()
             .map(inventoryMapper::toResponse)
             .collect(Collectors.toList());
@@ -248,7 +250,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     public List<InventoryResponse> getExpiringStock(Integer daysBeforeExpiry) {
         LocalDate expiryDate = LocalDate.now().plusDays(daysBeforeExpiry);
-        List<Inventory> inventories = inventoryRepository.findExpiringStock(LocalDate.now(), expiryDate);
+        List<Inventory> inventories = inventoryRepository.findInventoryExpiringInDays(LocalDate.now(), expiryDate);
         return inventories.stream()
             .map(inventoryMapper::toResponse)
             .collect(Collectors.toList());
@@ -264,21 +266,21 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public BigDecimal getTotalStockByProduct(Long productId) {
-        return inventoryRepository.getTotalStockByProduct(productId)
-            .orElse(BigDecimal.ZERO);
+        BigDecimal total = inventoryRepository.getTotalAvailableQuantityByProduct(productId);
+        return total != null ? total : BigDecimal.ZERO;
     }
 
     @Override
     public BigDecimal getTotalStockValue(Long warehouseId) {
-        return inventoryRepository.getTotalStockValue(warehouseId)
-            .orElse(BigDecimal.ZERO);
+        BigDecimal total = inventoryRepository.getInventoryValueByWarehouse(warehouseId);
+        return total != null ? total : BigDecimal.ZERO;
     }
 
     @Override
     public List<InventoryValuation> getInventoryValuation(Long warehouseId) {
         // This would typically involve complex calculations
         // For now, returning empty list - to be implemented based on business requirements
-        return List.of();
+        return Arrays.asList();
     }
 
     // ==================== PRIVATE HELPER METHODS ====================
@@ -333,5 +335,161 @@ public class InventoryServiceImpl implements InventoryService {
             .first(inventoryPage.isFirst())
             .empty(inventoryPage.isEmpty())
             .build();
+    }
+
+    @Override
+    public void deleteInventory(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteInventory'");
+    }
+
+    @Override
+    public InventoryResponse getInventoryByProductAndWarehouse(Long productId, Long warehouseId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getInventoryByProductAndWarehouse'");
+    }
+
+    @Override
+    public List<Inventory> getAllInventory() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllInventory'");
+    }
+
+    @Override
+    public PageResponse<InventoryResponse> searchInventory(String keyword, Pageable pageable) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchInventory'");
+    }
+
+    @Override
+    public void addStock(Long id, Double quantity, Double cost) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addStock'");
+    }
+
+    @Override
+    public void removeStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'removeStock'");
+    }
+
+    @Override
+    public void adjustStock(Long id, Double newQuantity, String reason) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'adjustStock'");
+    }
+
+    @Override
+    public void increaseStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'increaseStock'");
+    }
+
+    @Override
+    public void decreaseStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'decreaseStock'");
+    }
+
+    @Override
+    public void transferStock(Long fromInventoryId, Long toInventoryId, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'transferStock'");
+    }
+
+    @Override
+    public void reserveStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'reserveStock'");
+    }
+
+    @Override
+    public void releaseReservation(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'releaseReservation'");
+    }
+
+    @Override
+    public void releaseReservedStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'releaseReservedStock'");
+    }
+
+    @Override
+    public void allocateStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'allocateStock'");
+    }
+
+    @Override
+    public void releaseAllocation(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'releaseAllocation'");
+    }
+
+    @Override
+    public void deallocateStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deallocateStock'");
+    }
+
+    @Override
+    public void recordDamagedStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'recordDamagedStock'");
+    }
+
+    @Override
+    public void recordExpiredStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'recordExpiredStock'");
+    }
+
+    @Override
+    public void updateStockLevels(Long id, Integer reorderLevel, Integer maxLevel, Integer minLevel) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateStockLevels'");
+    }
+
+    @Override
+    public Double getAvailableQuantity(Long productId, Long warehouseId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAvailableQuantity'");
+    }
+
+    @Override
+    public boolean isStockAvailable(Long productId, Long warehouseId, Double requiredQuantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isStockAvailable'");
+    }
+
+    @Override
+    public List<Inventory> getOutOfStockItems() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getOutOfStockItems'");
+    }
+
+    @Override
+    public Map<String, Object> getInventorySummary(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getInventorySummary'");
+    }
+
+    @Override
+    public Map<String, Object> calculateInventoryMetrics(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculateInventoryMetrics'");
+    }
+
+    @Override
+    public Map<String, Object> getInventoryStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getInventoryStatistics'");
+    }
+
+    @Override
+    public Map<String, Object> getDashboardStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDashboardStatistics'");
     }
 }

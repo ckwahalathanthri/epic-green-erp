@@ -86,7 +86,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     /**
      * Find inventory with available quantity greater than zero for a warehouse
      */
-    @Query("SELECT i FROM Inventory i WHERE i.warehouseId = :warehouseId AND i.quantityAvailable > 0")
+    @Query("SELECT i FROM Inventory i WHERE i.warehouse.id = :warehouseId AND i.quantityAvailable > 0")
     List<Inventory> findInventoryWithStockByWarehouse(@Param("warehouseId") Long warehouseId);
     
     // ==================== EXISTENCE CHECKS ====================
@@ -108,9 +108,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
      * Search inventory by multiple criteria
      */
     @Query("SELECT i FROM Inventory i WHERE " +
-           "(:warehouseId IS NULL OR i.warehouseId = :warehouseId) AND " +
-           "(:productId IS NULL OR i.productId = :productId) AND " +
-           "(:locationId IS NULL OR i.locationId = :locationId) AND " +
+           "(:warehouseId IS NULL OR i.warehouse.id = :warehouseId) AND " +
+           "(:productId IS NULL OR i.product.id = :productId) AND " +
+           "(:locationId IS NULL OR i.location.id = :locationId) AND " +
            "(:batchNumber IS NULL OR LOWER(i.batchNumber) LIKE LOWER(CONCAT('%', :batchNumber, '%')))")
     Page<Inventory> searchInventory(
             @Param("warehouseId") Long warehouseId,
@@ -141,14 +141,14 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     /**
      * Get total available quantity for a product across all warehouses
      */
-    @Query("SELECT SUM(i.quantityAvailable) FROM Inventory i WHERE i.productId = :productId")
+    @Query("SELECT SUM(i.quantityAvailable) FROM Inventory i WHERE i.product.id = :productId")
     BigDecimal getTotalAvailableQuantityByProduct(@Param("productId") Long productId);
     
     /**
      * Get total available quantity for a product in a specific warehouse
      */
     @Query("SELECT SUM(i.quantityAvailable) FROM Inventory i " +
-           "WHERE i.warehouseId = :warehouseId AND i.productId = :productId")
+           "WHERE i.warehouse.id = :warehouseId AND i.product.id = :productId")
     BigDecimal getTotalAvailableQuantityByWarehouseAndProduct(
             @Param("warehouseId") Long warehouseId,
             @Param("productId") Long productId);
@@ -156,13 +156,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     /**
      * Get total reserved quantity for a product
      */
-    @Query("SELECT SUM(i.quantityReserved) FROM Inventory i WHERE i.productId = :productId")
+    @Query("SELECT SUM(i.quantityReserved) FROM Inventory i WHERE i.product.id = :productId")
     BigDecimal getTotalReservedQuantityByProduct(@Param("productId") Long productId);
     
     /**
      * Get total ordered quantity for a product
      */
-    @Query("SELECT SUM(i.quantityOrdered) FROM Inventory i WHERE i.productId = :productId")
+    @Query("SELECT SUM(i.quantityOrdered) FROM Inventory i WHERE i.product.id = :productId")
     BigDecimal getTotalOrderedQuantityByProduct(@Param("productId") Long productId);
     
     /**
@@ -215,7 +215,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     /**
      * Get inventory value by warehouse
      */
-    @Query("SELECT SUM(i.quantityAvailable * i.unitCost) FROM Inventory i WHERE i.warehouseId = :warehouseId")
+    @Query("SELECT SUM(i.quantityAvailable * i.unitCost) FROM Inventory i WHERE i.warehouse.id = :warehouseId")
     BigDecimal getInventoryValueByWarehouse(@Param("warehouseId") Long warehouseId);
     
     /**
@@ -228,29 +228,29 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
      * Get inventory statistics by warehouse
      */
     @Query("SELECT " +
-           "COUNT(DISTINCT i.productId) as uniqueProducts, " +
+           "COUNT(DISTINCT i.product.id) as uniqueProducts, " +
            "SUM(i.quantityAvailable) as totalQuantity, " +
            "SUM(i.quantityReserved) as totalReserved, " +
            "SUM(i.quantityOrdered) as totalOrdered, " +
            "SUM(i.quantityAvailable * i.unitCost) as totalValue " +
-           "FROM Inventory i WHERE i.warehouseId = :warehouseId")
+           "FROM Inventory i WHERE i.warehouse.id = :warehouseId")
     Object getInventoryStatisticsByWarehouse(@Param("warehouseId") Long warehouseId);
     
     /**
      * Get inventory statistics by product
      */
     @Query("SELECT " +
-           "COUNT(DISTINCT i.warehouseId) as warehouseCount, " +
+           "COUNT(DISTINCT i.warehouse.id) as warehouseCount, " +
            "SUM(i.quantityAvailable) as totalAvailable, " +
            "SUM(i.quantityReserved) as totalReserved, " +
            "AVG(i.unitCost) as avgUnitCost " +
-           "FROM Inventory i WHERE i.productId = :productId")
+           "FROM Inventory i WHERE i.product.id = :productId")
     Object getInventoryStatisticsByProduct(@Param("productId") Long productId);
     
     /**
      * Find inventory by warehouse and expiry date range
      */
-    @Query("SELECT i FROM Inventory i WHERE i.warehouseId = :warehouseId " +
+    @Query("SELECT i FROM Inventory i WHERE i.warehouse.id = :warehouseId " +
            "AND i.expiryDate BETWEEN :startDate AND :endDate ORDER BY i.expiryDate")
     List<Inventory> findByWarehouseAndExpiryDateBetween(
             @Param("warehouseId") Long warehouseId,
@@ -260,9 +260,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     /**
      * Get products with inventory in multiple warehouses
      */
-    @Query("SELECT i.productId, COUNT(DISTINCT i.warehouseId) as warehouseCount " +
+    @Query("SELECT i.product.id, COUNT(DISTINCT i.warehouse.id) as warehouseCount " +
            "FROM Inventory i WHERE i.quantityAvailable > 0 " +
-           "GROUP BY i.productId HAVING COUNT(DISTINCT i.warehouseId) > 1")
+           "GROUP BY i.product.id HAVING COUNT(DISTINCT i.warehouse.id) > 1")
     List<Object[]> findProductsInMultipleWarehouses();
     
     /**
@@ -274,6 +274,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     /**
      * Find all inventory ordered by warehouse and product
      */
-    @Query("SELECT i FROM Inventory i ORDER BY i.warehouseId, i.productId")
+    @Query("SELECT i FROM Inventory i ORDER BY i.warehouse.id, i.product.id")
     List<Inventory> findAllOrderedByWarehouseAndProduct();
+
+    boolean existsByWarehouseIdAndProductIdAndBatchNumberAndLocationIdAndIdNot(Long warehouseId, Long productId,
+            String batchNumber, Long locationId, Long excludeId);
 }

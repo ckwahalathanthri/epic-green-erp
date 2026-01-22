@@ -86,7 +86,7 @@ public interface StockAdjustmentItemRepository extends JpaRepository<StockAdjust
      * Delete all items for an adjustment
      */
     @Modifying
-    @Query("DELETE FROM StockAdjustmentItem sai WHERE sai.adjustmentId = :adjustmentId")
+    @Query("DELETE FROM StockAdjustmentItem sai WHERE sai.adjustment.id = :adjustmentId")
     void deleteAllByAdjustmentId(@Param("adjustmentId") Long adjustmentId);
     
     /**
@@ -99,19 +99,19 @@ public interface StockAdjustmentItemRepository extends JpaRepository<StockAdjust
     /**
      * Get total quantity adjusted for a product
      */
-    @Query("SELECT SUM(sai.quantityAdjusted) FROM StockAdjustmentItem sai WHERE sai.productId = :productId")
+    @Query("SELECT SUM(sai.quantityAdjusted) FROM StockAdjustmentItem sai WHERE sai.product.id = :productId")
     BigDecimal getTotalQuantityAdjustedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total value for an adjustment
      */
-    @Query("SELECT SUM(sai.totalValue) FROM StockAdjustmentItem sai WHERE sai.adjustmentId = :adjustmentId")
+    @Query("SELECT SUM(sai.totalValue) FROM StockAdjustmentItem sai WHERE sai.adjustment.id = :adjustmentId")
     BigDecimal getTotalValueByAdjustment(@Param("adjustmentId") Long adjustmentId);
     
     /**
      * Get total quantity for an adjustment
      */
-    @Query("SELECT SUM(sai.quantityAdjusted) FROM StockAdjustmentItem sai WHERE sai.adjustmentId = :adjustmentId")
+    @Query("SELECT SUM(sai.quantityAdjusted) FROM StockAdjustmentItem sai WHERE sai.adjustment.id = :adjustmentId")
     BigDecimal getTotalQuantityByAdjustment(@Param("adjustmentId") Long adjustmentId);
     
     /**
@@ -135,18 +135,18 @@ public interface StockAdjustmentItemRepository extends JpaRepository<StockAdjust
     /**
      * Get adjustment item statistics by product
      */
-    @Query("SELECT sai.productId, COUNT(sai) as adjustmentCount, " +
+    @Query("SELECT sai.product.id, COUNT(sai) as adjustmentCount, " +
            "SUM(sai.quantityAdjusted) as totalQuantityAdjusted, SUM(sai.totalValue) as totalValue " +
-           "FROM StockAdjustmentItem sai GROUP BY sai.productId ORDER BY adjustmentCount DESC")
+           "FROM StockAdjustmentItem sai GROUP BY sai.product.id ORDER BY adjustmentCount DESC")
     List<Object[]> getAdjustmentStatisticsByProduct();
     
     /**
      * Get adjustment item statistics by location
      */
-    @Query("SELECT sai.locationId, COUNT(sai) as adjustmentCount, " +
+    @Query("SELECT sai.location.id, COUNT(sai) as adjustmentCount, " +
            "SUM(sai.quantityAdjusted) as totalQuantityAdjusted " +
-           "FROM StockAdjustmentItem sai WHERE sai.locationId IS NOT NULL " +
-           "GROUP BY sai.locationId ORDER BY adjustmentCount DESC")
+           "FROM StockAdjustmentItem sai WHERE sai.location.id IS NOT NULL " +
+           "GROUP BY sai.location.id ORDER BY adjustmentCount DESC")
     List<Object[]> getAdjustmentStatisticsByLocation();
     
     /**
@@ -168,20 +168,20 @@ public interface StockAdjustmentItemRepository extends JpaRepository<StockAdjust
     /**
      * Find items with null location
      */
-    @Query("SELECT sai FROM StockAdjustmentItem sai WHERE sai.locationId IS NULL")
+    @Query("SELECT sai FROM StockAdjustmentItem sai WHERE sai.location.id IS NULL")
     List<StockAdjustmentItem> findItemsWithoutLocation();
     
     /**
      * Find all items ordered by adjustment
      */
-    @Query("SELECT sai FROM StockAdjustmentItem sai ORDER BY sai.adjustmentId, sai.productId")
+    @Query("SELECT sai FROM StockAdjustmentItem sai ORDER BY sai.adjustment.id, sai.product.id")
     List<StockAdjustmentItem> findAllOrderedByAdjustment();
     
     /**
      * Get top adjusted products
      */
-    @Query("SELECT sai.productId, SUM(ABS(sai.quantityAdjusted)) as totalAdjusted " +
-           "FROM StockAdjustmentItem sai GROUP BY sai.productId " +
-           "ORDER BY totalAdjusted DESC")
-    List<Object[]> findTopAdjustedProducts(Pageable pageable);
+//    @Query("SELECT sai.product.id, SUM(ABS(sai.quantityAdjusted)) as totalAdjusted " +
+//           "FROM StockAdjustmentItem sai GROUP BY sai.product.id" +
+//           "ORDER totalAdjusted DESC")
+//    List<Object[]> findTopAdjustedProducts(Pageable pageable);
 }

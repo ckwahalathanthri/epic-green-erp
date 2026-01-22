@@ -38,7 +38,7 @@ public class ProductionOutputMapper {
             .unitCost(request.getUnitCost())
             .totalCost(totalCost)
             .qualityStatus(request.getQualityStatus() != null ? request.getQualityStatus() : "PENDING")
-            .qualityCheckedBy(request.getQualityCheckedBy())
+            //.qualityCheckedBy(request.getQualityCheckedBy()) // Handled in service
             .remarks(request.getRemarks())
             .build();
     }
@@ -66,7 +66,7 @@ public class ProductionOutputMapper {
             output.setQualityStatus(request.getQualityStatus());
         }
         
-        output.setQualityCheckedBy(request.getQualityCheckedBy());
+        // output.setQualityCheckedBy(request.getQualityCheckedBy()); // Handled in service
         output.setRemarks(request.getRemarks());
     }
 
@@ -106,7 +106,7 @@ public class ProductionOutputMapper {
             .unitCost(output.getUnitCost())
             .totalCost(totalCost)
             .qualityStatus(output.getQualityStatus())
-            .qualityCheckedBy(output.getQualityCheckedBy())
+            .qualityCheckedBy(output.getQualityCheckedBy() != null ? output.getQualityCheckedBy().getId() : null)
             .qualityCheckedAt(output.getQualityCheckedAt())
             .remarks(output.getRemarks())
             .createdAt(output.getCreatedAt())

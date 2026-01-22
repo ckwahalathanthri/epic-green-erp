@@ -54,6 +54,9 @@ public class ActivityLogServiceImpl implements ActivityLogService {
         ActivityLog activityLog = findActivityLogById(id);
         return activityLogMapper.toResponse(activityLog);
     }
+    public List<ActivityLog> getLoginActivitiesByUserId(Long userId){
+        return activityLogRepository.findByUserId(userId);
+    }
 
     @Override
     public PageResponse<ActivityLogResponse> getAllActivityLogs(Pageable pageable) {
@@ -67,6 +70,10 @@ public class ActivityLogServiceImpl implements ActivityLogService {
         return activityLogs.stream()
             .map(activityLogMapper::toResponse)
             .collect(Collectors.toList());
+    }
+
+    public Page<ActivityLog> getActivityLogsByUserId(Long userId,Pageable pageable){
+        return activityLogRepository.findByUserId(userId,pageable);
     }
 
     @Override
@@ -97,26 +104,40 @@ public class ActivityLogServiceImpl implements ActivityLogService {
             .collect(Collectors.toList());
     }
 
-    @Override
-    public List<ActivityLogResponse> getActivityLogsByReference(String referenceType, Long referenceId) {
-        List<ActivityLog> activityLogs = activityLogRepository.findByReferenceTypeAndReferenceId(referenceType, referenceId);
-        return activityLogs.stream()
-            .map(activityLogMapper::toResponse)
-            .collect(Collectors.toList());
+//    @Override
+//    public List<ActivityLogResponse> getActivityLogsByReference(String referenceType, Long referenceId) {
+//        List<ActivityLog> activityLogs = activityLogRepository.findByReferenceTypeAndReferenceId(referenceType, referenceId);
+//        return activityLogs.stream()
+//            .map(activityLogMapper::toResponse)
+//            .collect(Collectors.toList());
+//    }
+
+//    @Override
+//    public List<ActivityLogResponse> getUserActivitySummary(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+//        List<ActivityLog> activityLogs = activityLogRepository.findByUserIdAndCreatedAtBetween(userId, startDate, endDate);
+//        return activityLogs.stream()
+//            .map(activityLogMapper::toResponse)
+//            .collect(Collectors.toList());
+//    }
+
+    public Page<ActivityLog> getActivityLogsByType(String activityType,Pageable pageable){
+        return activityLogRepository.findByActivityType(activityType,pageable);
     }
 
-    @Override
-    public List<ActivityLogResponse> getUserActivitySummary(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<ActivityLog> activityLogs = activityLogRepository.findByUserIdAndCreatedAtBetween(userId, startDate, endDate);
-        return activityLogs.stream()
-            .map(activityLogMapper::toResponse)
-            .collect(Collectors.toList());
+//    @Override
+//    public PageResponse<ActivityLogResponse> searchActivityLogs(String keyword, Pageable pageable) {
+//        Page<ActivityLog> activityLogPage = activityLogRepository.searchActivityLogs(Long.valueOf(keyword),null,null,null,null,null,pageable);
+//        return createPageResponse(activityLogPage);
+//    }
+
+    public List<ActivityLog> getRecentActivityLogs(Pageable limit){
+        return activityLogRepository.findLatest(limit);
     }
 
-    @Override
-    public PageResponse<ActivityLogResponse> searchActivityLogs(String keyword, Pageable pageable) {
-        Page<ActivityLog> activityLogPage = activityLogRepository.searchActivityLogs(keyword, pageable);
-        return createPageResponse(activityLogPage);
+    public void deleteOldActivityLogs(int daysToKeep){
+        LocalDateTime cutoffDate=LocalDateTime.now().minusDays(daysToKeep);
+        activityLogRepository.deleteActivityLogsByCreatedAtBefore(cutoffDate);
+        log.info("Deleted successfully");
     }
 
     // ==================== PRIVATE HELPER METHODS ====================

@@ -1,4 +1,4 @@
-package lk.epicgreen.erp.notifications.dto.response;
+package lk.epicgreen.erp.notification.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

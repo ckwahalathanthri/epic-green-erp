@@ -75,9 +75,9 @@ public class GeneralLedgerServiceImpl implements GeneralLedgerService {
     @Override
     public PageResponse<GeneralLedgerResponse> getAccountLedger(Long accountId, LocalDate startDate, 
                                                                  LocalDate endDate, Pageable pageable) {
-        Page<GeneralLedger> ledgerPage = ledgerRepository.findByAccountIdAndTransactionDateBetween(
-            accountId, startDate, endDate, pageable);
-        return createPageResponse(ledgerPage);
+        List<GeneralLedger> ledgerPage = ledgerRepository.findByAccountIdAndTransactionDateBetween(
+            accountId, startDate, endDate);
+        return createPageResponse((Page<GeneralLedger>) ledgerPage);
     }
 
     private PageResponse<GeneralLedgerResponse> createPageResponse(Page<GeneralLedger> ledgerPage) {

@@ -128,7 +128,7 @@ public interface DispatchNoteRepository extends JpaRepository<DispatchNote, Long
      */
     @Query("SELECT dn FROM DispatchNote dn WHERE " +
            "(:dispatchNumber IS NULL OR LOWER(dn.dispatchNumber) LIKE LOWER(CONCAT('%', :dispatchNumber, '%'))) AND " +
-           "(:customerId IS NULL OR dn.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR dn.customer.id = :customerId) AND " +
            "(:status IS NULL OR dn.status = :status) AND " +
            "(:routeCode IS NULL OR dn.routeCode = :routeCode) AND " +
            "(:startDate IS NULL OR dn.dispatchDate >= :startDate) AND " +

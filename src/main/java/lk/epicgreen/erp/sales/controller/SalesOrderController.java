@@ -1,7 +1,10 @@
 package lk.epicgreen.erp.sales.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.sales.dto.SalesOrderRequest;
+
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.sales.dto.request.SalesOrderRequest;
+import lk.epicgreen.erp.sales.dto.response.SalesOrderResponse;
 import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.service.SalesOrderService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -37,17 +41,17 @@ public class SalesOrderController {
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<SalesOrder>> createSalesOrder(@Valid @RequestBody SalesOrderRequest request) {
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> createSalesOrder(@Valid @RequestBody SalesOrderRequest request) {
         log.info("Creating sales order for customer: {}", request.getCustomerId());
-        SalesOrder created = salesOrderService.createSalesOrder(request);
+        SalesOrderResponse created = salesOrderService.createSalesOrder(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Sales order created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<SalesOrder>> updateSalesOrder(@PathVariable Long id, @Valid @RequestBody SalesOrderRequest request) {
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> updateSalesOrder(@PathVariable Long id, @Valid @RequestBody SalesOrderRequest request) {
         log.info("Updating sales order: {}", id);
-        SalesOrder updated = salesOrderService.updateSalesOrder(id, request);
+        SalesOrderResponse updated = salesOrderService.updateSalesOrder(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Sales order updated successfully"));
     }
     
@@ -61,36 +65,36 @@ public class SalesOrderController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<SalesOrder>> getSalesOrderById(@PathVariable Long id) {
-        SalesOrder order = salesOrderService.getSalesOrderById(id);
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> getSalesOrderById(@PathVariable Long id) {
+        SalesOrderResponse order = salesOrderService.getSalesOrderById(id);
         return ResponseEntity.ok(ApiResponse.success(order, "Sales order retrieved successfully"));
     }
     
     @GetMapping("/number/{orderNumber}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<SalesOrder>> getSalesOrderByNumber(@PathVariable String orderNumber) {
-        SalesOrder order = salesOrderService.getSalesOrderByNumber(orderNumber);
+    public ResponseEntity<ApiResponse<SalesOrderResponse>> getSalesOrderByNumber(@PathVariable String orderNumber) {
+        SalesOrderResponse order = salesOrderService.getSalesOrderByNumber(orderNumber);
         return ResponseEntity.ok(ApiResponse.success(order, "Sales order retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Page<SalesOrder>>> getAllSalesOrders(Pageable pageable) {
-        Page<SalesOrder> orders = salesOrderService.getAllSalesOrders(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<SalesOrderResponse>>> getAllSalesOrders(Pageable pageable) {
+        PageResponse<SalesOrderResponse> orders = salesOrderService.getAllSalesOrders(pageable);
         return ResponseEntity.ok(ApiResponse.success(orders, "Sales orders retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<List<SalesOrder>>> getAllSalesOrdersList() {
-        List<SalesOrder> orders = salesOrderService.getAllSalesOrders();
+    public ResponseEntity<ApiResponse<PageResponse<SalesOrderResponse>>> getAllSalesOrdersList(Pageable pageable) {
+        PageResponse<SalesOrderResponse> orders = salesOrderService.getAllSalesOrders(pageable);
         return ResponseEntity.ok(ApiResponse.success(orders, "Sales orders list retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<Page<SalesOrder>>> searchSalesOrders(@RequestParam String keyword, Pageable pageable) {
-        Page<SalesOrder> orders = salesOrderService.searchSalesOrders(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<SalesOrderResponse>>> searchSalesOrders(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<SalesOrderResponse> orders = salesOrderService.searchSalesOrders(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(orders, "Search results retrieved successfully"));
     }
     
@@ -135,7 +139,7 @@ public class SalesOrderController {
         @RequestParam(required = false) String approvalNotes
     ) {
         log.info("Approving sales order: {}", id);
-        SalesOrder approved = salesOrderService.approveSalesOrder(id, approvedByUserId, approvalNotes);
+        SalesOrder approved = salesOrderService.approveSalesOrder(id, approvedByUserId,approvalNotes);
         return ResponseEntity.ok(ApiResponse.success(approved, "Sales order approved successfully"));
     }
     
@@ -152,7 +156,7 @@ public class SalesOrderController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<ApiResponse<SalesOrder>> markAsDispatched(@PathVariable Long id, @RequestParam Long dispatchNoteId) {
         log.info("Marking sales order as dispatched: {}", id);
-        SalesOrder dispatched = salesOrderService.markAsDispatched(id, dispatchNoteId);
+        SalesOrder dispatched = salesOrderService.markAsDispatched(id);
         return ResponseEntity.ok(ApiResponse.success(dispatched, "Sales order marked as dispatched"));
     }
     
@@ -312,16 +316,16 @@ public class SalesOrderController {
         return ResponseEntity.ok(ApiResponse.success(orders, "Orders by date range retrieved successfully"));
     }
     
-    @GetMapping("/recent")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<List<SalesOrder>>> getRecentOrders(@RequestParam(defaultValue = "10") int limit) {
-        List<SalesOrder> orders = salesOrderService.getRecentOrders(limit);
-        return ResponseEntity.ok(ApiResponse.success(orders, "Recent orders retrieved successfully"));
-    }
+//    @GetMapping("/recent")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
+//    public ResponseEntity<ApiResponse<List<SalesOrder>>> getRecentOrders(@RequestParam(defaultValue = "10") int limit) {
+//        List<SalesOrder> orders = salesOrderService.getRecentOrders(limit);
+//        return ResponseEntity.ok(ApiResponse.success(orders, "Recent orders retrieved successfully"));
+//    }
     
     @GetMapping("/customer/{customerId}/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
-    public ResponseEntity<ApiResponse<List<SalesOrder>>> getCustomerRecentOrders(@PathVariable Long customerId, @RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<ApiResponse<List<SalesOrder>>> getCustomerRecentOrders(@PathVariable Long customerId, Pageable limit) {
         List<SalesOrder> orders = salesOrderService.getCustomerRecentOrders(customerId, limit);
         return ResponseEntity.ok(ApiResponse.success(orders, "Customer recent orders retrieved successfully"));
     }
@@ -349,13 +353,13 @@ public class SalesOrderController {
     }
     
     // Calculations
-    @PutMapping("/{id}/calculate-totals")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Void>> calculateOrderTotals(@PathVariable Long id) {
-        log.info("Calculating totals for sales order: {}", id);
-        salesOrderService.calculateOrderTotals(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Order totals calculated successfully"));
-    }
+//    @PutMapping("/{id}/calculate-totals")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<Void>> calculateOrderTotals(@PathVariable Long id) {
+//        log.info("Calculating totals for sales order: {}", id);
+//        salesOrderService.calculateOrderTotals(id);
+//        return ResponseEntity.ok(ApiResponse.success(null, "Order totals calculated successfully"));
+//    }
     
     @GetMapping("/{id}/subtotal")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
@@ -379,29 +383,29 @@ public class SalesOrderController {
     }
     
     // Batch Operations
-    @PostMapping("/bulk")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<SalesOrder>>> createBulkSalesOrders(@Valid @RequestBody List<SalesOrderRequest> requests) {
-        log.info("Creating {} sales orders in bulk", requests.size());
-        List<SalesOrder> orders = salesOrderService.createBulkSalesOrders(requests);
-        return ResponseEntity.ok(ApiResponse.success(orders, orders.size() + " sales orders created successfully"));
-    }
+//    @PostMapping("/bulk")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    public ResponseEntity<ApiResponse<List<SalesOrder>>> createBulkSalesOrders(@Valid @RequestBody List<SalesOrderRequest> requests) {
+//        log.info("Creating {} sales orders in bulk", requests.size());
+//        List<SalesOrder> orders = salesOrderService.createBulkSalesOrders(requests);
+//        return ResponseEntity.ok(ApiResponse.success(orders, orders.size() + " sales orders created successfully"));
+//    }
     
-    @PutMapping("/bulk/approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> approveBulkSalesOrders(@RequestBody List<Long> orderIds, @RequestParam Long approvedByUserId) {
-        log.info("Approving {} sales orders in bulk", orderIds.size());
-        int count = salesOrderService.approveBulkSalesOrders(orderIds, approvedByUserId);
-        return ResponseEntity.ok(ApiResponse.success(count, count + " sales orders approved successfully"));
-    }
+//    @PutMapping("/bulk/approve")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<Integer>> approveBulkSalesOrders(@RequestBody List<Long> orderIds, @RequestParam Long approvedByUserId) {
+//        log.info("Approving {} sales orders in bulk", orderIds.size());
+//        int count = salesOrderService.approveBulkSalesOrders(orderIds, approvedByUserId);
+//        return ResponseEntity.ok(ApiResponse.success(count, count + " sales orders approved successfully"));
+//    }
     
-    @DeleteMapping("/bulk")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Integer>> deleteBulkSalesOrders(@RequestBody List<Long> orderIds) {
-        log.info("Deleting {} sales orders in bulk", orderIds.size());
-        int count = salesOrderService.deleteBulkSalesOrders(orderIds);
-        return ResponseEntity.ok(ApiResponse.success(count, count + " sales orders deleted successfully"));
-    }
+//    @DeleteMapping("/bulk")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<Integer>> deleteBulkSalesOrders(@RequestBody List<Long> orderIds) {
+//        log.info("Deleting {} sales orders in bulk", orderIds.size());
+//        int count = salesOrderService.deleteBulkSalesOrders(orderIds);
+//        return ResponseEntity.ok(ApiResponse.success(count, count + " sales orders deleted successfully"));
+//    }
     
     // Statistics
     @GetMapping("/statistics")
@@ -413,24 +417,24 @@ public class SalesOrderController {
     
     @GetMapping("/statistics/type-distribution")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getOrderTypeDistribution() {
-        List<Map<String, Object>> distribution = salesOrderService.getOrderTypeDistribution();
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getOrderTypeDistribution() {
+        Map<String, Object> distribution = salesOrderService.getOrderTypeDistribution();
         return ResponseEntity.ok(ApiResponse.success(distribution, "Order type distribution retrieved successfully"));
     }
     
-    @GetMapping("/statistics/status-distribution")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getStatusDistribution() {
-        List<Map<String, Object>> distribution = salesOrderService.getStatusDistribution();
-        return ResponseEntity.ok(ApiResponse.success(distribution, "Status distribution retrieved successfully"));
-    }
-    
-    @GetMapping("/statistics/priority-distribution")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getPriorityDistribution() {
-        List<Map<String, Object>> distribution = salesOrderService.getPriorityDistribution();
-        return ResponseEntity.ok(ApiResponse.success(distribution, "Priority distribution retrieved successfully"));
-    }
+//    @GetMapping("/statistics/status-distribution")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getStatusDistribution() {
+//        List<Map<String, Object>> distribution = salesOrderService.getStatusDistribution();
+//        return ResponseEntity.ok(ApiResponse.success(distribution, "Status distribution retrieved successfully"));
+//    }
+//
+//    @GetMapping("/statistics/priority-distribution")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getPriorityDistribution() {
+//        List<Map<String, Object>> distribution = salesOrderService.getPriorityDistribution();
+//        return ResponseEntity.ok(ApiResponse.success(distribution, "Priority distribution retrieved successfully"));
+//    }
     
     @GetMapping("/statistics/delivery-status-distribution")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
@@ -438,44 +442,44 @@ public class SalesOrderController {
         List<Map<String, Object>> distribution = salesOrderService.getDeliveryStatusDistribution();
         return ResponseEntity.ok(ApiResponse.success(distribution, "Delivery status distribution retrieved successfully"));
     }
-    
-    @GetMapping("/statistics/payment-status-distribution")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getPaymentStatusDistribution() {
-        List<Map<String, Object>> distribution = salesOrderService.getPaymentStatusDistribution();
-        return ResponseEntity.ok(ApiResponse.success(distribution, "Payment status distribution retrieved successfully"));
-    }
-    
-    @GetMapping("/statistics/monthly")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getMonthlyOrderCount(
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ) {
-        List<Map<String, Object>> count = salesOrderService.getMonthlyOrderCount(startDate, endDate);
-        return ResponseEntity.ok(ApiResponse.success(count, "Monthly order count retrieved successfully"));
-    }
-    
-    @GetMapping("/statistics/by-customer")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTotalOrderValueByCustomer() {
-        List<Map<String, Object>> stats = salesOrderService.getTotalOrderValueByCustomer();
-        return ResponseEntity.ok(ApiResponse.success(stats, "Order value by customer retrieved successfully"));
-    }
-    
-    @GetMapping("/statistics/by-sales-rep")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTotalOrderValueBySalesRep() {
-        List<Map<String, Object>> stats = salesOrderService.getTotalOrderValueBySalesRep();
-        return ResponseEntity.ok(ApiResponse.success(stats, "Order value by sales rep retrieved successfully"));
-    }
-    
-    @GetMapping("/statistics/top-customers")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTopCustomers(@RequestParam(defaultValue = "10") int limit) {
-        List<Map<String, Object>> customers = salesOrderService.getTopCustomers(limit);
-        return ResponseEntity.ok(ApiResponse.success(customers, "Top customers retrieved successfully"));
-    }
+//
+//    @GetMapping("/statistics/payment-status-distribution")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getPaymentStatusDistribution() {
+//        List<Map<String, Object>> distribution = salesOrderService.getPaymentStatusDistribution();
+//        return ResponseEntity.ok(ApiResponse.success(distribution, "Payment status distribution retrieved successfully"));
+//    }
+//
+//    @GetMapping("/statistics/monthly")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getMonthlyOrderCount(
+//        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+//        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+//    ) {
+//        List<Map<String, Object>> count = salesOrderService.getMonthlyOrderCount(startDate, endDate);
+//        return ResponseEntity.ok(ApiResponse.success(count, "Monthly order count retrieved successfully"));
+//    }
+//
+//    @GetMapping("/statistics/by-customer")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTotalOrderValueByCustomer() {
+//        List<Map<String, Object>> stats = salesOrderService.getTotalOrderValueByCustomer();
+//        return ResponseEntity.ok(ApiResponse.success(stats, "Order value by customer retrieved successfully"));
+//    }
+//
+//    @GetMapping("/statistics/by-sales-rep")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTotalOrderValueBySalesRep() {
+//        List<Map<String, Object>> stats = salesOrderService.getTotalOrderValueBySalesRep();
+//        return ResponseEntity.ok(ApiResponse.success(stats, "Order value by sales rep retrieved successfully"));
+//    }
+//
+//    @GetMapping("/statistics/top-customers")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getTopCustomers(@RequestParam(defaultValue = "10") int limit) {
+//        List<Map<String, Object>> customers = salesOrderService.getTopCustomers(limit);
+//        return ResponseEntity.ok(ApiResponse.success(customers, "Top customers retrieved successfully"));
+//    }
     
     @GetMapping("/statistics/total-value")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT')")

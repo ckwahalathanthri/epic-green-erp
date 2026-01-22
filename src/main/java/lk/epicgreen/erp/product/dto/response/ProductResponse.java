@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
+
 /**
  * DTO for product response
  * 
@@ -43,4 +45,5 @@ public class ProductResponse {
     private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Double discountAmount;
 }

@@ -2,6 +2,7 @@ package lk.epicgreen.erp.accounting.service;
 
 import lk.epicgreen.erp.accounting.dto.request.BankReconciliationRequest;
 import lk.epicgreen.erp.accounting.dto.response.BankReconciliationResponse;
+import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 
@@ -22,7 +23,7 @@ public interface BankReconciliationService {
     BankReconciliationResponse createReconciliation(BankReconciliationRequest request);
     BankReconciliationResponse updateReconciliation(Long id, BankReconciliationRequest request);
     void startReconciliation(Long id);
-    void completeReconciliation(Long id, Long reconciledBy);
+    void completeReconciliation(Long id, User reconciledBy);
     void deleteReconciliation(Long id);
     
     BankReconciliationResponse getReconciliationById(Long id);

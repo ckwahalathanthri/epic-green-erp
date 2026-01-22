@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -151,9 +152,9 @@ public class SyncConflictServiceImpl implements SyncConflictService {
         }
 
         syncConflict.setResolutionStrategy(resolutionStrategy);
-        syncConflict.setResolvedData(resolvedData);
+        syncConflict.setResolvedData(resolvedData.toString());
         syncConflict.setStatus("RESOLVED");
-        syncConflict.setResolvedBy(resolvedBy);
+//        syncConflict.setResolvedBy(resolvedBy);
         syncConflict.setResolvedAt(LocalDateTime.now());
 
         syncConflictRepository.save(syncConflict);
@@ -179,7 +180,7 @@ public class SyncConflictServiceImpl implements SyncConflictService {
 
         SyncConflict syncConflict = findSyncConflictById(id);
 
-        Map<String, Object> resolvedData;
+        @NotBlank(message = "Server data is required") String resolvedData;
         if ("SERVER_WINS".equals(resolutionStrategy)) {
             resolvedData = syncConflict.getServerData();
         } else if ("CLIENT_WINS".equals(resolutionStrategy)) {

@@ -1,10 +1,13 @@
 package lk.epicgreen.erp.audit.controller;
 
+import lk.epicgreen.erp.audit.dto.response.AuditLogResponse;
+import lk.epicgreen.erp.audit.service.impl.AuditLogServiceImpl;
 import lk.epicgreen.erp.common.dto.ApiResponse;
 import lk.epicgreen.erp.audit.entity.AuditLog;
-import lk.epicgreen.erp.audit.service.AuditService;
+import lk.epicgreen.erp.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,28 +32,29 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AuditLogController {
-    
-    private final AuditService auditService;
+
+    @Autowired
+    private final AuditLogServiceImpl auditService;
     
     // Query Operations
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<AuditLog>> getAuditLogById(@PathVariable Long id) {
-        AuditLog auditLog = auditService.getAuditLogById(id);
+    public ResponseEntity<ApiResponse<AuditLogResponse>> getAuditLogById(@PathVariable Long id) {
+        AuditLogResponse auditLog = auditService.getAuditLogById(id);
         return ResponseEntity.ok(ApiResponse.success(auditLog, "Audit log retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getAllAuditLogs(Pageable pageable) {
-        Page<AuditLog> auditLogs = auditService.getAllAuditLogs(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<AuditLogResponse>>> getAllAuditLogs(Pageable pageable) {
+        PageResponse<AuditLogResponse> auditLogs = auditService.getAllAuditLogs(pageable);
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Audit logs retrieved successfully"));
     }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<List<AuditLog>>> getAllAuditLogsList() {
-        List<AuditLog> auditLogs = auditService.getAllAuditLogs();
+    public ResponseEntity<ApiResponse<PageResponse<AuditLogResponse>>> getAllAuditLogsList(Pageable pagable) {
+        PageResponse<AuditLogResponse> auditLogs = auditService.getAllAuditLogs(pagable);
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Audit logs list retrieved successfully"));
     }
     
@@ -84,33 +88,33 @@ public class AuditLogController {
     
     @GetMapping("/entity/{entityType}/{entityId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getAuditLogsByEntity(
+    public ResponseEntity<ApiResponse<List<AuditLogResponse>>> getAuditLogsByEntity(
         @PathVariable String entityType,
         @PathVariable Long entityId,
         Pageable pageable
     ) {
-        Page<AuditLog> auditLogs = auditService.getAuditLogsByEntity(entityType, entityId, pageable);
+        List<AuditLogResponse> auditLogs = auditService.getAuditLogsByEntity(entityType, entityId);
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Audit logs by entity retrieved successfully"));
     }
     
     @GetMapping("/entity/{entityType}/{entityId}/history")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR', 'USER')")
     public ResponseEntity<ApiResponse<List<AuditLog>>> getEntityHistory(
-        @PathVariable String entityType,
-        @PathVariable Long entityId
+        @PathVariable String entityType
+//        @PathVariable Long entityId
     ) {
-        List<AuditLog> history = auditService.getEntityHistory(entityType, entityId);
+        List<AuditLog> history = auditService.getEntityHistory(entityType);
         return ResponseEntity.ok(ApiResponse.success(history, "Entity history retrieved successfully"));
     }
     
     @GetMapping("/date-range")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getAuditLogsByDateRange(
+    public ResponseEntity<ApiResponse<List<AuditLogResponse>>> getAuditLogsByDateRange(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
         Pageable pageable
     ) {
-        Page<AuditLog> auditLogs = auditService.getAuditLogsByDateRange(startDate, endDate, pageable);
+        List<AuditLogResponse> auditLogs = auditService.getAuditLogsByDateRange(startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Audit logs by date range retrieved successfully"));
     }
     
@@ -137,27 +141,27 @@ public class AuditLogController {
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> searchAuditLogs(@RequestParam String keyword, Pageable pageable) {
-        Page<AuditLog> auditLogs = auditService.searchAuditLogs(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<AuditLogResponse>>> searchAuditLogs(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<AuditLogResponse> auditLogs = auditService.searchAuditLogs(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Search results retrieved successfully"));
     }
     
     @GetMapping("/recent")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AUDITOR')")
-    public ResponseEntity<ApiResponse<List<AuditLog>>> getRecentAuditLogs(@RequestParam(defaultValue = "100") int limit) {
-        List<AuditLog> auditLogs = auditService.getRecentAuditLogs(limit);
+    public ResponseEntity<ApiResponse<List<AuditLog>>> getRecentAuditLogs(@RequestParam(defaultValue = "100") Pageable limit) {
+        List<AuditLog> auditLogs = auditService.getRecentAuditLogs(limit );
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Recent audit logs retrieved successfully"));
     }
     
-    @GetMapping("/slow-queries")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getSlowQueries(
-        @RequestParam(defaultValue = "1000") Long thresholdMillis,
-        Pageable pageable
-    ) {
-        Page<AuditLog> slowQueries = auditService.getSlowQueries(thresholdMillis, pageable);
-        return ResponseEntity.ok(ApiResponse.success(slowQueries, "Slow queries retrieved successfully"));
-    }
+//    @GetMapping("/slow-queries")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<Page<AuditLog>>> getSlowQueries(
+//        @RequestParam(defaultValue = "1000") Long thresholdMillis,
+//        Pageable pageable
+//    ) {
+//        Page<AuditLog> slowQueries = auditService.getSlowQueries(thresholdMillis, pageable);
+//        return ResponseEntity.ok(ApiResponse.success(slowQueries, "Slow queries retrieved successfully"));
+//    }
     
     // Cleanup Operations
     @DeleteMapping("/cleanup")

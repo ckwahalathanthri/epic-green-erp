@@ -138,7 +138,8 @@ public class TaxRateServiceImpl implements TaxRateService {
 
     @Override
     public List<TaxRateResponse> getActiveTaxRatesByDate(LocalDate date) {
-        List<TaxRate> taxRates = taxRateRepository.findActiveTaxRatesByDate(date);
+        //List<TaxRate> taxRates = taxRateRepository.findActiveTaxRatesByDate(date);
+        List<TaxRate> taxRates = taxRateRepository.findApplicableTaxRatesOnDate(date);
         return taxRates.stream()
             .map(taxRateMapper::toResponse)
             .collect(Collectors.toList());

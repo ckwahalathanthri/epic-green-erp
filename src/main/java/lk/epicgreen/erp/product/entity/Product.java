@@ -1,10 +1,10 @@
 package lk.epicgreen.erp.product.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
@@ -46,6 +46,9 @@ public class Product extends AuditEntity {
     @Size(max = 30)
     @Column(name = "product_code", nullable = false, unique = true, length = 30)
     private String productCode;
+
+    @Column
+    private String brand;
     
     /**
      * Product name
@@ -103,6 +106,14 @@ public class Product extends AuditEntity {
     @Size(max = 20)
     @Column(name = "hsn_code", length = 20)
     private String hsnCode;
+
+    /**
+     * Is featured product
+     */
+    @Column(name = "is_featured")
+    private Boolean isFeatured;
+
+    
     
     /**
      * Reorder level (trigger for purchase)

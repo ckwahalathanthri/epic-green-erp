@@ -34,27 +34,27 @@ public interface WorkOrderItemRepository extends JpaRepository<WorkOrderItem, Lo
     /**
      * Find all items for a work order
      */
-    List<WorkOrderItem> findByWoId(Long woId);
+//    List<WorkOrderItem> findByWoId(Long woId);
     
     /**
      * Find all items for a work order with pagination
      */
-    Page<WorkOrderItem> findByWoId(Long woId, Pageable pageable);
-    
-    /**
-     * Find all items for a raw material
-     */
-    List<WorkOrderItem> findByRawMaterialId(Long rawMaterialId);
+//    Page<WorkOrderItem> findByWoId(Long woId, Pageable pageable);
+//
+//    /**
+//     * Find all items for a raw material
+//     */
+//    List<WorkOrderItem> findByRawMaterialId(Long rawMaterialId);
     
     /**
      * Find all items for a raw material with pagination
      */
-    Page<WorkOrderItem> findByRawMaterialId(Long rawMaterialId, Pageable pageable);
-    
-    /**
-     * Find items by work order and raw material
-     */
-    List<WorkOrderItem> findByWoIdAndRawMaterialId(Long woId, Long rawMaterialId);
+//    Page<WorkOrderItem> findByRawMaterialId(Long rawMaterialId, Pageable pageable);
+//
+//    /**
+//     * Find items by work order and raw material
+//     */
+//    List<WorkOrderItem> findByWoIdAndRawMaterialId(Long woId, Long rawMaterialId);
     
     /**
      * Find items by status
@@ -64,29 +64,29 @@ public interface WorkOrderItemRepository extends JpaRepository<WorkOrderItem, Lo
     /**
      * Find items by work order and status
      */
-    List<WorkOrderItem> findByWoIdAndStatus(Long woId, String status);
-    
-    /**
-     * Find items issued by user
-     */
-    List<WorkOrderItem> findByIssuedBy(Long issuedBy);
+//    List<WorkOrderItem> findByWoIdAndStatus(Long woId, String status);
+//
+//    /**
+//     * Find items issued by user
+//     */
+//    List<WorkOrderItem> findByIssuedBy(Long issuedBy);
     
     /**
      * Find items issued from warehouse
      */
-    List<WorkOrderItem> findByIssuedFromWarehouseId(Long warehouseId);
+//    List<WorkOrderItem> findByIssuedFromWarehouseId(Long warehouseId);
     
     // ==================== COUNT METHODS ====================
     
     /**
      * Count items for a work order
      */
-    long countByWoId(Long woId);
-    
-    /**
-     * Count items for a raw material
-     */
-    long countByRawMaterialId(Long rawMaterialId);
+//    long countByWoId(Long woId);
+//
+//    /**
+//     * Count items for a raw material
+//     */
+//    long countByRawMaterialId(Long rawMaterialId);
     
     /**
      * Count items by status
@@ -99,7 +99,7 @@ public interface WorkOrderItemRepository extends JpaRepository<WorkOrderItem, Lo
      * Delete all items for a work order
      */
     @Modifying
-    @Query("DELETE FROM WorkOrderItem woi WHERE woi.woId = :woId")
+    @Query("DELETE FROM WorkOrderItem woi WHERE woi.id = :woId")
     void deleteAllByWoId(@Param("woId") Long woId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -107,7 +107,7 @@ public interface WorkOrderItemRepository extends JpaRepository<WorkOrderItem, Lo
     /**
      * Find pending items
      */
-    @Query("SELECT woi FROM WorkOrderItem woi WHERE woi.status = 'PENDING' ORDER BY woi.woId")
+    @Query("SELECT woi FROM WorkOrderItem woi WHERE woi.status = 'PENDING' ORDER BY woi.id")
     List<WorkOrderItem> findPendingItems();
     
     /**
@@ -119,13 +119,13 @@ public interface WorkOrderItemRepository extends JpaRepository<WorkOrderItem, Lo
     /**
      * Find consumed items
      */
-    @Query("SELECT woi FROM WorkOrderItem woi WHERE woi.status = 'CONSUMED' ORDER BY woi.woId")
+    @Query("SELECT woi FROM WorkOrderItem woi WHERE woi.status = 'CONSUMED' ORDER BY woi.id")
     List<WorkOrderItem> findConsumedItems();
     
     /**
      * Find pending items for a work order
      */
-    @Query("SELECT woi FROM WorkOrderItem woi WHERE woi.woId = :woId AND woi.status = 'PENDING'")
+    @Query("SELECT woi FROM WorkOrderItem woi WHERE woi.id = :woId AND woi.status = 'PENDING'")
     List<WorkOrderItem> findPendingItemsByWorkOrder(@Param("woId") Long woId);
     
     /**
@@ -138,47 +138,47 @@ public interface WorkOrderItemRepository extends JpaRepository<WorkOrderItem, Lo
     /**
      * Get total planned quantity for a raw material
      */
-    @Query("SELECT SUM(woi.plannedQuantity) FROM WorkOrderItem woi WHERE woi.rawMaterialId = :rawMaterialId")
+    @Query("SELECT SUM(woi.plannedQuantity) FROM WorkOrderItem woi WHERE woi.rawMaterial.id = :rawMaterialId")
     BigDecimal getTotalPlannedQuantityByRawMaterial(@Param("rawMaterialId") Long rawMaterialId);
     
     /**
      * Get total consumed quantity for a raw material
      */
-    @Query("SELECT SUM(woi.consumedQuantity) FROM WorkOrderItem woi WHERE woi.rawMaterialId = :rawMaterialId")
+    @Query("SELECT SUM(woi.consumedQuantity) FROM WorkOrderItem woi WHERE woi.rawMaterial.id = :rawMaterialId")
     BigDecimal getTotalConsumedQuantityByRawMaterial(@Param("rawMaterialId") Long rawMaterialId);
     
     /**
      * Get total cost for a work order
      */
-    @Query("SELECT SUM(woi.totalCost) FROM WorkOrderItem woi WHERE woi.woId = :woId")
+    @Query("SELECT SUM(woi.totalCost) FROM WorkOrderItem woi WHERE woi.id = :woId")
     BigDecimal getTotalCostByWorkOrder(@Param("woId") Long woId);
     
     /**
      * Get total planned quantity for a work order
      */
-    @Query("SELECT SUM(woi.plannedQuantity) FROM WorkOrderItem woi WHERE woi.woId = :woId")
+    @Query("SELECT SUM(woi.plannedQuantity) FROM WorkOrderItem woi WHERE woi.id = :woId")
     BigDecimal getTotalPlannedQuantityByWorkOrder(@Param("woId") Long woId);
     
     /**
      * Get total consumed quantity for a work order
      */
-    @Query("SELECT SUM(woi.consumedQuantity) FROM WorkOrderItem woi WHERE woi.woId = :woId")
+    @Query("SELECT SUM(woi.consumedQuantity) FROM WorkOrderItem woi WHERE woi.id = :woId")
     BigDecimal getTotalConsumedQuantityByWorkOrder(@Param("woId") Long woId);
     
     /**
      * Get work order item statistics by raw material
      */
-    @Query("SELECT woi.rawMaterialId, COUNT(woi) as orderCount, " +
+    @Query("SELECT woi.rawMaterial.id, COUNT(woi) as orderCount, " +
            "SUM(woi.plannedQuantity) as totalPlanned, SUM(woi.consumedQuantity) as totalConsumed " +
-           "FROM WorkOrderItem woi GROUP BY woi.rawMaterialId ORDER BY orderCount DESC")
+           "FROM WorkOrderItem woi GROUP BY woi.rawMaterial.id ORDER BY orderCount DESC")
     List<Object[]> getWorkOrderItemStatisticsByRawMaterial();
     
     /**
      * Get most consumed raw materials
      */
-    @Query("SELECT woi.rawMaterialId, SUM(woi.consumedQuantity) as totalConsumed " +
+    @Query("SELECT woi.rawMaterial.id, SUM(woi.consumedQuantity) as totalConsumed " +
            "FROM WorkOrderItem woi WHERE woi.status = 'CONSUMED' " +
-           "GROUP BY woi.rawMaterialId ORDER BY totalConsumed DESC")
+           "GROUP BY woi.rawMaterial.id ORDER BY totalConsumed DESC")
     List<Object[]> getMostConsumedRawMaterials(Pageable pageable);
     
     /**
@@ -193,17 +193,17 @@ public interface WorkOrderItemRepository extends JpaRepository<WorkOrderItem, Lo
     /**
      * Find all items ordered by work order
      */
-    @Query("SELECT woi FROM WorkOrderItem woi ORDER BY woi.woId, woi.rawMaterialId")
+    @Query("SELECT woi FROM WorkOrderItem woi ORDER BY woi.id, woi.rawMaterial.id")
     List<WorkOrderItem> findAllOrderedByWorkOrder();
     
     /**
      * Get material consumption efficiency
      */
-    @Query("SELECT woi.rawMaterialId, " +
+    @Query("SELECT woi.rawMaterial.id, " +
            "SUM(woi.plannedQuantity) as totalPlanned, " +
            "SUM(woi.consumedQuantity) as totalConsumed, " +
            "((SUM(woi.plannedQuantity) - SUM(woi.consumedQuantity)) / SUM(woi.plannedQuantity) * 100) as savingsPercentage " +
            "FROM WorkOrderItem woi WHERE woi.status = 'CONSUMED' AND woi.plannedQuantity > 0 " +
-           "GROUP BY woi.rawMaterialId")
+           "GROUP BY woi.rawMaterial.id")
     List<Object[]> getMaterialConsumptionEfficiency();
 }

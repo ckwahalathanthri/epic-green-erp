@@ -128,7 +128,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
      */
     @Query("SELECT i FROM Invoice i WHERE " +
            "(:invoiceNumber IS NULL OR LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :invoiceNumber, '%'))) AND " +
-           "(:customerId IS NULL OR i.customerId = :customerId) AND " +
+           "(:customerId IS NULL OR i.customer.id = :customerId) AND " +
            "(:invoiceType IS NULL OR i.invoiceType = :invoiceType) AND " +
            "(:paymentStatus IS NULL OR i.paymentStatus = :paymentStatus) AND " +
            "(:status IS NULL OR i.status = :status) AND " +
@@ -251,21 +251,21 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
      * Get total outstanding amount for a customer
      */
     @Query("SELECT SUM(i.totalAmount - i.paidAmount) FROM Invoice i " +
-           "WHERE i.customerId = :customerId AND i.paymentStatus IN ('UNPAID', 'PARTIAL') " +
+           "WHERE i.customer.id = :customerId AND i.paymentStatus IN ('UNPAID', 'PARTIAL') " +
            "AND i.status = 'POSTED'")
     BigDecimal getTotalOutstandingByCustomer(@Param("customerId") Long customerId);
     
     /**
      * Get total invoice amount for a customer
      */
-    @Query("SELECT SUM(i.totalAmount) FROM Invoice i WHERE i.customerId = :customerId " +
+    @Query("SELECT SUM(i.totalAmount) FROM Invoice i WHERE i.customer.id = :customerId " +
            "AND i.status = 'POSTED'")
     BigDecimal getTotalInvoiceAmountByCustomer(@Param("customerId") Long customerId);
     
     /**
      * Get total paid amount for a customer
      */
-    @Query("SELECT SUM(i.paidAmount) FROM Invoice i WHERE i.customerId = :customerId " +
+    @Query("SELECT SUM(i.paidAmount) FROM Invoice i WHERE i.customer.id = :customerId " +
            "AND i.status = 'POSTED'")
     BigDecimal getTotalPaidAmountByCustomer(@Param("customerId") Long customerId);
     
@@ -295,10 +295,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
     /**
      * Get invoices grouped by customer
      */
-    @Query("SELECT i.customerId, COUNT(i) as invoiceCount, " +
+    @Query("SELECT i.customer.id, COUNT(i) as invoiceCount, " +
            "SUM(i.totalAmount) as totalAmount, SUM(i.totalAmount - i.paidAmount) as totalOutstanding " +
            "FROM Invoice i WHERE i.status = 'POSTED' " +
-           "GROUP BY i.customerId ORDER BY totalAmount DESC")
+           "GROUP BY i.customer.id ORDER BY totalAmount DESC")
     List<Object[]> getInvoicesByCustomer();
     
     /**
@@ -331,4 +331,20 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
      * Find all invoices ordered by date
      */
     List<Invoice> findAllByOrderByInvoiceDateDescCreatedAtDesc();
+
+    @Query("SELECT i FROM Invoice i WHERE i.dispatch.id = :dispatchId")
+    List<Invoice> findByDispatchNoteId(Long dispatchId);
+
+    @Query("SELECT i FROM Invoice i WHERE i.dueDate BETWEEN :now AND :dueDate " +
+           "AND i.paymentStatus IN ('UNPAID', 'PARTIAL') AND i.status = 'POSTED' " +
+           "ORDER BY i.dueDate")
+
+    List<Invoice> findInvoicesDueSoon(LocalDate now, LocalDate dueDate);
+
+    @Query("SELECT SUM(i.totalAmount) FROM Invoice i WHERE i.customer.id = :customerId")
+
+    Optional<BigDecimal> sumTotalAmountByCustomer(Long customerId);
+    @Query("SELECT SUM(i.totalAmount) FROM Invoice i WHERE i.invoiceDate BETWEEN :startDate AND :endDate")
+
+    Optional<BigDecimal> sumTotalAmountByDateRange(LocalDate startDate, LocalDate endDate);
 }

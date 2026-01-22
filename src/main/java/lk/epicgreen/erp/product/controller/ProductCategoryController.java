@@ -1,7 +1,8 @@
 package lk.epicgreen.erp.product.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.product.dto.ProductCategoryRequest;
+import lk.epicgreen.erp.product.dto.request.ProductCategoryRequest;
+import lk.epicgreen.erp.product.dto.response.ProductCategoryResponse;
 import lk.epicgreen.erp.product.entity.ProductCategory;
 import lk.epicgreen.erp.product.service.ProductCategoryService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -153,15 +155,15 @@ public class ProductCategoryController {
     
     @GetMapping("/{parentId}/children")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductCategory>>> getChildCategories(@PathVariable Long parentId) {
-        List<ProductCategory> children = categoryService.getChildCategories(parentId);
+    public ResponseEntity<ApiResponse<List<ProductCategoryResponse>>> getChildCategories(@PathVariable Long parentId) {
+        List<ProductCategoryResponse> children = categoryService.getChildCategories(parentId);
         return ResponseEntity.ok(ApiResponse.success(children, "Child categories retrieved successfully"));
     }
     
     @GetMapping("/root")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductCategory>>> getRootCategories() {
-        List<ProductCategory> rootCategories = categoryService.getRootCategories();
+    public ResponseEntity<ApiResponse<List<ProductCategoryResponse>>> getRootCategories() {
+        List<ProductCategoryResponse> rootCategories = categoryService.getRootCategories();
         return ResponseEntity.ok(ApiResponse.success(rootCategories, "Root categories retrieved successfully"));
     }
     

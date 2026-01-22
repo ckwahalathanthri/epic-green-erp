@@ -10,6 +10,7 @@ import lk.epicgreen.erp.accounting.repository.ChartOfAccountsRepository;
 import lk.epicgreen.erp.accounting.repository.FinancialPeriodRepository;
 import lk.epicgreen.erp.accounting.repository.GeneralLedgerRepository;
 import lk.epicgreen.erp.accounting.service.TrialBalanceService;
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class TrialBalanceServiceImpl implements TrialBalanceService {
     private final FinancialPeriodRepository periodRepository;
     private final GeneralLedgerRepository generalLedgerRepository;
     private final TrialBalanceMapper trialBalanceMapper;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -69,7 +71,7 @@ public class TrialBalanceServiceImpl implements TrialBalanceService {
                 .closingDebit(BigDecimal.ZERO)
                 .closingCredit(BigDecimal.ZERO)
                 .generatedAt(LocalDateTime.now())
-                .generatedBy(generatedBy)
+                .generatedBy(userRepository.findById(generatedBy).get())
                 .build();
 
             // Calculate closing balances

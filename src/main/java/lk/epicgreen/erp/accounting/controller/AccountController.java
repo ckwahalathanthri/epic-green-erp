@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,6 +38,11 @@ public class AccountController {
     private final AccountingService accountingService;
 
     private final ChartOfAccountsService chartOfAccountsService;
+
+//    @GetMapping("/home")
+//    public String hello(){
+//        return "Hello ";
+//    }
 
     // CRUD Operations
     @PostMapping
@@ -299,13 +304,13 @@ public class AccountController {
         return ResponseEntity.ok(ApiResponse.success(null, "Account balance recalculated successfully"));
     }
     
-    @PutMapping("/recalculate-all-balances")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> recalculateAllAccountBalances() {
-        log.info("Recalculating all account balances");
-        accountingService.recalculateAllAccountBalances();
-        return ResponseEntity.ok(ApiResponse.success(null, "All account balances recalculated successfully"));
-    }
+//    @PutMapping("/recalculate-all-balances")
+//    @PreAuthorize("hasAnyRole('ADMIN')")
+//    public ResponseEntity<ApiResponse<Void>> recalculateAllAccountBalances() {
+//        log.info("Recalculating all account balances");
+//        accountingService.recalculateAllAccountBalances();
+//        return ResponseEntity.ok(ApiResponse.success(null, "All account balances recalculated successfully"));
+//    }
     
     // Trial Balance
     @GetMapping("/trial-balance")
@@ -332,12 +337,12 @@ public class AccountController {
         return ResponseEntity.ok(ApiResponse.success(trialBalance, "Fiscal year trial balance retrieved successfully"));
     }
     
-    @GetMapping("/trial-balance/verify")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> verifyTrialBalance() {
-        Map<String, Object> verification = accountingService.verifyTrialBalance();
-        return ResponseEntity.ok(ApiResponse.success(verification, "Trial balance verified successfully"));
-    }
+//    @GetMapping("/trial-balance/verify")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<Map<String, Object>>> verifyTrialBalance() {
+//        Map<String, Object> verification = accountingService.verifyTrialBalance();
+//        return ResponseEntity.ok(ApiResponse.success(verification, "Trial balance verified successfully"));
+//    }
     
     // Financial Statements
     @GetMapping("/balance-sheet")
@@ -387,42 +392,42 @@ public class AccountController {
     
     @GetMapping("/fiscal-period/current")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Integer>> getCurrentFiscalPeriod() {
-        Integer period = accountingService.getCurrentFiscalPeriod();
+    public ResponseEntity<ApiResponse<String>> getCurrentFiscalPeriod() {
+        String period = accountingService.getCurrentFiscalPeriod();
         return ResponseEntity.ok(ApiResponse.success(period, "Current fiscal period retrieved successfully"));
     }
     
-    @PutMapping("/fiscal-period/close")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Void>> closeFiscalPeriod(@RequestParam Integer year, @RequestParam Integer period) {
-        log.info("Closing fiscal period: {}-{}", year, period);
-        accountingService.closeFiscalPeriod(year, period);
-        return ResponseEntity.ok(ApiResponse.success(null, "Fiscal period closed successfully"));
-    }
+//    @PutMapping("/fiscal-period/close")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<Void>> closeFiscalPeriod(@RequestParam Integer year, @RequestParam Integer period) {
+//        log.info("Closing fiscal period: {}-{}", year, period);
+//        accountingService.closeFiscalPeriod(year, period);
+//        return ResponseEntity.ok(ApiResponse.success(null, "Fiscal period closed successfully"));
+//    }
     
-    @PutMapping("/fiscal-year/close")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Void>> closeFiscalYear(@RequestParam Integer year) {
-        log.info("Closing fiscal year: {}", year);
-        accountingService.closeFiscalYear(year);
-        return ResponseEntity.ok(ApiResponse.success(null, "Fiscal year closed successfully"));
-    }
+//    @PutMapping("/fiscal-year/close")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<Void>> closeFiscalYear(@RequestParam Integer year) {
+//        log.info("Closing fiscal year: {}", year);
+//        accountingService.closeFiscalYear(year);
+//        return ResponseEntity.ok(ApiResponse.success(null, "Fiscal year closed successfully"));
+//    }
     
-    @PutMapping("/fiscal-period/reopen")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Void>> reopenFiscalPeriod(@RequestParam Integer year, @RequestParam Integer period) {
-        log.info("Reopening fiscal period: {}-{}", year, period);
-        accountingService.reopenFiscalPeriod(year, period);
-        return ResponseEntity.ok(ApiResponse.success(null, "Fiscal period reopened successfully"));
-    }
+//    @PutMapping("/fiscal-period/reopen")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<Void>> reopenFiscalPeriod(@RequestParam Integer year, @RequestParam Integer period) {
+//        log.info("Reopening fiscal period: {}-{}", year, period);
+//        accountingService.reopenFiscalPeriod(year, period);
+//        return ResponseEntity.ok(ApiResponse.success(null, "Fiscal period reopened successfully"));
+//    }
     
-    // Reconciliation
-    @GetMapping("/reconciliation/requiring")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER')")
-    public ResponseEntity<ApiResponse<List<ChartOfAccounts>>> getAccountsRequiringReconciliation() {
-        List<ChartOfAccounts> accounts = accountingService.getAccountsRequiringReconciliation();
-        return ResponseEntity.ok(ApiResponse.success(accounts, "Accounts requiring reconciliation retrieved successfully"));
-    }
+//    // Reconciliation
+//    @GetMapping("/reconciliation/requiring")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'MANAGER')")
+//    public ResponseEntity<ApiResponse<List<ChartOfAccounts>>> getAccountsRequiringReconciliation() {
+//        List<ChartOfAccounts> accounts = accountingService.getAccountsRequiringReconciliation();
+//        return ResponseEntity.ok(ApiResponse.success(accounts, "Accounts requiring reconciliation retrieved successfully"));
+//    }
     
     @PutMapping("/{id}/reconciliation/mark")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
@@ -493,13 +498,13 @@ public class AccountController {
     }
     
     // Validation
-    @GetMapping("/validate-code/{code}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
-    public ResponseEntity<ApiResponse<Boolean>> isAccountCodeAvailable(@PathVariable String code) {
-        boolean available = accountingService.isAccountCodeAvailable(code);
-        return ResponseEntity.ok(ApiResponse.success(available, "Account code availability checked"));
-    }
-    
+//    @GetMapping("/validate-code/{code}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+//    public ResponseEntity<ApiResponse<Boolean>> isAccountCodeAvailable(@PathVariable String code) {
+//        boolean available = accountingService.isAccountCodeAvailable(code);
+//        return ResponseEntity.ok(ApiResponse.success(available, "Account code availability checked"));
+//    }
+//
     @GetMapping("/{id}/has-transactions")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
     public ResponseEntity<ApiResponse<Boolean>> hasAccountTransactions(@PathVariable Long id) {

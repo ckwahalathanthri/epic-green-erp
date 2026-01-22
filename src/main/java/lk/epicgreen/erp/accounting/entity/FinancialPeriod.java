@@ -1,12 +1,13 @@
 package lk.epicgreen.erp.accounting.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+
 import lk.epicgreen.erp.admin.entity.User;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -41,6 +42,8 @@ public class FinancialPeriod {
     @Size(max = 20)
     @Column(name = "period_code", nullable = false, unique = true, length = 20)
     private String periodCode;
+
+    @Column String code;
     
     /**
      * Period name (e.g., "January 2024", "Q1 2024", "Fiscal Year 2024")

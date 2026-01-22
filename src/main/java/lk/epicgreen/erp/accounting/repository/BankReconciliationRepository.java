@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.accounting.repository;
 
+import lk.epicgreen.erp.accounting.entity.BankAccount;
 import lk.epicgreen.erp.accounting.entity.BankReconciliation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +52,8 @@ public interface BankReconciliationRepository extends JpaRepository<BankReconcil
      * Find reconciliations by status
      */
     List<BankReconciliation> findByStatus(String status);
+
+    List<BankReconciliation> findByIsReconciled(Boolean value);
     
     /**
      * Find reconciliations by status with pagination
@@ -101,7 +104,7 @@ public interface BankReconciliationRepository extends JpaRepository<BankReconcil
      */
     @Query("SELECT br FROM BankReconciliation br WHERE " +
            "(:reconciliationNumber IS NULL OR LOWER(br.reconciliationNumber) LIKE LOWER(CONCAT('%', :reconciliationNumber, '%'))) AND " +
-           "(:bankAccountId IS NULL OR br.bankAccountId = :bankAccountId) AND " +
+           "(:bankAccountId IS NULL OR br.bankAccount.id = :bankAccountId) AND " +
            "(:status IS NULL OR br.status = :status) AND " +
            "(:startDate IS NULL OR br.statementDate >= :startDate) AND " +
            "(:endDate IS NULL OR br.statementDate <= :endDate)")
@@ -156,8 +159,8 @@ public interface BankReconciliationRepository extends JpaRepository<BankReconcil
     /**
      * Find latest reconciliation for a bank account
      */
-    @Query("SELECT br FROM BankReconciliation br WHERE br.bankAccountId = :bankAccountId " +
-           "ORDER BY br.statementDate DESC, br.reconciledAt DESC LIMIT 1")
+    @Query("SELECT br FROM BankReconciliation br WHERE br.bankAccount.id = :bankAccountId " +
+           "ORDER BY br.statementDate DESC, br.reconciledAt DESC ")
     Optional<BankReconciliation> findLatestReconciliationByBankAccount(@Param("bankAccountId") Long bankAccountId);
     
     /**
@@ -185,8 +188,8 @@ public interface BankReconciliationRepository extends JpaRepository<BankReconcil
      * Get total statement balance for bank account
      */
     @Query("SELECT br.statementBalance FROM BankReconciliation br " +
-           "WHERE br.bankAccountId = :bankAccountId AND br.status = 'COMPLETED' " +
-           "ORDER BY br.statementDate DESC LIMIT 1")
+           "WHERE br.bankAccount.id = :bankAccountId AND br.status = 'COMPLETED' " +
+           "ORDER BY br.statementDate DESC ")
     BigDecimal getLatestStatementBalance(@Param("bankAccountId") Long bankAccountId);
     
     /**
@@ -210,9 +213,9 @@ public interface BankReconciliationRepository extends JpaRepository<BankReconcil
     /**
      * Get reconciliations grouped by bank account
      */
-    @Query("SELECT br.bankAccountId, COUNT(br) as reconciliationCount, " +
+    @Query("SELECT br.bankAccount.id, COUNT(br) as reconciliationCount, " +
            "SUM(CASE WHEN br.status = 'COMPLETED' THEN 1 ELSE 0 END) as completedCount " +
-           "FROM BankReconciliation br GROUP BY br.bankAccountId ORDER BY reconciliationCount DESC")
+           "FROM BankReconciliation br GROUP BY br.bankAccount.id ORDER BY reconciliationCount DESC")
     List<Object[]> getReconciliationsByBankAccount();
     
     /**

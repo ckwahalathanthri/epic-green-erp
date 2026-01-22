@@ -1,11 +1,15 @@
 package lk.epicgreen.erp.accounting.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +92,15 @@ public class ChartOfAccounts extends AuditEntity {
      */
     @Column(name = "is_group_account")
     private Boolean isGroupAccount;
+
+    @Column(name="is_reconciled")
+    private Boolean isReconsiled;
+
+    @Column(name="last_reconsiled_at")
+    private LocalDateTime lastReconsiledAt;
+
+    @Column
+    private LocalDate openDate;
     
     /**
      * Is control account (linked to subsidiary ledgers)
@@ -145,6 +158,16 @@ public class ChartOfAccounts extends AuditEntity {
     @Transient
     public boolean isExpense() {
         return "EXPENSE".equals(accountType);
+    }
+
+    @Transient
+    public boolean getIsReconsiled(){
+        return this.isReconsiled;
+    }
+
+    @Transient
+    public LocalDateTime getLastReconciledAt(){
+        return this.lastReconsiledAt;
     }
     
     /**
@@ -276,6 +299,16 @@ public class ChartOfAccounts extends AuditEntity {
             // Credit increases, Debit decreases
             currentBalance = current.add(credit).subtract(debit);
         }
+    }
+
+    public  void markReconciled(){
+        this.isReconsiled=true;
+        this.lastReconsiledAt=LocalDateTime.now();
+    }
+
+    public void markUnReconcile(){
+        this.isReconsiled=false;
+        this.lastReconsiledAt=null;
     }
     
     @PrePersist

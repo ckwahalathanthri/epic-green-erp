@@ -1,13 +1,17 @@
-package lk.epicgreen.erp.notifications.service.impl;
+package lk.epicgreen.erp.notification.service.impl;
 
-import lk.epicgreen.erp.notifications.dto.request.NotificationQueueRequest;
-import lk.epicgreen.erp.notifications.dto.response.NotificationQueueResponse;
-import lk.epicgreen.erp.notifications.entity.NotificationQueue;
-import lk.epicgreen.erp.notifications.entity.NotificationTemplate;
-import lk.epicgreen.erp.notifications.mapper.NotificationQueueMapper;
-import lk.epicgreen.erp.notifications.repository.NotificationQueueRepository;
-import lk.epicgreen.erp.notifications.repository.NotificationTemplateRepository;
-import lk.epicgreen.erp.notifications.service.NotificationQueueService;
+import lk.epicgreen.erp.admin.entity.User;
+import lk.epicgreen.erp.admin.repository.UserRepository;
+
+import lk.epicgreen.erp.notification.dto.request.NotificationQueueRequest;
+import lk.epicgreen.erp.notification.dto.response.NotificationQueueResponse;
+import lk.epicgreen.erp.notification.entity.NotificationQueue;
+import lk.epicgreen.erp.notification.entity.NotificationTemplate;
+import lk.epicgreen.erp.notification.mapper.NotificationQueueMapper;
+import lk.epicgreen.erp.notification.repository.NotificationTemplateRepository;
+import lk.epicgreen.erp.notification.repository.NotificationsQueueRepository;
+
+import lk.epicgreen.erp.notification.service.NotificationQueueService;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.InvalidOperationException;
 import lk.epicgreen.erp.common.dto.PageResponse;
@@ -19,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,9 +46,10 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class NotificationQueueServiceImpl implements NotificationQueueService {
 
-    private final NotificationQueueRepository notificationRepository;
+    private final NotificationsQueueRepository notificationRepository;
     private final NotificationTemplateRepository templateRepository;
     private final NotificationQueueMapper notificationMapper;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -77,7 +84,8 @@ public class NotificationQueueServiceImpl implements NotificationQueueService {
             renderTemplateBody(template.getSubject(), variables) : null;
 
         NotificationQueue notification = NotificationQueue.builder()
-            .recipientUserId(recipientUserId)
+                .recipientUser(userRepository.findById(recipientUserId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + recipientUserId)))
             .notificationType(template.getNotificationType())
             .template(template)
             .subject(renderedSubject)
@@ -124,7 +132,7 @@ public class NotificationQueueServiceImpl implements NotificationQueueService {
 
     @Override
     @Transactional
-    public void sendNotification(Long id) {
+    public NotificationQueue sendNotification(Long id) {
         log.info("Sending notification: {}", id);
 
         NotificationQueue notification = findNotificationById(id);
@@ -141,8 +149,271 @@ public class NotificationQueueServiceImpl implements NotificationQueueService {
         notificationRepository.save(notification);
 
         log.info("Notification sent successfully");
+        return notification;
     }
 
+//    public  List<NotificationQueue> sendBulkNotifications(NotificationQueueRequest request){
+//        List<User> users=userRepository.findAll(reques)
+//    }
+
+    public NotificationQueue sendEmail(String to,String subject,String body, String htmlBody){
+        NotificationQueue notification=NotificationQueue.builder()
+                .recipientEmail(to)
+                .subject(subject)
+                .message(body)
+                .notificationType("EMAIL")
+                .status("SENT")
+                .sentAt(LocalDateTime.now())
+                .build();
+        return notificationRepository.save(notification);
+    }
+
+    public NotificationQueue sendEmail(String to,String subject,String body){
+        NotificationQueue notification=NotificationQueue.builder()
+                .recipientEmail(to)
+                .subject(subject)
+                .message(body)
+                .notificationType("EMAIL")
+                .status("SENT")
+                .sentAt(LocalDateTime.now())
+                .build();
+        return notificationRepository.save(notification);
+    }
+
+    public NotificationQueue sendSms(String to,String message){
+        NotificationQueue notification=NotificationQueue.builder()
+                .recipientMobile(to)
+                .message(message)
+                .notificationType("SMS")
+                .status("SENT")
+                .sentAt(LocalDateTime.now())
+                .build();
+        return notificationRepository.save(notification);
+    }
+
+    public NotificationQueue sendPush(String deviceToken,String title, String message){
+        NotificationQueue notification=NotificationQueue.builder()
+                .recipientMobile(deviceToken)
+                .subject(title)
+                .message(message)
+                .notificationType("PUSH")
+                .status("SENT")
+                .sentAt(LocalDateTime.now())
+                .build();
+        return notificationRepository.save(notification);
+    }
+
+    public NotificationQueue sendInAppNotification(Long userId,String title,String message){
+        NotificationQueue notification=NotificationQueue.builder()
+                .recipientUser(userRepository.findById(userId).orElse(null))
+                .subject(title)
+                .message(message)
+                .notificationType("IN_APP")
+                .status("SENT")
+                .sentAt(LocalDateTime.now())
+                .build();
+        return notificationRepository.save(notification);
+    }
+
+    public NotificationQueue scheduleNotification(NotificationQueueRequest request, LocalDateTime scheduledTime){
+        NotificationQueue notification=notificationMapper.toEntity(request);
+        notification.setScheduledAt(scheduledTime);
+        notification.setStatus("PENDING");
+        return notificationRepository.save(notification);
+
+    }
+
+    public List<NotificationQueue> scheduleBulkNotifications(NotificationQueueRequest request,LocalDateTime scheduledTime){
+        List<User> users = userRepository.findAllById(Arrays.asList(request.getRecipientUserId()));
+        List<NotificationQueue> notifications=users.stream().map(user -> {
+            NotificationQueue notification=NotificationQueue.builder()
+                    .recipientUser(user)
+                    .notificationType(request.getNotificationType())
+                    .subject(request.getSubject())
+                    .message(request.getMessage())
+                    .scheduledAt(scheduledTime)
+                    .status("PENDING")
+                    .priority(request.getPriority())
+                    .retryCount(0)
+                    .maxRetries(3)
+                    .build();
+            return notification;
+        }).collect(Collectors.toList());
+        return notificationRepository.saveAll(notifications);
+    }
+
+    public List<NotificationQueue> getNotificationsReadyToSend(Pageable limit){
+        return notificationRepository.findByStatusAndScheduledAtLessThanEqual("PENDING",LocalDateTime.now());
+    }
+
+    public List<NotificationQueue> getFailedNotificationsForRetry(){
+        return notificationRepository.findByStatus("FAILED");
+    }
+
+    public List<NotificationQueue> getNotificationsByUserId(Long userId){
+        return notificationRepository.findByRecipientUserId(userId);
+    }
+
+    public List<NotificationQueue> getNotificationsByBatchId(String batchId){
+        return notificationRepository.findByBatchId(batchId);
+    }
+
+    public void processNotificationQueue(){
+        List<NotificationQueue> dueNotifications =
+            notificationRepository.findByStatusAndScheduledAtLessThanEqual("PENDING", LocalDateTime.now());
+
+        for (NotificationQueue notification : dueNotifications) {
+            try {
+                sendNotification(notification.getId());
+            } catch (Exception e) {
+                log.error("Failed to send notification {}: {}", notification.getId(), e.getMessage());
+                markAsFailed(notification.getId(), e.getMessage());
+            }
+        }
+
+        log.info("Notification queue processing completed. Processed: {}", dueNotifications.size());
+    }
+
+    public int processPendingNotifications(int limit){
+        List<NotificationQueue> pendingNotifications =
+            notificationRepository.findByStatusAndScheduledAtLessThanEqual("PENDING", LocalDateTime.now());
+
+        int processedCount = 0;
+
+        for (NotificationQueue notification : pendingNotifications) {
+            if (processedCount >= limit) {
+                break;
+            }
+            try {
+                sendNotification(notification.getId());
+                processedCount++;
+            } catch (Exception e) {
+                log.error("Failed to send notification {}: {}", notification.getId(), e.getMessage());
+                markAsFailed(notification.getId(), e.getMessage());
+            }
+        }
+
+        log.info("Processed {} pending notifications", processedCount);
+        return processedCount;
+    }
+
+    public boolean processNotification(Long id){
+        try {
+            sendNotification(id);
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to send notification {}: {}", id, e.getMessage());
+            markAsFailed(id, e.getMessage());
+            return false;
+        }
+    }
+
+    public int retryFailedNotifications(int limit){
+        List<NotificationQueue> failedNotifications =
+            notificationRepository.findByStatus("FAILED");
+
+        int retriedCount = 0;
+
+        for (NotificationQueue notification : failedNotifications) {
+            if (retriedCount >= limit) {
+                break;
+            }
+
+            if (notification.getRetryCount() < notification.getMaxRetries()) {
+                notification.setStatus("PENDING");
+                notification.setErrorMessage(null);
+                notificationRepository.save(notification);
+                retriedCount++;
+            }
+        }
+
+        log.info("Retried {} failed notifications", retriedCount);
+        return retriedCount;
+    }
+
+    public List<NotificationQueue> checkForStuckNotifications(){
+        LocalDateTime thresholdTime = LocalDateTime.now().minusHours(1);
+        return notificationRepository.findByStatusAndCreatedAtLessThanEqual("PENDING", thresholdTime);
+    }
+
+    public  int  resetStuckNotifications(){
+        List<NotificationQueue> stuckNotifications = checkForStuckNotifications();
+        for (NotificationQueue notification : stuckNotifications) {
+            notification.setStatus("PENDING");
+            notificationRepository.save(notification);
+        }
+        log.info("Reset {} stuck notifications to PENDING", stuckNotifications.size());
+        return stuckNotifications.size();
+    }
+
+    public int cancelBatchNotifications(String batchId){
+        List<NotificationQueue> batchNotifications = getNotificationsByBatchId(batchId);
+        int cancelledCount = 0;
+        for (NotificationQueue notification : batchNotifications) {
+            if (!"SENT".equals(notification.getStatus())) {
+                notification.setStatus("CANCELLED");
+                notificationRepository.save(notification);
+                cancelledCount++;
+            }
+        }
+        log.info("Cancelled {} notifications in batch {}", cancelledCount, batchId);
+        return cancelledCount;
+    }
+
+    public Map<String,Object> getBatchProgress(String batchId){
+        List<NotificationQueue> batchNotifications = getNotificationsByBatchId(batchId);
+        long total = batchNotifications.size();
+        long sent = batchNotifications.stream().filter(n -> "SENT".equals(n.getStatus())).count();
+        long failed = batchNotifications.stream().filter(n -> "FAILED".equals(n.getStatus())).count();
+        long pending = batchNotifications.stream().filter(n -> "PENDING".equals(n.getStatus())).count();
+        long cancelled = batchNotifications.stream().filter(n -> "CANCELLED".equals(n.getStatus())).count();
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("sent", sent);
+        result.put("failed", failed);
+        result.put("pending", pending);
+        result.put("cancelled", cancelled);
+        return result;
+    }
+
+    public Map<String,Object> getBatchStatistics(String batchId){
+        return getBatchProgress(batchId);
+    }
+
+    public boolean isBatchComplete(String batchId){
+        List<NotificationQueue> batchNotifications = getNotificationsByBatchId(batchId);
+        return batchNotifications.stream()
+            .allMatch(n -> "SENT".equals(n.getStatus()) );
+    }
+
+    public int deleteOldSentNotifications(int daysToKeep){
+        LocalDateTime thresholdDate = LocalDateTime.now().minusDays(daysToKeep);
+        List<NotificationQueue> oldSentNotifications =
+            notificationRepository.findByStatusAndSentAtLessThanEqual("SENT", thresholdDate);
+        int deletedCount = oldSentNotifications.size();
+        notificationRepository.deleteAll(oldSentNotifications);
+        log.info("Deleted {} old sent notifications", deletedCount);
+        return deletedCount;
+    }
+
+    public int deleteOldCancelledNotifications(int daysToKeep){
+        LocalDateTime thresholdDate = LocalDateTime.now().minusDays(daysToKeep);
+        List<NotificationQueue> oldCancelledNotifications =
+            notificationRepository.findByStatusAndCreatedAtLessThanEqual("CANCELLED", thresholdDate);
+        int deletedCount = oldCancelledNotifications.size();
+        notificationRepository.deleteAll(oldCancelledNotifications);
+        log.info("Deleted {} old cancelled notifications", deletedCount);
+        return deletedCount;
+    }
+
+    public Map<String,Integer> cleanupOldNotifications(int daysToKeep){
+        int sentDeleted = deleteOldSentNotifications(daysToKeep);
+        int cancelledDeleted = deleteOldCancelledNotifications(daysToKeep);
+        Map<String, Integer> result = new HashMap<>();
+        result.put("sentDeleted", sentDeleted);
+        result.put("cancelledDeleted", cancelledDeleted);
+        return result;
+    }
     @Override
     @Transactional
     public void markAsSent(Long id) {
@@ -313,7 +584,7 @@ public class NotificationQueueServiceImpl implements NotificationQueueService {
 
     @Override
     public PageResponse<NotificationQueueResponse> searchNotifications(String keyword, Pageable pageable) {
-        Page<NotificationQueue> notificationPage = notificationRepository.searchNotifications(keyword, pageable);
+        Page<NotificationQueue> notificationPage = notificationRepository.searchNotifications(null,keyword,null,null,null,null,pageable);
         return createPageResponse(notificationPage);
     }
 

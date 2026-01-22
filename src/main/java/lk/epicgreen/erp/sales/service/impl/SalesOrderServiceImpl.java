@@ -39,7 +39,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -196,9 +198,36 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return salesOrderMapper.toResponse(updatedOrder);
     }
 
+    private SalesOrderItem createOrderItem(SalesOrderItemRequest itemRequest) {
+        SalesOrderItem item = salesOrderItemMapper.toEntity(itemRequest);
+
+        // Verify product exists
+        Product product = findProductById(itemRequest.getProductId());
+        item.setProduct(product);
+
+        // Verify unit of measure exists
+//        UnitOfMeasure uom = findUnitOfMeasureById(itemRequest.getUnitOfMeasureId());
+//        item.setUnitOfMeasure(uom);
+
+        // Verify tax rate exists if provided
+        if (itemRequest.getTaxRateId() != null) {
+            TaxRate taxRate = findTaxRateById(itemRequest.getTaxRateId());
+            item.setTaxRate(taxRate);
+        }
+
+        return item;
+    }
+
+    private Product findProductById(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+    }
+
+
+
     @Override
     @Transactional
-    public void confirmSalesOrder(Long id) {
+    public SalesOrder confirmSalesOrder(Long id) {
         log.info("Confirming Sales Order: {}", id);
 
         SalesOrder order = findSalesOrderById(id);
@@ -213,6 +242,44 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         salesOrderRepository.save(order);
 
         log.info("Sales Order confirmed successfully: {}", id);
+        return order;
+    }
+
+    @Transactional
+    public SalesOrder processSalesOrder(Long id){
+        log.info("Processing Sales Order: {}", id);
+
+        SalesOrder order = findSalesOrderById(id);
+
+        if (!"APPROVED".equals(order.getStatus())) {
+            throw new InvalidOperationException(
+                "Cannot process Sales Order. Current status: " + order.getStatus() +
+                ". Only APPROVED orders can be processed.");
+        }
+
+        order.setStatus("PROCESSING");
+        salesOrderRepository.save(order);
+
+        log.info("Sales Order processed successfully: {}", id);
+        return order;
+    }
+
+    public SalesOrder completeSalesOrder(Long id){
+        log.info("Completing Sales Order: {}", id);
+
+        SalesOrder order = findSalesOrderById(id);
+
+        if (!"DISPATCHED".equals(order.getStatus())) {
+            throw new InvalidOperationException(
+                "Cannot complete Sales Order. Current status: " + order.getStatus() +
+                ". Only DISPATCHED orders can be completed.");
+        }
+
+        order.setStatus("DELIVERED");
+        salesOrderRepository.save(order);
+
+        log.info("Sales Order completed successfully: {}", id);
+        return order;
     }
 
     @Override
@@ -236,7 +303,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Override
     @Transactional
-    public void approveSalesOrder(Long id, Long approvedBy) {
+    public SalesOrder approveSalesOrder(Long id, Long approvedBy,String approvalNotes) {
         log.info("Approving Sales Order: {} by user: {}", id, approvedBy);
 
         SalesOrder order = findSalesOrderById(id);
@@ -248,11 +315,13 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         }
 
         order.setStatus("APPROVED");
-        order.setApprovedBy(approvedBy);
+        User approvedUser=userRepository.findById(approvedBy).orElseThrow(()->new ResourceNotFoundException("User not found: "+approvedBy));
+        order.setApprovedBy(approvedUser);
         order.setApprovedAt(LocalDateTime.now());
         salesOrderRepository.save(order);
 
         log.info("Sales Order approved successfully: {}", id);
+        return order;
     }
 
     @Override
@@ -295,7 +364,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Override
     @Transactional
-    public void markAsDispatched(Long id) {
+    public SalesOrder markAsDispatched(Long id) {
         log.info("Marking Sales Order as DISPATCHED: {}", id);
 
         SalesOrder order = findSalesOrderById(id);
@@ -310,7 +379,111 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         salesOrderRepository.save(order);
 
         log.info("Sales Order marked as DISPATCHED successfully: {}", id);
+        return order;
     }
+    @Transactional
+    public SalesOrder updateDeliveryStatus(Long id, String deliveryStatus){
+        log.info("Updating delivery status for Sales Order: {} to {}", id, deliveryStatus);
+
+        SalesOrder order = findSalesOrderById(id);
+
+        order.setDeliveryStatus(deliveryStatus);
+        salesOrderRepository.save(order);
+
+        log.info("Sales Order delivery status updated successfully: {}", id);
+        return order;
+    }
+
+    public SalesOrder markAsInvoiced(Long id,Long invoiceId){
+        log.info("Marking Sales Order as INVOICED: {}", id);
+
+        SalesOrder order = findSalesOrderById(id);
+
+        if (!"DELIVERED".equals(order.getStatus())) {
+            throw new InvalidOperationException(
+                "Cannot mark as invoiced. Current status: " + order.getStatus() +
+                ". Only DELIVERED orders can be marked as invoiced.");
+        }
+
+        order.setStatus("INVOICED");
+//        order.setInvoiceId(invoiceId);
+        salesOrderRepository.save(order);
+
+        log.info("Sales Order marked as INVOICED successfully: {}", id);
+        return order;
+    }
+
+    @Transactional
+    public SalesOrder updatePaymentStatus(Long id,String paymentStatus){
+        log.info("Updating payment status for Sales Order: {} to {}", id, paymentStatus);
+
+        SalesOrder order = findSalesOrderById(id);
+
+        order.setPaymentStatus(paymentStatus);
+        salesOrderRepository.save(order);
+
+        log.info("Sales Order payment status updated successfully: {}", id);
+        return order;
+    }
+
+    @Transactional
+    public SalesOrder markAsPaid(Long id){
+        log.info("Marking Sales Order as PAID: {}", id);
+
+        SalesOrder order = findSalesOrderById(id);
+
+        if (!"INVOICED".equals(order.getStatus())) {
+            throw new InvalidOperationException(
+                "Cannot mark as paid. Current status: " + order.getStatus() +
+                ". Only INVOICED orders can be marked as paid.");
+        }
+
+        order.setStatus("PAID");
+        salesOrderRepository.save(order);
+
+        log.info("Sales Order marked as PAID successfully: {}", id);
+        return order;
+    }
+
+    @Transactional
+    public List<SalesOrder> getDraftOrders(){
+        log.info("Retrieving DRAFT Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("DRAFT");
+
+        log.info("Retrieved {} DRAFT Sales Orders", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public  List<SalesOrder>getPendingOrders(){
+        log.info("Retrieving PENDING_APPROVAL Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("PENDING_APPROVAL");
+
+        log.info("Retrieved {} PENDING_APPROVAL Sales Orders", orders.size());
+        return orders;
+    }
+    @Transactional
+    public  List<SalesOrder> getConfirmedOrders(){
+        log.info("Retrieving CONFIRMED Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("CONFIRMED");
+
+        log.info("Retrieved {} CONFIRMED Sales Orders", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getProcessingOrders(){
+        log.info("Retrieving PROCESSING Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("PROCESSING");
+
+        log.info("Retrieved {} PROCESSING Sales Orders", orders.size());
+        return orders;
+    }
+
 
     @Override
     @Transactional
@@ -333,7 +506,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Override
     @Transactional
-    public void cancelSalesOrder(Long id, String reason) {
+    public SalesOrder cancelSalesOrder(Long id, String reason) {
         log.info("Cancelling Sales Order: {} with reason: {}", id, reason);
 
         SalesOrder order = findSalesOrderById(id);
@@ -353,6 +526,313 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         salesOrderRepository.save(order);
 
         log.info("Sales Order cancelled successfully: {}", id);
+        return order;
+    }
+
+    @Transactional
+    public List<SalesOrder> getCompletedOrders(){
+        log.info("Retrieving COMPLETED Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("DELIVERED");
+
+        log.info("Retrieved {} COMPLETED Sales Orders", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getCancelledOrders(){
+        log.info("Retrieving CANCELLED Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("CANCELLED");
+
+        log.info("Retrieved {} CANCELLED Sales Orders", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getOrdersPendingApproval(){
+        log.info("Retrieving Sales Orders pending approval");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("PENDING_APPROVAL");
+
+        log.info("Retrieved {} Sales Orders pending approval", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder>  getOrdersPendingDispatch(){
+        log.info("Retrieving Sales Orders pending dispatch");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("PACKED");
+
+        log.info("Retrieved {} Sales Orders pending dispatch", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getOrdersPendingInvoicing(){
+        log.info("Retrieving Sales Orders pending invoicing");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("DELIVERED");
+
+        log.info("Retrieved {} Sales Orders pending invoicing", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getUnpaidOrders(){
+        log.info("Retrieving UNPAID Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatus("INVOICED");
+
+        log.info("Retrieved {} UNPAID Sales Orders", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getOverdueDeliveries(){
+        log.info("Retrieving Sales Orders with overdue deliveries");
+
+        List<SalesOrder> orders = salesOrderRepository.findOverdueOrders(LocalDate.now());
+
+        log.info("Retrieved {} Sales Orders with overdue deliveries", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getHighPriorityOrders(){
+        log.info("Retrieving HIGH PRIORITY Sales Orders");
+
+        List<SalesOrder> orders = salesOrderRepository.findByPriority("HIGH");
+
+        log.info("Retrieved {} HIGH PRIORITY Sales Orders", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public  List<SalesOrder> getOrdersRequiringAction(){
+        log.info("Retrieving Sales Orders requiring action");
+
+        List<SalesOrder> orders = salesOrderRepository.findOrdersRequiringAction(LocalDate.now());
+
+        log.info("Retrieved {} Sales Orders requiring action", orders.size());
+        return orders;
+    }
+
+    @Transactional
+    public Page<SalesOrder> getOrdersByCustomer(Long customerId,Pageable pageable){
+        log.info("Retrieving Sales Orders for customer: {}", customerId);
+
+        Page<SalesOrder> orders = salesOrderRepository.findByCustomerId(customerId, pageable);
+
+        log.info("Retrieved {} Sales Orders for customer: {}", orders.getTotalElements(), customerId);
+        return orders;
+    }
+
+    @Transactional
+    public  List<SalesOrder> getOrdersBySalesRep(Long salesRepId){
+        log.info("Retrieving Sales Orders for sales rep: {}", salesRepId);
+
+        List<SalesOrder> orders = salesOrderRepository.findBySalesRepId(salesRepId);
+
+        log.info("Retrieved {} Sales Orders for sales rep: {}", orders.size(), salesRepId);
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getOrdersByDateRange(LocalDate startDate,LocalDate endDate){
+        log.info("Retrieving Sales Orders from {} to {}", startDate, endDate);
+
+        List<SalesOrder> orders = salesOrderRepository.findByOrderDateBetween(startDate, endDate);
+
+        log.info("Retrieved {} Sales Orders from {} to {}", orders.size(), startDate, endDate);
+        return orders;
+    }
+
+    @Transactional
+    public List<SalesOrder> getCustomerRecentOrders(Long customerId,Pageable limit){
+        log.info("Retrieving recent {} Sales Orders for customer: {}", limit, customerId);
+
+        List<SalesOrder> orders = salesOrderRepository.findTopByCustomerIdOrderByOrderDateDesc(customerId, limit);
+
+        log.info("Retrieved {} recent Sales Orders for customer: {}", orders.size(), customerId);
+        return orders;
+    }
+
+    @Transactional
+    public  boolean canConfirmOrder(Long id){
+        SalesOrder order = findSalesOrderById(id);
+        return "DRAFT".equals(order.getStatus());
+    }
+
+    @Transactional
+    public boolean canCancelOrder(Long id){
+        SalesOrder order = findSalesOrderById(id);
+        return !"DELIVERED".equals(order.getStatus()) && !"CANCELLED".equals(order.getStatus());
+    }
+    @Transactional
+    public  boolean canApproveOrder(Long id){
+        SalesOrder order = findSalesOrderById(id);
+        return "PENDING_APPROVAL".equals(order.getStatus());
+    }
+
+    @Transactional
+    public double calculateSubtotal(Long id){
+        SalesOrder order = findSalesOrderById(id);
+        return order.getItems().stream()
+            .mapToDouble(item -> item.getUnitPrice().doubleValue() * item.getQuantity())
+            .sum();
+    }
+
+    @Transactional
+    public double calculateTotalTax(Long id){
+        SalesOrder order = findSalesOrderById(id);
+        return order.getItems().stream()
+            .mapToDouble(item -> {
+                BigDecimal taxRate = item.getTaxRate() != null ? item.getTaxRate().getRate() : BigDecimal.ZERO;
+                return item.getUnitPrice().doubleValue() * item.getQuantity() * taxRate.doubleValue() / 100;
+            })
+            .sum();
+    }
+
+    @Transactional
+    public double calculateTotalDiscount(Long id){
+        SalesOrder order = findSalesOrderById(id);
+        return order.getItems().stream()
+            .mapToDouble(item -> {
+                BigDecimal discount = item.getDiscount() != null ? item.getDiscount() : BigDecimal.ZERO;
+                return discount.doubleValue();
+            })
+            .sum();
+    }
+
+    @Transactional
+    public Map<String,Object> getSalesOrderStatistics(){
+        log.info("Calculating Sales Order statistics");
+
+        long totalOrders = salesOrderRepository.count();
+        long pendingOrders = salesOrderRepository.countByStatus("PENDING_APPROVAL");
+        long completedOrders = salesOrderRepository.countByStatus("DELIVERED");
+
+        log.info("Sales Order statistics calculated successfully");
+
+        Map<String,Object> map=new HashMap<>();
+        map.put("totalOrders",totalOrders);
+        map.put("pendingOrders",pendingOrders);
+        map.put("completedOrders",completedOrders);
+
+        return map;
+    }
+
+    public  Map<String,Object> getOrderTypeDistribution(){
+        log.info("Calculating Sales Order type distribution");
+
+        List<Object[]> distributionData = salesOrderRepository.countOrdersByType();
+
+        Map<String,Object> distributionMap = new HashMap<>();
+        for (Object[] data : distributionData) {
+            String orderType = (String) data[0];
+            Long count = (Long) data[1];
+            distributionMap.put(orderType, count);
+        }
+
+        log.info("Sales Order type distribution calculated successfully");
+        return distributionMap;
+    }
+
+    @Transactional
+    public List<Map<String,Object>> getDeliveryStatusDistribution(){
+        log.info("Calculating Sales Order delivery status distribution");
+
+        List<Object[]> distributionData = salesOrderRepository.countOrdersByDeliveryStatus();
+
+        List<Map<String,Object>> distributionList = new ArrayList<>();
+        for (Object[] data : distributionData) {
+            String deliveryStatus = (String) data[0];
+            Long count = (Long) data[1];
+            Map<String,Object> statusMap = new HashMap<>();
+            statusMap.put("deliveryStatus", deliveryStatus);
+            statusMap.put("count", count);
+            distributionList.add(statusMap);
+        }
+
+        log.info("Sales Order delivery status distribution calculated successfully");
+        return distributionList;
+    }
+
+    @Transactional
+    public double getTotalOrderValue(){
+        log.info("Calculating total Sales Order value");
+
+        Double totalValue = salesOrderRepository.sumTotalOrderValue()
+            .orElse(0.0);
+
+        log.info("Total Sales Order value calculated successfully: {}", totalValue);
+        return totalValue;
+    }
+
+    @Transactional
+    public double getAverageOrderValue(){
+        log.info("Calculating average Sales Order value");
+
+        Double averageValue = salesOrderRepository.averageOrderValue()
+            .orElse(0.0);
+
+        log.info("Average Sales Order value calculated successfully: {}", averageValue);
+        return averageValue;
+    }
+
+    @Transactional
+    public Map<String,Object> getDashboardStatistics(){
+        log.info("Calculating Sales Order dashboard statistics");
+
+        long totalOrders = salesOrderRepository.count();
+        long pendingOrders = salesOrderRepository.countByStatus("PENDING_APPROVAL");
+        double totalSalesValue = salesOrderRepository.sumTotalOrderValue()
+            .orElse(0.0);
+        double averageOrderValue = salesOrderRepository.averageOrderValue()
+            .orElse(0.0);
+
+        Map<String,Object> statsMap = new HashMap<>();
+        statsMap.put("totalOrders", totalOrders);
+        statsMap.put("pendingOrders", pendingOrders);
+        statsMap.put("totalSalesValue", totalSalesValue);
+        statsMap.put("averageOrderValue", averageOrderValue);
+
+        log.info("Sales Order dashboard statistics calculated successfully");
+        return statsMap;
+    }
+
+    @Transactional
+    public List<SalesOrder> getOrdersByCustomer(Long customerId){
+        log.info("Retrieving Sales Orders for customer: {}", customerId);
+
+        List<SalesOrder> orders = salesOrderRepository.findByCustomerId(customerId);
+
+        log.info("Retrieved {} Sales Orders for customer: {}", orders.size(), customerId);
+        return orders;
+    }
+
+    @Transactional
+    public SalesOrder rejectSalesOrder(Long id, String rejectionReason){
+        log.info("Rejecting Sales Order: {} with reason: {}", id, rejectionReason);
+
+        SalesOrder order = findSalesOrderById(id);
+
+        if (!"PENDING_APPROVAL".equals(order.getStatus())) {
+            throw new InvalidOperationException(
+                "Cannot reject Sales Order. Current status: " + order.getStatus() +
+                ". Only PENDING_APPROVAL orders can be rejected.");
+        }
+
+        order.setStatus("DRAFT");
+        order.setRemarks(order.getRemarks() != null ?
+            order.getRemarks() + "\nRejection: " + rejectionReason :
+            "Rejection: " + rejectionReason);
+        salesOrderRepository.save(order);
+
+        log.info("Sales Order rejected successfully: {}", id);
+        return order;
     }
 
     @Override
@@ -442,11 +922,22 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Get Sales Orders by order type
+     *
+     * @param orderType
+     * @param pageable
+     */
     @Override
     public PageResponse<SalesOrderResponse> getSalesOrdersByOrderType(String orderType, Pageable pageable) {
-        Page<SalesOrder> orderPage = salesOrderRepository.findByOrderType(orderType, pageable);
-        return createPageResponse(orderPage);
+        return null;
     }
+
+//    @Override
+//    public PageResponse<SalesOrderResponse> getSalesOrdersByOrderType(String orderType, Pageable pageable) {
+//        Page<SalesOrder> orderPage = salesOrderRepository.findByOrderType(orderType);
+//        return createPageResponse(orderPage);
+//    }
 
     @Override
     public List<SalesOrderResponse> getPendingApprovalOrders() {
@@ -466,21 +957,42 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Override
     public PageResponse<SalesOrderResponse> searchSalesOrders(String keyword, Pageable pageable) {
-        Page<SalesOrder> orderPage = salesOrderRepository.searchOrders(keyword, pageable);
+        Page<SalesOrder> orderPage = salesOrderRepository.searchOrders(keyword,null,null,null,null,null,null,pageable);
         return createPageResponse(orderPage);
     }
 
+    /**
+     * Get total sales amount for a customer
+     *
+     * @param customerId
+     */
     @Override
     public BigDecimal getTotalSalesByCustomer(Long customerId) {
-        return salesOrderRepository.sumTotalAmountByCustomer(customerId)
-            .orElse(BigDecimal.ZERO);
+        return null;
     }
 
+    /**
+     * Get total sales amount for a date range
+     *
+     * @param startDate
+     * @param endDate
+     */
     @Override
     public BigDecimal getTotalSalesByDateRange(LocalDate startDate, LocalDate endDate) {
-        return salesOrderRepository.sumTotalAmountByDateRange(startDate, endDate)
-            .orElse(BigDecimal.ZERO);
+        return null;
     }
+
+//    @Override
+//    public BigDecimal getTotalSalesByCustomer(Long customerId) {
+//        return salesOrderRepository.sumTotalAmountByCustomer(customerId)
+//            .orElse(BigDecimal.ZERO);
+//    }
+
+//    @Override
+//    public BigDecimal getTotalSalesByDateRange(LocalDate startDate, LocalDate endDate) {
+//        return salesOrderRepository.sumTotalAmountByDateRange(startDate, endDate)
+//            .orElse(BigDecimal.ZERO);
+//    }
 
     @Override
     public boolean canDelete(Long id) {
@@ -496,21 +1008,21 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     // ==================== PRIVATE HELPER METHODS ====================
 
-    private SalesOrderItem createOrderItem(SalesOrderItemRequest request) {
-        Product product = findProductById(request.getProductId());
-        UnitOfMeasure uom = findUnitOfMeasureById(request.getUomId());
-
-        SalesOrderItem item = salesOrderItemMapper.toEntity(request);
-        item.setProduct(product);
-        item.setUom(uom);
-
-        if (request.getTaxRateId() != null) {
-            TaxRate taxRate = findTaxRateById(request.getTaxRateId());
-            item.setTaxRate(taxRate);
-        }
-
-        return item;
-    }
+//    private SalesOrderItem createOrderItem(SalesOrderItemRequest request) {
+//        Product product = findProductById(request.getProductId());
+//        UnitOfMeasure uom = findUnitOfMeasureById(request.getUomId());
+//
+//        SalesOrderItem item = salesOrderItemMapper.toEntity(request);
+//        item.setProduct(product);
+//        item.setUom(uom);
+//
+//        if (request.getTaxRateId() != null) {
+//            TaxRate taxRate = findTaxRateById(request.getTaxRateId());
+//            item.setTaxRate(taxRate);
+//        }
+//
+//        return item;
+//    }
 
     private void validateUniqueOrderNumber(String orderNumber, Long excludeId) {
         boolean exists;
@@ -531,8 +1043,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
     }
 
     private Customer findCustomerById(Long id) {
-        return customerRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + id));
+        return customerRepository.findByIdAndDeletedAtIsNull(id).get();
     }
 
     private CustomerAddress findCustomerAddressById(Long id) {
@@ -545,10 +1056,10 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found: " + id));
     }
 
-    private Product findProductById(Long id) {
-        return productRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
-    }
+//    private Product findProductById(Long id) {
+//        return productRepository.findByIdAndDeletedAtIsNull(id)
+//            .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+//    }
 
     private UnitOfMeasure findUnitOfMeasureById(Long id) {
         return unitOfMeasureRepository.findById(id)

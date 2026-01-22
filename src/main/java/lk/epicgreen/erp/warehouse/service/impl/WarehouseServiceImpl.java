@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -233,5 +234,245 @@ public class WarehouseServiceImpl implements WarehouseService {
             .first(warehousePage.isFirst())
             .empty(warehousePage.isEmpty())
             .build();
+    }
+
+    @Override
+    public void deleteWarehouse(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteWarehouse'");
+    }
+
+    @Override
+    public WarehouseResponse getWarehouseByName(String warehouseName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehouseByName'");
+    }
+
+    @Override
+    public WarehouseResponse setAsDefault(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setAsDefault'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getActiveWarehouses() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getActiveWarehouses'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getInactiveWarehouses() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getInactiveWarehouses'");
+    }
+
+    @Override
+    public WarehouseResponse getDefaultWarehouse() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDefaultWarehouse'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getMainWarehouses() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getMainWarehouses'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getBranchWarehouses() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBranchWarehouses'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getTransitWarehouses() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTransitWarehouses'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getRetailWarehouses() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRetailWarehouses'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesByType(String warehouseType) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesByType'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesByCity(String city) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesByCity'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesByState(String stateProvince) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesByState'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesByRegion(String region) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesByRegion'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesByCapacityRange(Double minCapacity, Double maxCapacity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesByCapacityRange'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesWithLowUtilization(Double threshold) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesWithLowUtilization'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesWithHighUtilization(Double threshold) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesWithHighUtilization'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getWarehousesNearCapacity(Double threshold) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesNearCapacity'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getRecentWarehouses(int limit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRecentWarehouses'");
+    }
+
+    @Override
+    public void updateCurrentStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateCurrentStock'");
+    }
+
+    @Override
+    public void increaseStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'increaseStock'");
+    }
+
+    @Override
+    public void decreaseStock(Long id, Double quantity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'decreaseStock'");
+    }
+
+    @Override
+    public Double getCapacityUtilization(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCapacityUtilization'");
+    }
+
+    @Override
+    public Double getAvailableCapacity(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAvailableCapacity'");
+    }
+
+    @Override
+    public boolean isWarehouseCodeAvailable(String warehouseCode) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isWarehouseCodeAvailable'");
+    }
+
+    @Override
+    public boolean isWarehouseNameAvailable(String warehouseName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isWarehouseNameAvailable'");
+    }
+
+    @Override
+    public boolean canDeleteWarehouse(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canDeleteWarehouse'");
+    }
+
+    @Override
+    public List<Warehouse> createBulkWarehouses(List<WarehouseRequest> requests) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createBulkWarehouses'");
+    }
+
+    @Override
+    public int activateBulkWarehouses(List<Long> warehouseIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'activateBulkWarehouses'");
+    }
+
+    @Override
+    public int deactivateBulkWarehouses(List<Long> warehouseIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deactivateBulkWarehouses'");
+    }
+
+    @Override
+    public int deleteBulkWarehouses(List<Long> warehouseIds) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteBulkWarehouses'");
+    }
+
+    @Override
+    public Map<String, Object> getWarehouseStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehouseStatistics'");
+    }
+
+    @Override
+    public List<WarehouseResponse> getAllWarehouses() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllWarehouses'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getTypeDistribution() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTypeDistribution'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getWarehousesByRegionStats() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWarehousesByRegionStats'");
+    }
+
+    @Override
+    public List<Map<String, Object>> getCapacityUtilizationStats() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCapacityUtilizationStats'");
+    }
+
+    @Override
+    public Double getTotalCapacity() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTotalCapacity'");
+    }
+
+    @Override
+    public Double getTotalCurrentStock() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTotalCurrentStock'");
+    }
+
+    @Override
+    public Double getAverageUtilization() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAverageUtilization'");
+    }
+
+    @Override
+    public Map<String, Object> getDashboardStatistics() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDashboardStatistics'");
     }
 }

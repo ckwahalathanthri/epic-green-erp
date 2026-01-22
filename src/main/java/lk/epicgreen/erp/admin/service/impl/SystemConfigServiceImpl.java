@@ -134,7 +134,8 @@ public class SystemConfigServiceImpl implements SystemConfigService {
 
     @Override
     public List<String> getAvailableConfigGroups() {
-        return systemConfigRepository.findDistinctConfigGroups();
+        //return systemConfigRepository.findDistinctConfigGroups();
+        return systemConfigRepository.findAllDistinctGroups();
     }
 
     @Override

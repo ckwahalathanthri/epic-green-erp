@@ -39,6 +39,8 @@ public interface NotificationTemplateRepository extends JpaRepository<Notificati
      * Find notification templates by notification type
      */
     List<NotificationTemplate> findByNotificationType(String notificationType);
+
+    List<NotificationTemplate> findByCategory(String category);
     
     /**
      * Find notification templates by notification type with pagination
@@ -117,6 +119,14 @@ public interface NotificationTemplateRepository extends JpaRepository<Notificati
             @Param("notificationType") String notificationType,
             @Param("isActive") Boolean isActive,
             Pageable pageable);
+
+
+    @Query("SELECT nt FROM NotificationTemplate nt WHERE " +
+           "LOWER(nt.templateCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(nt.templateName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(nt.subject) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(nt.bodyTemplate) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<NotificationTemplate> searchTemplates(String keyword,Pageable pageable);
     
     // ==================== COUNT METHODS ====================
     

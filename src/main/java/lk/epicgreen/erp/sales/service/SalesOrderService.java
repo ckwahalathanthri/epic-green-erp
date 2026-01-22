@@ -3,11 +3,14 @@ package lk.epicgreen.erp.sales.service;
 import lk.epicgreen.erp.sales.dto.request.SalesOrderRequest;
 import lk.epicgreen.erp.sales.dto.response.SalesOrderResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.sales.entity.SalesOrder;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service interface for SalesOrder entity business logic
@@ -34,7 +37,7 @@ public interface SalesOrderService {
     /**
      * Confirm Sales Order (DRAFT → CONFIRMED)
      */
-    void confirmSalesOrder(Long id);
+    SalesOrder confirmSalesOrder(Long id);
 
     /**
      * Submit for Approval (CONFIRMED → PENDING_APPROVAL)
@@ -44,7 +47,7 @@ public interface SalesOrderService {
     /**
      * Approve Sales Order (PENDING_APPROVAL → APPROVED)
      */
-    void approveSalesOrder(Long id, Long approvedBy);
+    SalesOrder approveSalesOrder(Long id, Long approvedBy,String approvalNotes);
 
     /**
      * Start Processing (APPROVED → PROCESSING)
@@ -59,7 +62,7 @@ public interface SalesOrderService {
     /**
      * Mark as Dispatched (PACKED → DISPATCHED)
      */
-    void markAsDispatched(Long id);
+    SalesOrder markAsDispatched(Long id);
 
     /**
      * Mark as Delivered (DISPATCHED → DELIVERED)
@@ -69,7 +72,7 @@ public interface SalesOrderService {
     /**
      * Cancel Sales Order
      */
-    void cancelSalesOrder(Long id, String reason);
+    SalesOrder cancelSalesOrder(Long id, String reason);
 
     /**
      * Delete Sales Order (only in DRAFT status)
@@ -160,4 +163,72 @@ public interface SalesOrderService {
      * Check if can update
      */
     boolean canUpdate(Long id);
+
+    SalesOrder processSalesOrder(Long id);
+
+    SalesOrder completeSalesOrder(Long id);
+
+    SalesOrder updateDeliveryStatus(Long id, String deliveryStatus);
+    SalesOrder markAsInvoiced(Long id,Long invoiceId);
+
+    SalesOrder updatePaymentStatus(Long id,String paymentStatus);
+
+    SalesOrder markAsPaid(Long id);
+
+    List<SalesOrder> getDraftOrders();
+
+    List<SalesOrder>getPendingOrders();
+
+    List<SalesOrder> getConfirmedOrders();
+    List<SalesOrder> getProcessingOrders();
+
+    List<SalesOrder> getCompletedOrders();
+
+    List<SalesOrder> getCancelledOrders();
+
+    List<SalesOrder> getOrdersPendingApproval();
+
+    List<SalesOrder>  getOrdersPendingDispatch();
+
+    List<SalesOrder> getOrdersPendingInvoicing();
+
+    List<SalesOrder> getUnpaidOrders();
+
+    List<SalesOrder> getHighPriorityOrders();
+
+    List<SalesOrder> getOrdersRequiringAction();
+
+    Page<SalesOrder> getOrdersByCustomer(Long customerId,Pageable pageable);
+
+    List<SalesOrder> getOrdersByCustomer(Long customerId);
+    List<SalesOrder> getOrdersBySalesRep(Long salesRepId);
+
+    List<SalesOrder> getOrdersByDateRange(LocalDate startDate,LocalDate endDate);
+    List<SalesOrder> getCustomerRecentOrders(Long customerId,Pageable limit);
+
+    boolean canConfirmOrder(Long id);
+
+    boolean canCancelOrder(Long id);
+
+    boolean canApproveOrder(Long id);
+
+    double calculateSubtotal(Long id);
+
+    double calculateTotalTax(Long id);
+
+    Map<String,Object> getSalesOrderStatistics();
+    Map<String,Object> getOrderTypeDistribution();
+    List<Map<String,Object>> getDeliveryStatusDistribution();
+
+    double getTotalOrderValue();
+
+    double getAverageOrderValue();
+
+    Map<String,Object> getDashboardStatistics();
+
+    double calculateTotalDiscount(Long id);
+
+    List<SalesOrder> getOverdueDeliveries();
+
+    SalesOrder rejectSalesOrder(Long id, String rejectionReason);
 }

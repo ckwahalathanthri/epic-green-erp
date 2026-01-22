@@ -1,8 +1,10 @@
 package lk.epicgreen.erp.mobile.mapper;
 
+import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.mobile.dto.request.SyncLogRequest;
 import lk.epicgreen.erp.mobile.dto.response.SyncLogResponse;
 import lk.epicgreen.erp.mobile.entity.SyncLog;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,13 +16,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class SyncLogMapper {
 
+    @Autowired
+    private UserRepository userRepository;
+
     public SyncLog toEntity(SyncLogRequest request) {
         if (request == null) {
             return null;
         }
 
         return SyncLog.builder()
-            .userId(request.getUserId())
+            .user(userRepository.findById(request.getUserId()).orElse(null))
             .deviceId(request.getDeviceId())
             .deviceType(request.getDeviceType())
             .appVersion(request.getAppVersion())
@@ -43,7 +48,7 @@ public class SyncLogMapper {
             return;
         }
 
-        syncLog.setUserId(request.getUserId());
+        syncLog.setUser(userRepository.findById(request.getUserId()).orElse(null));
         syncLog.setDeviceId(request.getDeviceId());
         syncLog.setDeviceType(request.getDeviceType());
         syncLog.setAppVersion(request.getAppVersion());
@@ -67,7 +72,7 @@ public class SyncLogMapper {
 
         return SyncLogResponse.builder()
             .id(syncLog.getId())
-            .userId(syncLog.getUserId())
+            .userId(syncLog.getUser().getId())
             .deviceId(syncLog.getDeviceId())
             .deviceType(syncLog.getDeviceType())
             .appVersion(syncLog.getAppVersion())

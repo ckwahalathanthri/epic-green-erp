@@ -5,7 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -29,7 +33,7 @@ public class MobileDataCacheRequest {
     private String cacheKey;
 
     @NotBlank(message = "Cache type is required")
-    @Pattern(regexp = "^(CUSTOMER|PRODUCT|PRICELIST|STOCK|ORDER|PAYMENT|OTHER)$", 
+    @Pattern(regexp = "^(CUSTOMER|PRODUCT|PRICELIST|STOCK|ORDER|PAYMENT|OTHER)$",
              message = "Cache type must be one of: CUSTOMER, PRODUCT, PRICELIST, STOCK, ORDER, PAYMENT, OTHER")
     private String cacheType;
 
@@ -39,4 +43,6 @@ public class MobileDataCacheRequest {
     private LocalDateTime lastSyncedAt;
 
     private LocalDateTime expiresAt;
+
+
 }

@@ -62,7 +62,7 @@ public class WorkOrderItemMapper {
             .issuedFromWarehouseId(item.getIssuedFromWarehouse() != null ? item.getIssuedFromWarehouse().getId() : null)
             .issuedFromWarehouseCode(item.getIssuedFromWarehouse() != null ? item.getIssuedFromWarehouse().getWarehouseCode() : null)
             .issuedAt(item.getIssuedAt())
-            .issuedBy(item.getIssuedBy())
+            .issuedBy(item.getIssuedBy() != null ? item.getIssuedBy().getId() : null)
             .build();
     }
 }

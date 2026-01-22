@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.*;
+
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -31,7 +32,7 @@ public class ProductionWastageRequest {
     private Long productId;
 
     @NotBlank(message = "Wastage type is required")
-    @Pattern(regexp = "^(MATERIAL|PRODUCTION|QUALITY_REJECTION)$", 
+    @Pattern(regexp = "^(MATERIAL|PRODUCTION|QUALITY_REJECTION)$",
              message = "Wastage type must be one of: MATERIAL, PRODUCTION, QUALITY_REJECTION")
     private String wastageType;
 

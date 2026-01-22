@@ -78,7 +78,7 @@ public interface SalesOrderItemRepository extends JpaRepository<SalesOrderItem, 
      * Delete all items for an order
      */
     @Modifying
-    @Query("DELETE FROM SalesOrderItem soi WHERE soi.orderId = :orderId")
+    @Query("DELETE FROM SalesOrderItem soi WHERE soi.order.id = :orderId")
     void deleteAllByOrderId(@Param("orderId") Long orderId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -86,32 +86,32 @@ public interface SalesOrderItemRepository extends JpaRepository<SalesOrderItem, 
     /**
      * Get total quantity ordered for a product
      */
-    @Query("SELECT SUM(soi.quantityOrdered) FROM SalesOrderItem soi WHERE soi.productId = :productId")
+    @Query("SELECT SUM(soi.quantityOrdered) FROM SalesOrderItem soi WHERE soi.product.id = :productId")
     BigDecimal getTotalQuantityOrderedByProduct(@Param("productId") Long productId);
     
     /**
      * Get total quantity delivered for a product
      */
-    @Query("SELECT SUM(soi.quantityDelivered) FROM SalesOrderItem soi WHERE soi.productId = :productId")
+    @Query("SELECT SUM(soi.quantityDelivered) FROM SalesOrderItem soi WHERE soi.product.id = :productId")
     BigDecimal getTotalQuantityDeliveredByProduct(@Param("productId") Long productId);
     
     /**
      * Get total quantity pending for a product
      */
     @Query("SELECT SUM(soi.quantityOrdered - soi.quantityDelivered) FROM SalesOrderItem soi " +
-           "WHERE soi.productId = :productId")
+           "WHERE soi.product.id = :productId")
     BigDecimal getTotalQuantityPendingByProduct(@Param("productId") Long productId);
     
     /**
      * Get total value for an order
      */
-    @Query("SELECT SUM(soi.lineTotal) FROM SalesOrderItem soi WHERE soi.orderId = :orderId")
+    @Query("SELECT SUM(soi.lineTotal) FROM SalesOrderItem soi WHERE soi.order.id = :orderId")
     BigDecimal getTotalValueByOrder(@Param("orderId") Long orderId);
     
     /**
      * Get total quantity for an order
      */
-    @Query("SELECT SUM(soi.quantityOrdered) FROM SalesOrderItem soi WHERE soi.orderId = :orderId")
+    @Query("SELECT SUM(soi.quantityOrdered) FROM SalesOrderItem soi WHERE soi.order.id = :orderId")
     BigDecimal getTotalQuantityByOrder(@Param("orderId") Long orderId);
     
     /**
@@ -123,7 +123,7 @@ public interface SalesOrderItemRepository extends JpaRepository<SalesOrderItem, 
     /**
      * Find items with pending delivery for an order
      */
-    @Query("SELECT soi FROM SalesOrderItem soi WHERE soi.orderId = :orderId " +
+    @Query("SELECT soi FROM SalesOrderItem soi WHERE soi.order.id = :orderId " +
            "AND soi.quantityOrdered > soi.quantityDelivered")
     List<SalesOrderItem> findPendingItemsByOrder(@Param("orderId") Long orderId);
     
@@ -143,16 +143,16 @@ public interface SalesOrderItemRepository extends JpaRepository<SalesOrderItem, 
     /**
      * Get order item statistics by product
      */
-    @Query("SELECT soi.productId, COUNT(soi) as orderCount, " +
+    @Query("SELECT soi.product.id, COUNT(soi) as orderCount, " +
            "SUM(soi.quantityOrdered) as totalQuantity, SUM(soi.lineTotal) as totalValue " +
-           "FROM SalesOrderItem soi GROUP BY soi.productId ORDER BY totalValue DESC")
+           "FROM SalesOrderItem soi GROUP BY soi.product.id ORDER BY totalValue DESC")
     List<Object[]> getOrderItemStatisticsByProduct();
     
     /**
      * Get top selling products
      */
-    @Query("SELECT soi.productId, SUM(soi.quantityOrdered) as totalQuantity " +
-           "FROM SalesOrderItem soi GROUP BY soi.productId ORDER BY totalQuantity DESC")
+    @Query("SELECT soi.product.id, SUM(soi.quantityOrdered) as totalQuantity " +
+           "FROM SalesOrderItem soi GROUP BY soi.product.id ORDER BY totalQuantity DESC")
     List<Object[]> getTopSellingProducts(Pageable pageable);
     
     /**
@@ -169,6 +169,6 @@ public interface SalesOrderItemRepository extends JpaRepository<SalesOrderItem, 
     /**
      * Find all items ordered by order
      */
-    @Query("SELECT soi FROM SalesOrderItem soi ORDER BY soi.orderId, soi.productId")
+    @Query("SELECT soi FROM SalesOrderItem soi ORDER BY soi.order.id, soi.product.id")
     List<SalesOrderItem> findAllOrderedByOrder();
 }

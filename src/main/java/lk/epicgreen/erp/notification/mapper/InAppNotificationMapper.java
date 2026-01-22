@@ -1,8 +1,10 @@
-package lk.epicgreen.erp.notifications.mapper;
+package lk.epicgreen.erp.notification.mapper;
 
-import lk.epicgreen.erp.notifications.dto.request.InAppNotificationRequest;
-import lk.epicgreen.erp.notifications.dto.response.InAppNotificationResponse;
-import lk.epicgreen.erp.notifications.entity.InAppNotification;
+import lk.epicgreen.erp.admin.repository.UserRepository;
+import lk.epicgreen.erp.notification.dto.request.InAppNotificationRequest;
+import lk.epicgreen.erp.notification.dto.response.InAppNotificationResponse;
+import lk.epicgreen.erp.notification.entity.InAppNotification;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,13 +16,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class InAppNotificationMapper {
 
+    @Autowired
+    UserRepository userRepository;
+
     public InAppNotification toEntity(InAppNotificationRequest request) {
         if (request == null) {
             return null;
         }
 
         return InAppNotification.builder()
-            .userId(request.getUserId())
+            .user(userRepository.findById(request.getUserId()).orElse(null))
             .notificationTitle(request.getNotificationTitle())
             .notificationMessage(request.getNotificationMessage())
             .notificationType(request.getNotificationType() != null ? request.getNotificationType() : "INFO")
@@ -36,7 +41,7 @@ public class InAppNotificationMapper {
             return;
         }
 
-        notification.setUserId(request.getUserId());
+        notification.setUser(userRepository.findById(request.getUserId()).orElse(null));
         notification.setNotificationTitle(request.getNotificationTitle());
         notification.setNotificationMessage(request.getNotificationMessage());
         notification.setNotificationType(request.getNotificationType());
@@ -53,7 +58,7 @@ public class InAppNotificationMapper {
 
         return InAppNotificationResponse.builder()
             .id(notification.getId())
-            .userId(notification.getUserId())
+            .userId(notification.getUser().getId())
             .notificationTitle(notification.getNotificationTitle())
             .notificationMessage(notification.getNotificationMessage())
             .notificationType(notification.getNotificationType())

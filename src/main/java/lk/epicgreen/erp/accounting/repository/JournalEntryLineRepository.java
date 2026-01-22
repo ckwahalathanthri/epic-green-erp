@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for JournalEntryLine entity
@@ -53,11 +54,15 @@ public interface JournalEntryLineRepository extends JpaRepository<JournalEntryLi
      * Find lines by journal and account
      */
     List<JournalEntryLine> findByJournalIdAndAccountId(Long journalId, Long accountId);
+
+
     
     /**
      * Find lines by cost center
      */
     List<JournalEntryLine> findByCostCenter(String costCenter);
+
+    Optional<JournalEntryLine> findByIdAndJournal_Id(Long id, Long journalId);
     
     // ==================== COUNT METHODS ====================
     
@@ -77,7 +82,7 @@ public interface JournalEntryLineRepository extends JpaRepository<JournalEntryLi
      * Delete all lines for a journal entry
      */
     @Modifying
-    @Query("DELETE FROM JournalEntryLine jel WHERE jel.journalId = :journalId")
+    @Query("DELETE FROM JournalEntryLine jel WHERE jel.journal.id = :journalId")
     void deleteAllByJournalId(@Param("journalId") Long journalId);
     
     // ==================== CUSTOM QUERIES ====================
@@ -85,52 +90,53 @@ public interface JournalEntryLineRepository extends JpaRepository<JournalEntryLi
     /**
      * Get total debit for a journal entry
      */
-    @Query("SELECT SUM(jel.debitAmount) FROM JournalEntryLine jel WHERE jel.journalId = :journalId")
+    @Query("SELECT SUM(jel.debitAmount) FROM JournalEntryLine jel WHERE jel.journal.id = :journalId")
     BigDecimal getTotalDebitByJournal(@Param("journalId") Long journalId);
+
     
     /**
      * Get total credit for a journal entry
      */
-    @Query("SELECT SUM(jel.creditAmount) FROM JournalEntryLine jel WHERE jel.journalId = :journalId")
+    @Query("SELECT SUM(jel.creditAmount) FROM JournalEntryLine jel WHERE jel.journal.id = :journalId")
     BigDecimal getTotalCreditByJournal(@Param("journalId") Long journalId);
     
     /**
      * Get total debit for an account
      */
-    @Query("SELECT SUM(jel.debitAmount) FROM JournalEntryLine jel WHERE jel.accountId = :accountId")
+    @Query("SELECT SUM(jel.debitAmount) FROM JournalEntryLine jel WHERE jel.account.id = :accountId")
     BigDecimal getTotalDebitByAccount(@Param("accountId") Long accountId);
     
     /**
      * Get total credit for an account
      */
-    @Query("SELECT SUM(jel.creditAmount) FROM JournalEntryLine jel WHERE jel.accountId = :accountId")
+    @Query("SELECT SUM(jel.creditAmount) FROM JournalEntryLine jel WHERE jel.account.id = :accountId")
     BigDecimal getTotalCreditByAccount(@Param("accountId") Long accountId);
     
     /**
      * Find debit lines for a journal
      */
-    @Query("SELECT jel FROM JournalEntryLine jel WHERE jel.journalId = :journalId " +
+    @Query("SELECT jel FROM JournalEntryLine jel WHERE jel.journal.id = :journalId " +
            "AND jel.debitAmount > 0 ORDER BY jel.lineNumber")
     List<JournalEntryLine> findDebitLinesByJournal(@Param("journalId") Long journalId);
     
     /**
      * Find credit lines for a journal
      */
-    @Query("SELECT jel FROM JournalEntryLine jel WHERE jel.journalId = :journalId " +
+    @Query("SELECT jel FROM JournalEntryLine jel WHERE jel.journal.id = :journalId " +
            "AND jel.creditAmount > 0 ORDER BY jel.lineNumber")
     List<JournalEntryLine> findCreditLinesByJournal(@Param("journalId") Long journalId);
     
     /**
      * Get journal entry line statistics by account
      */
-    @Query("SELECT jel.accountId, COUNT(jel) as lineCount, " +
+    @Query("SELECT jel.account.id, COUNT(jel) as lineCount, " +
            "SUM(jel.debitAmount) as totalDebit, SUM(jel.creditAmount) as totalCredit " +
-           "FROM JournalEntryLine jel GROUP BY jel.accountId ORDER BY lineCount DESC")
+           "FROM JournalEntryLine jel GROUP BY jel.account.id ORDER BY lineCount DESC")
     List<Object[]> getJournalEntryLineStatisticsByAccount();
     
     /**
      * Find all lines ordered by journal
      */
-    @Query("SELECT jel FROM JournalEntryLine jel ORDER BY jel.journalId, jel.lineNumber")
+    @Query("SELECT jel FROM JournalEntryLine jel ORDER BY jel.journal.id, jel.lineNumber")
     List<JournalEntryLine> findAllOrderedByJournal();
 }

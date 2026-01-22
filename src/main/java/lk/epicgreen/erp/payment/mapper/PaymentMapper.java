@@ -41,7 +41,7 @@ public class PaymentMapper {
             .chequeDate(request.getChequeDate())
             .chequeClearanceDate(request.getChequeClearanceDate())
             .bankReferenceNumber(request.getBankReferenceNumber())
-            .collectedBy(request.getCollectedBy())
+//            .collectedBy(request.getCollectedBy())
             .collectedAt(request.getCollectedAt())
             .remarks(request.getRemarks())
             .build();
@@ -64,7 +64,7 @@ public class PaymentMapper {
         payment.setChequeDate(request.getChequeDate());
         payment.setChequeClearanceDate(request.getChequeClearanceDate());
         payment.setBankReferenceNumber(request.getBankReferenceNumber());
-        payment.setCollectedBy(request.getCollectedBy());
+//        payment.setCollectedBy(request.getCollectedBy());
         payment.setCollectedAt(request.getCollectedAt());
         payment.setRemarks(request.getRemarks());
     }
@@ -92,9 +92,9 @@ public class PaymentMapper {
             .chequeDate(payment.getChequeDate())
             .chequeClearanceDate(payment.getChequeClearanceDate())
             .bankReferenceNumber(payment.getBankReferenceNumber())
-            .collectedBy(payment.getCollectedBy())
+//            .collectedBy(payment.getCollectedBy())
             .collectedAt(payment.getCollectedAt())
-            .approvedBy(payment.getApprovedBy())
+//            .approvedBy(payment.getApprovedBy())
             .approvedAt(payment.getApprovedAt())
             .remarks(payment.getRemarks())
             .createdAt(payment.getCreatedAt())

@@ -1,7 +1,9 @@
 package lk.epicgreen.erp.warehouse.controller;
 
 import lk.epicgreen.erp.common.dto.ApiResponse;
-import lk.epicgreen.erp.warehouse.dto.InventoryRequest;
+import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.warehouse.dto.request.InventoryRequest;
+import lk.epicgreen.erp.warehouse.dto.response.InventoryResponse;
 import lk.epicgreen.erp.warehouse.entity.Inventory;
 import lk.epicgreen.erp.warehouse.service.InventoryService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -35,17 +38,17 @@ public class InventoryController {
     // CRUD Operations
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<Inventory>> createInventory(@Valid @RequestBody InventoryRequest request) {
+    public ResponseEntity<ApiResponse<InventoryResponse>> createInventory(@Valid @RequestBody InventoryRequest request) {
         log.info("Creating inventory for product: {}, warehouse: {}", request.getProductId(), request.getWarehouseId());
-        Inventory created = inventoryService.createInventory(request);
+        InventoryResponse created = inventoryService.createInventory(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Inventory created successfully"));
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<Inventory>> updateInventory(@PathVariable Long id, @Valid @RequestBody InventoryRequest request) {
+    public ResponseEntity<ApiResponse<InventoryResponse>> updateInventory(@PathVariable Long id, @Valid @RequestBody InventoryRequest request) {
         log.info("Updating inventory: {}", id);
-        Inventory updated = inventoryService.updateInventory(id, request);
+        InventoryResponse updated = inventoryService.updateInventory(id, request);
         return ResponseEntity.ok(ApiResponse.success(updated, "Inventory updated successfully"));
     }
     
@@ -59,22 +62,22 @@ public class InventoryController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'SALES_REP', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Inventory>> getInventoryById(@PathVariable Long id) {
-        Inventory inventory = inventoryService.getInventoryById(id);
+    public ResponseEntity<ApiResponse<InventoryResponse>> getInventoryById(@PathVariable Long id) {
+        InventoryResponse inventory = inventoryService.getInventoryById(id);
         return ResponseEntity.ok(ApiResponse.success(inventory, "Inventory retrieved successfully"));
     }
     
     @GetMapping("/product/{productId}/warehouse/{warehouseId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'SALES_REP', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Inventory>> getInventoryByProductAndWarehouse(@PathVariable Long productId, @PathVariable Long warehouseId) {
-        Inventory inventory = inventoryService.getInventoryByProductAndWarehouse(productId, warehouseId);
+    public ResponseEntity<ApiResponse<InventoryResponse>> getInventoryByProductAndWarehouse(@PathVariable Long productId, @PathVariable Long warehouseId) {
+        InventoryResponse inventory = inventoryService.getInventoryByProductAndWarehouse(productId, warehouseId);
         return ResponseEntity.ok(ApiResponse.success(inventory, "Inventory retrieved successfully"));
     }
     
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'SALES_REP', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Inventory>>> getAllInventory(Pageable pageable) {
-        Page<Inventory> inventory = inventoryService.getAllInventory(pageable);
+    public ResponseEntity<ApiResponse<PageResponse<InventoryResponse>>> getAllInventory(Pageable pageable) {
+        PageResponse<InventoryResponse> inventory = inventoryService.getAllInventory(pageable);
         return ResponseEntity.ok(ApiResponse.success(inventory, "Inventory retrieved successfully"));
     }
     
@@ -87,22 +90,22 @@ public class InventoryController {
     
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'SALES_REP', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Inventory>>> getInventoryByProduct(@PathVariable Long productId) {
-        List<Inventory> inventory = inventoryService.getInventoryByProduct(productId);
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoryByProduct(@PathVariable Long productId) {
+        List<InventoryResponse> inventory = inventoryService.getInventoryByProduct(productId);
         return ResponseEntity.ok(ApiResponse.success(inventory, "Inventory by product retrieved successfully"));
     }
     
     @GetMapping("/warehouse/{warehouseId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<Inventory>>> getInventoryByWarehouse(@PathVariable Long warehouseId) {
-        List<Inventory> inventory = inventoryService.getInventoryByWarehouse(warehouseId);
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoryByWarehouse(@PathVariable Long warehouseId) {
+        List<InventoryResponse> inventory = inventoryService.getInventoryByWarehouse(warehouseId);
         return ResponseEntity.ok(ApiResponse.success(inventory, "Inventory by warehouse retrieved successfully"));
     }
     
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'SALES_REP', 'PURCHASE_MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<Page<Inventory>>> searchInventory(@RequestParam String keyword, Pageable pageable) {
-        Page<Inventory> inventory = inventoryService.searchInventory(keyword, pageable);
+    public ResponseEntity<ApiResponse<PageResponse<InventoryResponse>>> searchInventory(@RequestParam String keyword, Pageable pageable) {
+        PageResponse<InventoryResponse> inventory = inventoryService.searchInventory(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(inventory, "Search results retrieved successfully"));
     }
     
@@ -257,8 +260,8 @@ public class InventoryController {
     
     @GetMapping("/low-stock")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<Inventory>>> getLowStockItems() {
-        List<Inventory> inventory = inventoryService.getLowStockItems();
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getLowStockItems() {
+        List<InventoryResponse> inventory = inventoryService.getLowStockItems();
         return ResponseEntity.ok(ApiResponse.success(inventory, "Low stock items retrieved successfully"));
     }
     

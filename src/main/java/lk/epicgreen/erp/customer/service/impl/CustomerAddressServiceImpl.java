@@ -129,9 +129,11 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
 
     @Override
     public CustomerAddressResponse getDefaultAddressByCustomer(Long customerId) {
-        CustomerAddress address = customerAddressRepository.findByCustomerIdAndIsDefaultTrue(customerId)
-            .orElse(null);
-        return address != null ? customerAddressMapper.toResponse(address) : null;
+        List<CustomerAddress> addresses = customerAddressRepository.findByCustomerIdAndIsDefaultTrue(customerId);
+        if (addresses.isEmpty()) {
+            return null;
+        }
+        return customerAddressMapper.toResponse(addresses.get(0));
     }
 
     @Override

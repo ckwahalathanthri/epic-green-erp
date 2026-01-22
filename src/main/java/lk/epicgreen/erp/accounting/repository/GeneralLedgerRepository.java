@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for GeneralLedger entity
@@ -36,7 +37,13 @@ public interface GeneralLedgerRepository extends JpaRepository<GeneralLedger, Lo
      * Find all entries for an account
      */
     List<GeneralLedger> findByAccountId(Long accountId);
-    
+
+    List<GeneralLedger> findByAccountIdAndTransactionDateBetween(Long accountId,LocalDate startDate,LocalDate endDate);
+@Query("SELECT gl FROM GeneralLedger gl WHERE gl.id = :journalEntryId")
+    List<GeneralLedger> findByJournalEntryId(@Param("journalEntryId") Long journalEntryId);
+@Query("SELECT gl FROM GeneralLedger gl WHERE gl.isPosted = :value")
+    List<GeneralLedger> findByIsPosted(@Param("value") Boolean value);
+
     /**
      * Find all entries for an account with pagination
      */
@@ -104,40 +111,44 @@ public interface GeneralLedgerRepository extends JpaRepository<GeneralLedger, Lo
     /**
      * Get current balance for an account
      */
-    @Query("SELECT gl.balance FROM GeneralLedger gl WHERE gl.accountId = :accountId " +
-           "ORDER BY gl.transactionDate DESC, gl.createdAt DESC LIMIT 1")
+    @Query("SELECT gl.balance FROM GeneralLedger gl WHERE gl.account.id = :accountId " +
+           "ORDER BY gl.transactionDate DESC, gl.createdAt DESC")
     BigDecimal getCurrentBalanceByAccount(@Param("accountId") Long accountId);
     
     /**
      * Get total debit for an account
      */
-    @Query("SELECT SUM(gl.debitAmount) FROM GeneralLedger gl WHERE gl.accountId = :accountId")
+    @Query("SELECT SUM(gl.debitAmount) FROM GeneralLedger gl WHERE gl.account.id = :accountId")
     BigDecimal getTotalDebitByAccount(@Param("accountId") Long accountId);
     
     /**
      * Get total credit for an account
      */
-    @Query("SELECT SUM(gl.creditAmount) FROM GeneralLedger gl WHERE gl.accountId = :accountId")
+    @Query("SELECT SUM(gl.creditAmount) FROM GeneralLedger gl WHERE gl.account.id = :accountId")
     BigDecimal getTotalCreditByAccount(@Param("accountId") Long accountId);
     
     /**
      * Get total debit for an account in period
      */
-    @Query("SELECT SUM(gl.debitAmount) FROM GeneralLedger gl WHERE gl.accountId = :accountId " +
-           "AND gl.periodId = :periodId")
+    @Query("SELECT SUM(gl.debitAmount) FROM GeneralLedger gl WHERE gl.account.id = :accountId " +
+           "AND gl.period.id = :periodId")
     BigDecimal getTotalDebitByAccountAndPeriod(@Param("accountId") Long accountId, @Param("periodId") Long periodId);
     
     /**
      * Get total credit for an account in period
      */
-    @Query("SELECT SUM(gl.creditAmount) FROM GeneralLedger gl WHERE gl.accountId = :accountId " +
-           "AND gl.periodId = :periodId")
+    @Query("SELECT SUM(gl.creditAmount) FROM GeneralLedger gl WHERE gl.account.id = :accountId " +
+           "AND gl.period.id = :periodId")
     BigDecimal getTotalCreditByAccountAndPeriod(@Param("accountId") Long accountId, @Param("periodId") Long periodId);
+
+    @Query("SELECT gl FROM GeneralLedger  gl WHERE LOWER(gl.description) LIKE LOWER(CONCAT('%', :keyword,'%') ) ")
+    Page<GeneralLedger> searchLedgerEntries(@Param("keyword")String keyword,Pageable pageable);
+
     
     /**
      * Get account statement
      */
-    @Query("SELECT gl FROM GeneralLedger gl WHERE gl.accountId = :accountId " +
+    @Query("SELECT gl FROM GeneralLedger gl WHERE gl.account.id = :accountId " +
            "AND gl.transactionDate BETWEEN :startDate AND :endDate " +
            "ORDER BY gl.transactionDate ASC, gl.createdAt ASC")
     List<GeneralLedger> getAccountStatement(
@@ -157,16 +168,16 @@ public interface GeneralLedgerRepository extends JpaRepository<GeneralLedger, Lo
            "COUNT(gl) as totalEntries, " +
            "SUM(gl.debitAmount) as totalDebit, " +
            "SUM(gl.creditAmount) as totalCredit, " +
-           "COUNT(DISTINCT gl.accountId) as uniqueAccounts " +
+           "COUNT(DISTINCT gl.account.id) as uniqueAccounts " +
            "FROM GeneralLedger gl")
     Object getGeneralLedgerStatistics();
     
     /**
      * Get entries grouped by account
      */
-    @Query("SELECT gl.accountId, COUNT(gl) as entryCount, " +
+    @Query("SELECT gl.account.id, COUNT(gl) as entryCount, " +
            "SUM(gl.debitAmount) as totalDebit, SUM(gl.creditAmount) as totalCredit " +
-           "FROM GeneralLedger gl GROUP BY gl.accountId ORDER BY entryCount DESC")
+           "FROM GeneralLedger gl GROUP BY gl.account.id ORDER BY entryCount DESC")
     List<Object[]> getEntriesByAccount();
     
     /**
@@ -175,4 +186,11 @@ public interface GeneralLedgerRepository extends JpaRepository<GeneralLedger, Lo
     @Query("SELECT gl FROM GeneralLedger gl WHERE gl.transactionDate = CURRENT_DATE " +
            "ORDER BY gl.createdAt DESC")
     List<GeneralLedger> findTodayEntries();
+@Query("SELECT SUM(gl.creditAmount) FROM GeneralLedger gl WHERE gl.account.id = :id " +
+           "AND gl.period.id = :periodId")
+    Optional<BigDecimal> sumDebitByAccountAndPeriod(@Param("id")Long id,@Param("periodId") Long periodId);
+
+@Query("SELECT SUM(gl.debitAmount) FROM GeneralLedger gl WHERE gl.account.id = :id " +
+           "AND gl.period.id = :periodId")
+    Optional<BigDecimal> sumCreditByAccountAndPeriod(@Param("id")Long id,@Param("periodId") Long periodId);
 }

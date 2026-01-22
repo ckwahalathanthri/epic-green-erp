@@ -52,7 +52,7 @@ public class BankReconciliationMapper {
             .reconciledBalance(recon.getReconciledBalance())
             .difference(diff)
             .status(recon.getStatus())
-            .reconciledBy(recon.getReconciledBy())
+            .reconciledBy(recon.getReconciledBy().getId())
             .reconciledAt(recon.getReconciledAt())
             .remarks(recon.getRemarks())
             .createdAt(recon.getCreatedAt())

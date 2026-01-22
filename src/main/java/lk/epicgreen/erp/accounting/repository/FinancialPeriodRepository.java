@@ -40,6 +40,7 @@ public interface FinancialPeriodRepository extends JpaRepository<FinancialPeriod
      * Find periods by period type
      */
     List<FinancialPeriod> findByPeriodType(String periodType);
+
     
     /**
      * Find periods by period type with pagination
@@ -70,9 +71,12 @@ public interface FinancialPeriodRepository extends JpaRepository<FinancialPeriod
      * Find all closed periods
      */
     List<FinancialPeriod> findByIsClosedTrue();
+@Query("SELECT fp FROM FinancialPeriod fp WHERE fp.fiscalYear = :fiscalYear AND fp.periodCode = :periodCode")
+    Optional<FinancialPeriod> findByYearAndPeriod(@Param("fiscalYear") Integer fiscalYear,@Param("periodCode")String periodCode);
     
     /**
      * Find periods by closed by user
+     *
      */
     List<FinancialPeriod> findByClosedBy(Long closedBy);
     

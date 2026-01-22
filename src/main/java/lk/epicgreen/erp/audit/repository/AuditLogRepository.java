@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,6 +41,12 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
      * Find audit logs by user with pagination
      */
     Page<AuditLog> findByUserId(Long userId, Pageable pageable);
+
+    Page<AuditLog> findByModel(String model,Pageable pageable);
+
+    Page<AuditLog> getAuditLogsByActionType(String actionType,Pageable pageable);
+
+    List<AuditLog> findByCreatedAt(LocalDateTime date);
     
     /**
      * Find audit logs by username
@@ -112,7 +119,17 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
      * Search audit logs by action containing (case-insensitive)
      */
     Page<AuditLog> findByActionContainingIgnoreCase(String action, Pageable pageable);
-    
+
+    List<AuditLog> findByOrderByCreatedAtDesc(Pageable limit);
+
+    @Query("DELETE FROM AuditLog al WHERE al.createdAt < :cutodDate")
+   long deleteAuditLogByCreatedAtBefore(LocalDateTime cutodDate);
+
+
+
+
+    List<AuditLog> findByAction(String action);
+
     /**
      * Search audit logs by entity name containing (case-insensitive)
      */
@@ -122,7 +139,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
      * Search audit logs by multiple criteria
      */
     @Query("SELECT al FROM AuditLog al WHERE " +
-           "(:userId IS NULL OR al.userId = :userId) AND " +
+           "(:userId IS NULL OR al.user.id = :userId) AND " +
            "(:username IS NULL OR LOWER(al.username) LIKE LOWER(CONCAT('%', :username, '%'))) AND " +
            "(:action IS NULL OR LOWER(al.action) LIKE LOWER(CONCAT('%', :action, '%'))) AND " +
            "(:entityType IS NULL OR al.entityType = :entityType) AND " +
@@ -152,6 +169,11 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
      * Count audit logs by operation type
      */
     long countByOperationType(String operationType);
+
+    long countByCreatedAtBetweenAndUser_Id(LocalDateTime start,LocalDateTime stop,Long id);
+
+    long countByAction(String action);
+    long count();
     
     /**
      * Count audit logs by entity type
@@ -285,8 +307,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
     /**
      * Get audit logs grouped by user
      */
-    @Query("SELECT al.userId, al.username, COUNT(al) as logCount " +
-           "FROM AuditLog al GROUP BY al.userId, al.username ORDER BY logCount DESC")
+    @Query("SELECT al.user.id, al.username, COUNT(al) as logCount " +
+           "FROM AuditLog al GROUP BY al.user.id, al.username ORDER BY logCount DESC")
     List<Object[]> getAuditLogsByUser();
     
     /**
@@ -299,15 +321,15 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
     /**
      * Get daily audit log summary
      */
-    @Query("SELECT DATE(al.createdAt) as logDate, COUNT(al) as logCount, " +
-           "SUM(CASE WHEN al.status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount, " +
-           "SUM(CASE WHEN al.status = 'FAILED' THEN 1 ELSE 0 END) as failedCount " +
-           "FROM AuditLog al WHERE al.createdAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY DATE(al.createdAt) ORDER BY logDate DESC")
-    List<Object[]> getDailyAuditLogSummary(
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime);
-    
+//    @Query("SELECT DATE(al.createdAt) as logDate, COUNT(al) as logCount, " +
+//           "SUM(CASE WHEN al.status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount, " +
+//           "SUM(CASE WHEN al.status = 'FAILED' THEN 1 ELSE 0 END) as failedCount " +
+//           "FROM AuditLog al WHERE al.createdAt BETWEEN :startTime AND :endTime " +
+//           "GROUP BY DATE(al.createdAt) ORDER BY logDate DESC")
+//    List<Object[]> getDailyAuditLogSummary(
+//            @Param("startTime") LocalDateTime startTime,
+//            @Param("endTime") LocalDateTime endTime);
+//
     /**
      * Find today's audit logs
      */
@@ -322,7 +344,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
     /**
      * Get user activity timeline
      */
-    @Query("SELECT al FROM AuditLog al WHERE al.userId = :userId " +
+    @Query("SELECT al FROM AuditLog al WHERE al.user.id = :userId " +
            "AND al.createdAt BETWEEN :startTime AND :endTime " +
            "ORDER BY al.createdAt DESC")
     List<AuditLog> getUserActivityTimeline(
@@ -343,8 +365,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSp
     /**
      * Find most active users
      */
-    @Query("SELECT al.userId, al.username, COUNT(al) as activityCount " +
+    @Query("SELECT al.user.id, al.username, COUNT(al) as activityCount " +
            "FROM AuditLog al WHERE al.createdAt >= :sinceTime " +
-           "GROUP BY al.userId, al.username ORDER BY activityCount DESC")
+           "GROUP BY al.user.id, al.username ORDER BY activityCount DESC")
     List<Object[]> findMostActiveUsers(@Param("sinceTime") LocalDateTime sinceTime);
 }

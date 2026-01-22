@@ -1,4 +1,4 @@
-package lk.epicgreen.erp.notifications.dto.response;
+package lk.epicgreen.erp.notification.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,4 +33,8 @@ public class NotificationTemplateResponse {
     private String createdByName;
     private LocalDateTime updatedAt;
     private Long updatedBy;
+
+    public String getSubjectTemplate() {
+        return subject;
+    }
 }

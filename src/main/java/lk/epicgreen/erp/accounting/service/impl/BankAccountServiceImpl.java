@@ -133,7 +133,7 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Override
     public PageResponse<BankAccountResponse> searchBankAccounts(String keyword, Pageable pageable) {
-        Page<BankAccount> accountPage = bankAccountRepository.searchBankAccounts(keyword, pageable);
+        Page<BankAccount> accountPage = bankAccountRepository.searchBankAccounts(keyword,null,null,null,null,pageable);
         return createPageResponse(accountPage);
     }
 
