@@ -48,12 +48,28 @@ public class SecurityConfig {
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
+    // @Bean
+    // public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    //     http
+    //         .csrf(AbstractHttpConfigurer::disable)
+    //         .authorizeHttpRequests(req -> req
+    //             .antMatchers("/api/auth/**").permitAll() // Allow all auth endpoints
+    //             .anyRequest().authenticated()
+    //         )
+    //         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    //         .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+    //         .authenticationProvider(authenticationProvider());
+    //         //.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            
+    //     return http.build();
+    // }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(req -> req
-                .antMatchers("/api/auth/**").permitAll() // Allow all auth endpoints
+                .antMatchers("/api/auth/**", "/oauth/**").permitAll() // Added /oauth/**
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
