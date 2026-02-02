@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -174,6 +176,21 @@ public class UserController {
         UserResponse response = userService.getUserByEmail(email);
         return ResponseEntity.ok(ApiResponse.success(response, "User retrieved successfully"));
     }
+
+    /**
+     * Get Current Authenticated User Profile
+     * Used by OAuth2 flow to fetch user details after token acquisition
+     */
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUserProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        
+        log.info("Fetching profile for current user: {}", currentUsername);
+        UserResponse response = userService.getUserByUsername(currentUsername);
+return ResponseEntity.ok(ApiResponse.success(response, "Current user profile retrieved successfully"));
+}
     
     // Get All Active Users
     @GetMapping("/active")

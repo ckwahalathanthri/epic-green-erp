@@ -1,4 +1,4 @@
-package lk.epicgreen.erp.admin.config;
+package lk.epicgreen.erp.common.config;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
