@@ -1,4 +1,4 @@
-package lk.epicgreen.erp.admin.config;
+package lk.epicgreen.erp.common.config;
 
 import lk.epicgreen.erp.admin.entity.Role;
 import lk.epicgreen.erp.admin.repository.RoleRepository;
