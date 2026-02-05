@@ -1,6 +1,5 @@
 package lk.epicgreen.erp.admin.service;
 
-import lk.epicgreen.erp.admin.config.JwtService;
 import lk.epicgreen.erp.admin.dto.request.ChangePasswordRequest;
 import lk.epicgreen.erp.admin.dto.request.LoginRequest;
 import lk.epicgreen.erp.admin.dto.request.RegistrationRequest;
@@ -11,6 +10,7 @@ import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.admin.entity.UserRole;
 import lk.epicgreen.erp.admin.repository.RoleRepository;
 import lk.epicgreen.erp.admin.repository.UserRepository;
+import lk.epicgreen.erp.common.config.JwtService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;

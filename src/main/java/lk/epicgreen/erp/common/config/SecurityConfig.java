@@ -1,4 +1,4 @@
-package lk.epicgreen.erp.admin.config;
+package lk.epicgreen.erp.common.config;
 
 import java.util.Arrays;
 import java.util.Base64;
