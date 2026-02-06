@@ -67,12 +67,14 @@ application:
   security:
     jwt:
       # Base64-encoded secret key (minimum 256 bits for HS256)
-      # This is: "your-super-secret-key-at-least-32-chars-long!" in base64
       secret-key: ${JWT_SECRET_KEY:eW91ci1zdXBlci1zZWNyZXQta2V5LWF0LWxlYXN0LTMyLWNoYXJzLWxvbmch}
-      
       # Token expiration times (in seconds)
       token-expiration: ${JWT_EXPIRATION:864000000}        # 24 hours (1 day)
       refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
-      
       # JWT Issuer
       issuer: ${JWT_ISSUER:epic-green-erp}
+    
+    oauth2:
+      client:
+        id: epic-green-client
+        secret: epic-green-secret

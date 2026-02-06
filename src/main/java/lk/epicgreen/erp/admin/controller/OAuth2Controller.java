@@ -1,10 +1,14 @@
 package lk.epicgreen.erp.admin.controller;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +18,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,8 +40,24 @@ public class OAuth2Controller {
     @Value("${application.security.jwt.token-expiration}")
     private long jwtExpirationMs;
 
+    // Inject the Client Credentials
+    @Value("${application.security.oauth2.client.id}")
+    private String clientId;
+
+    @Value("${application.security.oauth2.client.secret}")
+    private String clientSecret;
+
     @PostMapping(value = "/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<Map<String, Object>> getToken(@RequestParam Map<String, String> parameters){
+    public ResponseEntity<Map<String, Object>> getToken(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+            @RequestParam Map<String, String> parameters){
+
+                // 1. Validate Client (Basic Auth)
+        if (!isClientAuthenticated(authHeader)) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "unauthorized_client");
+            error.put("error_description", "Invalid or missing client credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
         String grantType = parameters.get("grant_type");
 
         if("password".equals(grantType)){
@@ -49,6 +70,32 @@ public class OAuth2Controller {
         error.put("error", "unsupported_grant_type");
         error.put("error_description", "Unsupported grant type: " + grantType);
         return ResponseEntity.badRequest().body(error);
+    }
+
+    /**
+     * helper method to validate Basic Auth header against configured Client ID/Secret
+     */
+    private boolean isClientAuthenticated(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Basic ")) {
+            return false;
+        }
+        try {
+            // Remove "Basic " prefix
+            String base64Credentials = authHeader.substring(6);
+            // Decode Base64
+            byte[] decoded = Base64.getDecoder().decode(base64Credentials);
+            String credentials = new String(decoded, StandardCharsets.UTF_8);
+            // Split "clientId:clientSecret"
+            String[] parts = credentials.split(":", 2);
+            
+            // Check if matches
+            return parts.length == 2 && 
+                   clientId.equals(parts[0]) && 
+                   clientSecret.equals(parts[1]);
+        } catch (IllegalArgumentException e) {
+            log.error("Failed to decode Basic Auth header", e);
+            return false;
+        }
     }
 
     private ResponseEntity<Map<String, Object>> handlePasswordGrant(Map<String, String> parameters) {
