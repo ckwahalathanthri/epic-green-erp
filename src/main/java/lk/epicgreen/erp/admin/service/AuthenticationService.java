@@ -7,10 +7,11 @@ import lk.epicgreen.erp.admin.dto.request.ResetPasswordRequest;
 import lk.epicgreen.erp.admin.dto.response.AuthenticationResponse;
 import lk.epicgreen.erp.admin.entity.Role;
 import lk.epicgreen.erp.admin.entity.User;
-import lk.epicgreen.erp.admin.entity.UserRole;
 import lk.epicgreen.erp.admin.repository.RoleRepository;
 import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.common.config.JwtService;
+import lk.epicgreen.erp.token.entity.RefreshTokenService;
+import lk.epicgreen.erp.token.entity.dto.LoginToken;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,21 +39,29 @@ public class AuthenticationService {
    private final UserRepository userRepository;
    private final RoleRepository roleRepository;
    private final PasswordEncoder passwordEncoder;
+   private final RefreshTokenService refreshTokenService;
 
-   public AuthenticationResponse login(LoginRequest request) {
+   public LoginToken login(LoginRequest request) {
        authenticationManager.authenticate(
            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
        );
 
        UserDetails user = userService.loadUserByUsername(request.getUsername());
 
+       Long userId=userService.searchUserByUsername(request.getUsername()).getId();
+
+//       System.out.println("The user id is "+userId);
+
+
        String jwtToken = jwtService.generateToken(user);
        String refreshToken = jwtService.generateRefreshToken(user);
 
-       return AuthenticationResponse.builder()
-           .accessToken(jwtToken)
-           .refreshToken(refreshToken)
-           .build();
+       refreshTokenService.createSession(userId,refreshToken);
+       return new LoginToken(jwtToken,refreshToken);
+//       return AuthenticationResponse.builder()
+//           .accessToken(jwtToken)
+//           .refreshToken(refreshToken)
+//           .build();
    }
 
    @Transactional
