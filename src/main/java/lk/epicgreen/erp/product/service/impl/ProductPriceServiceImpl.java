@@ -1,9 +1,13 @@
-package com.epicgreen.erp.product.service;
+package lk.epicgreen.erp.product.service.impl;
 
-import com.epicgreen.erp.product.dto.*;
-import com.epicgreen.erp.product.model.*;
-import com.epicgreen.erp.product.repository.*;
-import com.epicgreen.erp.product.mapper.ProductPriceMapper;
+import lk.epicgreen.erp.product.dto.*;
+import lk.epicgreen.erp.product.dto.response.ProductPriceResponse;
+import lk.epicgreen.erp.product.dto.response.BulkPriceUpdateResponse;
+import lk.epicgreen.erp.product.dto.response.ProductPriceHistoryResponse;
+import lk.epicgreen.erp.product.entity.*;
+import lk.epicgreen.erp.product.repository.*;
+import lk.epicgreen.erp.product.service.ProductPriceService;
+import lk.epicgreen.erp.product.mapper.ProductPriceMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +28,7 @@ public class ProductPriceServiceImpl implements ProductPriceService {
     private final ProductPriceMapper priceMapper;
     
     @Override
-    public List<ProductPriceDTO> getProductPrices(Long productId) {
+    public List<ProductPriceResponse> getProductPrices(Long productId) {
         return priceRepository.findByProductId(productId)
             .stream()
             .map(priceMapper::toDTO)
@@ -32,14 +36,14 @@ public class ProductPriceServiceImpl implements ProductPriceService {
     }
     
     @Override
-    public ProductPriceDTO getDefaultPrice(Long productId) {
+    public ProductPriceResponse getDefaultPrice(Long productId) {
         return priceRepository.findByProductIdAndIsDefaultTrue(productId)
             .map(priceMapper::toDTO)
             .orElse(null);
     }
     
     @Override
-    public ProductPriceDTO createPrice(ProductPriceDTO dto) {
+    public ProductPriceResponse createPrice(ProductPriceResponse dto) {
         ProductPrice price = priceMapper.toEntity(dto);
         ProductPrice saved = priceRepository.save(price);
         
@@ -50,7 +54,7 @@ public class ProductPriceServiceImpl implements ProductPriceService {
     }
     
     @Override
-    public ProductPriceDTO updatePrice(Long id, ProductPriceDTO dto) {
+    public ProductPriceResponse updatePrice(Long id, ProductPriceResponse dto) {
         ProductPrice existing = priceRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Price not found"));
         
@@ -72,7 +76,7 @@ public class ProductPriceServiceImpl implements ProductPriceService {
     }
     
     @Override
-    public ProductPriceDTO setAsDefault(Long productId, Long priceId) {
+    public ProductPriceResponse setAsDefault(Long productId, Long priceId) {
         // Remove default from other prices
         List<ProductPrice> existingDefaults = priceRepository.findByProductId(productId);
         existingDefaults.forEach(p -> {
@@ -92,7 +96,7 @@ public class ProductPriceServiceImpl implements ProductPriceService {
     }
     
     @Override
-    public void bulkUpdatePrices(BulkPriceUpdateDTO dto) {
+    public void bulkUpdatePrices(BulkPriceUpdateResponse dto) {
         List<Product> products = productRepository.findAllById(dto.getProductIds());
         
         for (Product product : products) {
@@ -111,7 +115,7 @@ public class ProductPriceServiceImpl implements ProductPriceService {
     }
     
     @Override
-    public Page<PriceHistoryDTO> getPriceHistory(Long productId, Pageable pageable) {
+    public Page<ProductPriceHistoryResponse> getPriceHistory(Long productId, Pageable pageable) {
         return historyRepository.findByProductId(productId, pageable)
             .map(priceMapper::toHistoryDTO);
     }
@@ -127,7 +131,7 @@ public class ProductPriceServiceImpl implements ProductPriceService {
         historyRepository.save(history);
     }
     
-    private BigDecimal calculateNewPrice(BigDecimal oldPrice, BulkPriceUpdateDTO dto) {
+    private BigDecimal calculateNewPrice(BigDecimal oldPrice, BulkPriceUpdateResponse dto) {
         switch (dto.getUpdateType()) {
             case "PERCENTAGE":
                 return oldPrice.add(oldPrice.multiply(dto.getValue().divide(new BigDecimal(100))));
@@ -139,4 +143,6 @@ public class ProductPriceServiceImpl implements ProductPriceService {
                 return oldPrice;
         }
     }
+
+    
 }

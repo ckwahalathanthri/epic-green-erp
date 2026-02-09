@@ -1,8 +1,10 @@
-package com.epicgreen.erp.product.mapper;
+package lk.epicgreen.erp.product.mapper;
 
-import com.epicgreen.erp.product.dto.*;
-import com.epicgreen.erp.product.model.*;
-import com.epicgreen.erp.product.repository.ProductRepository;
+import lk.epicgreen.erp.product.dto.*;
+import lk.epicgreen.erp.product.dto.response.ProductPriceResponse;
+import lk.epicgreen.erp.product.dto.response.ProductPriceHistoryResponse;
+import lk.epicgreen.erp.product.entity.*;
+import lk.epicgreen.erp.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +14,8 @@ public class ProductPriceMapper {
     
     private final ProductRepository productRepository;
     
-    public ProductPriceDTO toDTO(ProductPrice entity) {
-        ProductPriceDTO dto = new ProductPriceDTO();
+    public ProductPriceResponse toDTO(ProductPrice entity) {
+        ProductPriceResponse dto = new ProductPriceResponse();
         dto.setId(entity.getId());
         dto.setProductId(entity.getProduct().getId());
         dto.setProductName(entity.getProduct().getProductName());
@@ -30,13 +32,13 @@ public class ProductPriceMapper {
         return dto;
     }
     
-    public ProductPrice toEntity(ProductPriceDTO dto) {
+    public ProductPrice toEntity(ProductPriceResponse dto) {
         ProductPrice entity = new ProductPrice();
         updateEntity(dto, entity);
         return entity;
     }
     
-    public void updateEntity(ProductPriceDTO dto, ProductPrice entity) {
+    public void updateEntity(ProductPriceResponse dto, ProductPrice entity) {
         if (dto.getProductId() != null) {
             Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -53,8 +55,8 @@ public class ProductPriceMapper {
         entity.setIsActive(dto.getIsActive());
     }
     
-    public PriceHistoryDTO toHistoryDTO(PriceHistory entity) {
-        PriceHistoryDTO dto = new PriceHistoryDTO();
+    public ProductPriceHistoryResponse toHistoryDTO(PriceHistory entity) {
+        ProductPriceHistoryResponse dto = new ProductPriceHistoryResponse();
         dto.setId(entity.getId());
         dto.setProductId(entity.getProduct().getId());
         dto.setProductName(entity.getProduct().getProductName());
