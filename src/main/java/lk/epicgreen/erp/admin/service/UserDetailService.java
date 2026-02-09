@@ -3,6 +3,7 @@ package lk.epicgreen.erp.admin.service;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.admin.repository.UserRepository;
 import lk.epicgreen.erp.admin.service.impl.UserDetailsImpl;
+import lk.epicgreen.erp.token.entity.dto.UserDtls;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,5 +24,14 @@ public class UserDetailService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
         return UserDetailsImpl.build(user);
+    }
+
+    public UserDtls searchUserByUsername(String username) throws UsernameNotFoundException{
+        User user=userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+        UserDtls userDtls = new UserDtls();
+        userDtls.setId(user.getId());
+        userDtls.setUsername(user.getUsername());
+        return userDtls;
     }
 }

@@ -7,8 +7,11 @@ import lk.epicgreen.erp.admin.dto.request.ChangePasswordRequest;
 import lk.epicgreen.erp.admin.dto.request.ResetPasswordRequest;
 import lk.epicgreen.erp.admin.dto.response.AuthenticationResponse;
 import lk.epicgreen.erp.admin.service.AuthenticationService;
+import lk.epicgreen.erp.token.entity.dto.LoginToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -58,9 +61,21 @@ public class AuthenticationController {
    @PostMapping("/login")
    public ResponseEntity<ApiResponse<AuthenticationResponse>> login(@Valid @RequestBody LoginRequest request) {
        log.info("Login attempt for username: {}", request.getUsername());
-       AuthenticationResponse response = authenticationService.login(request);
+       LoginToken response = authenticationService.login(request);
        log.info("Login successful for username: {}", request.getUsername());
-       return ResponseEntity.ok(ApiResponse.success(response, "Login successful"));
+       ResponseCookie refreshCookie=ResponseCookie.from("refresh_token",response.getRefreshToken())
+               .httpOnly(true)
+               .secure(false)
+               .sameSite("Lax")
+               .path("/api/auth")
+               .maxAge(7*24*60*60)
+               .build();
+       AuthenticationResponse authresponse=AuthenticationResponse.builder()
+                .accessToken(response.getAccessToken())
+                .build();
+       return ResponseEntity.ok()
+               .header(HttpHeaders.SET_COOKIE,refreshCookie.toString())
+               .body(ApiResponse.success(authresponse, "Login successful"));
    }
 
    /**
