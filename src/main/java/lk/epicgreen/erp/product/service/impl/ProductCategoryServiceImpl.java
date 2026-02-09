@@ -419,9 +419,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
-    public List<ProductCategory> getActiveCategories() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getActiveCategories'");
+    public List<ProductCategoryResponse> getActiveCategories() {
+        return productCategoryRepository.findByIsActiveTrue()
+            .stream()
+            .map(productCategoryMapper::toResponse)
+            .collect(Collectors.toList());
     }
 
     @Override
