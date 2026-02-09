@@ -1,6 +1,6 @@
 package lk.epicgreen.erp.product.mapper;
 
-import lk.epicgreen.erp.product.dto.*;
+
 import lk.epicgreen.erp.product.dto.response.ProductPriceResponse;
 import lk.epicgreen.erp.product.dto.response.ProductPriceHistoryResponse;
 import lk.epicgreen.erp.product.entity.*;
