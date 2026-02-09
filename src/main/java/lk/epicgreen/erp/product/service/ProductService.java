@@ -26,8 +26,7 @@ public interface ProductService {
      * Create new product
      */
     ProductResponse createProduct(ProductRequest request);
-
-    /**
+   /**
      * Update existing product
      */
     ProductResponse updateProduct(Long id, ProductRequest request);
@@ -71,6 +70,8 @@ public interface ProductService {
      * Get all products
      */
     PageResponse<ProductResponse> getAllProducts(Pageable pageable);
+
+
 
     /**
      * Get all active products
