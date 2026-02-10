@@ -215,8 +215,8 @@ public class ProductCategoryController {
     
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductCategory>>> getActiveCategories() {
-        List<ProductCategory> categories = categoryService.getActiveCategories();
+    public ResponseEntity<ApiResponse<List<ProductCategoryResponse>>> getActiveCategories() {
+        List<ProductCategoryResponse> categories = categoryService.getActiveCategories();
         return ResponseEntity.ok(ApiResponse.success(categories, "Active categories retrieved successfully"));
     }
     

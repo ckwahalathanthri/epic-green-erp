@@ -124,7 +124,7 @@ public interface ProductCategoryService {
 
     int getMaxDepth();
 
-    List<ProductCategory> getActiveCategories();
+    List<ProductCategoryResponse> getActiveCategories();
 
     List<ProductCategory> getInactiveCategories();
 
