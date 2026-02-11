@@ -2,8 +2,13 @@ package lk.epicgreen.erp.customer.entity;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
+import lk.epicgreen.erp.credit.controller.entity.CreditLimit;
+import lk.epicgreen.erp.credit.controller.entity.CustomerGroupMember;
+import lk.epicgreen.erp.product.entity.ProductDocument;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -54,6 +59,12 @@ public class Customer extends AuditEntity {
     @Size(max = 200)
     @Column(name = "customer_name", nullable = false, length = 200)
     private String customerName;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<CreditLimit> creditLimits=new ArrayList<>();
+
+
 
     @Column
     private String Type;
@@ -275,8 +286,10 @@ public class Customer extends AuditEntity {
     /**
      * Verified by user
      */
-    @Column(name = "verified_by_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "verified_by_id")
     private User verifiedBy;
+
 
     /**
      * Is blacklisted
@@ -314,6 +327,10 @@ public class Customer extends AuditEntity {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<CustomerContact> contacts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CustomerGroupMember> groupMembers = new ArrayList<>();
     
     /**
      * Customer addresses

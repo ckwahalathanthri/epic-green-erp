@@ -5,12 +5,16 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Product entity
@@ -46,6 +50,20 @@ public class Product extends AuditEntity {
     @Size(max = 30)
     @Column(name = "product_code", nullable = false, unique = true, length = 30)
     private String productCode;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ProductDocument> document=new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ProductImage> image=new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ProductSpecification> specification=new ArrayList<>();
+
+
 
     @Column
     private String brand;
@@ -284,7 +302,6 @@ public class Product extends AuditEntity {
         this.isActive = true;
     }
     
-    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (isActive == null) {
