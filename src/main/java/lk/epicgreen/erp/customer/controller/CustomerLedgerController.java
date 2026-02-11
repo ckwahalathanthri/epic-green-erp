@@ -1,9 +1,9 @@
 package lk.epicgreen.erp.customer.controller;
 
+import lk.epicgreen.erp.accounting.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.common.dto.ApiResponse;
 import lk.epicgreen.erp.customer.dto.request.CustomerLedgerRequest;
 import lk.epicgreen.erp.customer.dto.response.CustomerLedgerResponse;
-import lk.epicgreen.erp.customer.entity.CustomerLedger;
 import lk.epicgreen.erp.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +35,7 @@ import java.util.List;
 public class CustomerLedgerController {
     
     private final CustomerService customerService;
+
     
     // ===================================================================
     // LEDGER OPERATIONS
@@ -57,6 +58,14 @@ public class CustomerLedgerController {
         log.info("Reversing ledger entry: {}", id);
         CustomerLedgerResponse reversed = customerService.reverseLedgerEntry(id, reversalReason);
         return ResponseEntity.ok(ApiResponse.success(reversed, "Ledger entry reversed successfully"));
+    }
+
+    @GetMapping("/customer/{customerId}/date-range")
+    public ResponseEntity<List<LedgerEntryDTO>> getLedgerByDateRange(
+            @PathVariable Long customerId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        return ResponseEntity.ok(customerService.getCustomerLedgerByDateRange(customerId, fromDate, toDate));
     }
     
     @PutMapping("/{id}/reconcile")

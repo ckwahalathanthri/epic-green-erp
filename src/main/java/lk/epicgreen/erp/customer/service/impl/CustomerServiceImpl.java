@@ -1,11 +1,14 @@
 package lk.epicgreen.erp.customer.service.impl;
 
+import lk.epicgreen.erp.accounting.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.customer.dto.request.CustomerLedgerRequest;
 import lk.epicgreen.erp.customer.dto.request.CustomerRequest;
 import lk.epicgreen.erp.customer.dto.response.CustomerLedgerResponse;
 import lk.epicgreen.erp.customer.dto.response.CustomerResponse;
 import lk.epicgreen.erp.customer.entity.Customer;
+import lk.epicgreen.erp.customer.entity.CustomerLedger;
 import lk.epicgreen.erp.customer.mapper.CustomerMapper;
+import lk.epicgreen.erp.customer.repository.CustomerLedgerRepository;
 import lk.epicgreen.erp.customer.repository.CustomerRepository;
 import lk.epicgreen.erp.customer.service.CustomerService;
 import lk.epicgreen.erp.admin.entity.User;
@@ -44,6 +47,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final CustomerMapper customerMapper;
+    private final CustomerLedgerRepository customerLedgerRepository;
 
     @Override
     @Transactional
@@ -76,6 +80,14 @@ public class CustomerServiceImpl implements CustomerService {
         }
         customerRepository.deleteById(id);
     }
+
+    @Transactional(readOnly = true)
+    public List<LedgerEntryDTO> getCustomerLedgerByDateRange(
+            Long customerId, LocalDate fromDate, LocalDate toDate) {
+        return customerLedgerRepository.findByCustomerIdAndTransactionDateBetween(customerId, fromDate, toDate)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -328,6 +340,13 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Customer verified successfully: {}", id);
         return customerMapper.toResponse(verifiedCustomer);
     }
+
+//    @Transactional(readOnly = true)
+//    public List<LedgerEntryDTO> getCustomerLedgerByDateRange(
+//            Long customerId, LocalDate fromDate, LocalDate toDate) {
+//        return customerRepository.findByCustomerIdAndTransactionDateBetween(customerId, fromDate, toDate)
+//                .stream().map(this::toDTO).collect(Collectors.toList());
+//    }
 
     @Override
     public CustomerResponse blacklistCustomer(Long id, String blacklistReason){
@@ -1153,6 +1172,26 @@ public class CustomerServiceImpl implements CustomerService {
                 throw new DuplicateResourceException("Customer code already exists: " + customerCode);
             }
         }
+    }
+
+    private LedgerEntryDTO toDTO(CustomerLedger entity) {
+        LedgerEntryDTO dto = new LedgerEntryDTO();
+        dto.setId(entity.getId());
+        dto.setCustomerId(entity.getCustomer().getId());
+        dto.setCustomerName(entity.getCustomer().getCustomerName());
+        dto.setTransactionDate(entity.getTransactionDate());
+        dto.setTransactionType(entity.getTransactionType());
+        dto.setReferenceType(entity.getReferenceType());
+        dto.setReferenceNumber(entity.getReferenceNumber());
+        dto.setDebitAmount(entity.getDebitAmount());
+        dto.setCreditAmount(entity.getCreditAmount());
+        dto.setBalance(entity.getBalance());
+        dto.setDescription(entity.getDescription());
+//        dto.setDueDate(entity.getDueDate());
+//        dto.setIsReconciled(entity.getIsReconciled());
+        dto.setCreatedBy(String.valueOf(entity.getCreatedBy()));
+        dto.setCreatedAt(entity.getCreatedAt());
+        return dto;
     }
 
     private PageResponse<CustomerResponse> createPageResponse(Page<Customer> customerPage) {
