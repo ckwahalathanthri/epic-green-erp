@@ -459,4 +459,8 @@ public interface CustomerService {
     Double getCustomerOpeningBalance(Long customerId, LocalDate startDate);
 
     void updateLastOrderDate(Long id, LocalDate orderDate);
+
+    boolean customerCodeExists(String customerCode);
+
+    void permanentlyDeleteCustomer(Long id);
 }

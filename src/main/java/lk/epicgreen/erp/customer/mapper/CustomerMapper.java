@@ -1,8 +1,14 @@
 package lk.epicgreen.erp.customer.mapper;
 
 import lk.epicgreen.erp.customer.dto.request.CustomerRequest;
+import lk.epicgreen.erp.customer.dto.response.CustomerCategoryDTO;
+import lk.epicgreen.erp.customer.dto.response.CustomerContactDTO;
 import lk.epicgreen.erp.customer.dto.response.CustomerResponse;
+import lk.epicgreen.erp.customer.dto.response.CustomerTypeDTO;
 import lk.epicgreen.erp.customer.entity.Customer;
+import lk.epicgreen.erp.customer.entity.CustomerCategory;
+import lk.epicgreen.erp.customer.entity.CustomerContact;
+import lk.epicgreen.erp.customer.entity.CustomerType;
 import org.springframework.stereotype.Component;
 
 /**
@@ -83,6 +89,58 @@ public class CustomerMapper {
         if (request.getIsActive() != null) {
             customer.setIsActive(request.getIsActive());
         }
+    }
+
+    public CustomerCategory toEntity(CustomerCategoryDTO dto) {
+        if (dto == null) return null;
+        CustomerCategory category = new CustomerCategory();
+        category.setId(dto.getId());
+        category.setCategoryCode(dto.getCategoryCode());
+        category.setCategoryName(dto.getCategoryName());
+        category.setDescription(dto.getDescription());
+        category.setIsActive(dto.getIsActive());
+        return category;
+    }
+
+    public CustomerType toEntity(CustomerTypeDTO dto) {
+        if (dto == null) return null;
+        CustomerType type = new CustomerType();
+        type.setId(dto.getId());
+        type.setTypeCode(dto.getTypeCode());
+        type.setTypeName(dto.getTypeName());
+        type.setDescription(dto.getDescription());
+        type.setIsActive(dto.getIsActive());
+        return type;
+    }
+
+    public CustomerTypeDTO toDTO(CustomerType type) {
+        if (type == null) return null;
+        CustomerTypeDTO dto = new CustomerTypeDTO();
+        dto.setId(type.getId());
+        dto.setTypeCode(type.getTypeCode());
+        dto.setTypeName(type.getTypeName());
+        dto.setDescription(type.getDescription());
+        dto.setIsActive(type.getIsActive());
+        dto.setCreatedBy(type.getCreatedBy());
+        dto.setUpdatedBy(type.getUpdatedBy());
+        dto.setCreatedAt(type.getCreatedAt());
+        dto.setUpdatedAt(type.getUpdatedAt());
+        return dto;
+    }
+
+    public CustomerCategoryDTO toDTO(CustomerCategory category) {
+        if (category == null) return null;
+        CustomerCategoryDTO dto = new CustomerCategoryDTO();
+        dto.setId(category.getId());
+        dto.setCategoryCode(category.getCategoryCode());
+        dto.setCategoryName(category.getCategoryName());
+        dto.setDescription(category.getDescription());
+        dto.setIsActive(category.getIsActive());
+        dto.setCreatedBy(category.getCreatedBy());
+        dto.setUpdatedBy(category.getUpdatedBy());
+        dto.setCreatedAt(category.getCreatedAt());
+        dto.setUpdatedAt(category.getUpdatedAt());
+        return dto;
     }
 
     public CustomerResponse toResponse(Customer customer) {
