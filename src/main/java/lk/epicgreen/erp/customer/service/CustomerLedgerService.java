@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.customer.service;
 
+import lk.epicgreen.erp.accounting.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.customer.dto.request.CustomerLedgerRequest;
 import lk.epicgreen.erp.customer.dto.response.CustomerLedgerResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
@@ -40,6 +41,8 @@ public interface CustomerLedgerService {
     List<CustomerLedgerResponse> getPaymentEntriesByCustomer(Long customerId);
     CustomerLedgerSummary getLedgerSummary(Long customerId);
     CustomerLedgerSummary getLedgerSummaryForDateRange(Long customerId, LocalDate startDate, LocalDate endDate);
+
+    List<LedgerEntryDTO> getCustomerLedgerByDateRange(Long customerId, LocalDate fromDate, LocalDate toDate);
 
     /**
      * DTO for ledger summary
