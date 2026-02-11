@@ -70,6 +70,20 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public void permanentlyDeleteCustomer(Long id) {
+        if (!customerRepository.existsById(id)) {
+            throw new RuntimeException("Customer not found: " + id);
+        }
+        customerRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean customerCodeExists(String customerCode) {
+        return customerRepository.existsByCustomerCode(customerCode);
+    }
+
+    @Override
     @Transactional
     public CustomerResponse updateCustomer(Long id, CustomerRequest request) {
         log.info("Updating customer: {}", id);
