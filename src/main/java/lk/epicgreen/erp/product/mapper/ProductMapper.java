@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.product.mapper;
 
 import lk.epicgreen.erp.product.dto.request.ProductRequest;
+import lk.epicgreen.erp.product.dto.response.ProductListDTO;
 import lk.epicgreen.erp.product.dto.response.ProductResponse;
 import lk.epicgreen.erp.product.entity.Product;
 import org.springframework.stereotype.Component;
@@ -61,6 +62,19 @@ public class ProductMapper {
         if (request.getIsActive() != null) {
             product.setIsActive(request.getIsActive());
         }
+    }
+
+    public ProductListDTO toListDTO(Product product) {
+        if (product == null) {
+            return null;
+        }
+
+        return ProductListDTO.builder()
+                .id(product.getId())
+                .productType(product.getProductType())
+                .name(product.getProductName())
+                .isActive(product.getIsActive())
+                .build();
     }
 
     public ProductResponse toResponse(Product product) {
