@@ -1,8 +1,12 @@
 package lk.epicgreen.erp.supplier.mapper;
 
 import lk.epicgreen.erp.supplier.dto.request.SupplierRequest;
+import lk.epicgreen.erp.supplier.dto.response.SupplierCategoryDTO;
 import lk.epicgreen.erp.supplier.dto.response.SupplierResponse;
+import lk.epicgreen.erp.supplier.dto.response.SupplierTypeDTO;
 import lk.epicgreen.erp.supplier.entity.Supplier;
+import lk.epicgreen.erp.supplier.entity.SupplierCategory;
+import lk.epicgreen.erp.supplier.entity.SupplierType;
 import org.springframework.stereotype.Component;
 
 /**
@@ -45,6 +49,16 @@ public class SupplierMapper {
             .build();
     }
 
+    public SupplierType toEntity(SupplierTypeDTO dto) {
+        if (dto == null) return null;
+        SupplierType entity = new SupplierType();
+        entity.setId(dto.getId());
+        entity.setTypeCode(dto.getTypeCode());
+        entity.setTypeName(dto.getTypeName());
+        entity.setDescription(dto.getDescription());
+        entity.setIsActive(dto.getIsActive());
+        return entity;
+    }
     public void updateEntityFromRequest(SupplierRequest request, Supplier supplier) {
         if (request == null || supplier == null) {
             return;
@@ -111,4 +125,86 @@ public class SupplierMapper {
             .updatedAt(supplier.getUpdatedAt())
             .build();
     }
+
+
+    public SupplierCategoryDTO toDTO(SupplierCategory entity) {
+        if (entity == null) return null;
+        SupplierCategoryDTO dto = new SupplierCategoryDTO();
+        dto.setId(entity.getId());
+        dto.setCategoryCode(entity.getCategoryCode());
+        dto.setCategoryName(entity.getCategoryName());
+        dto.setDescription(entity.getDescription());
+        dto.setIsActive(entity.getIsActive());
+        dto.setCreatedBy(entity.getCreatedBy());
+        dto.setUpdatedBy(entity.getUpdatedBy());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+        return dto;
+    }
+
+    public SupplierTypeDTO toDTO(SupplierType entity) {
+        if (entity == null) return null;
+        SupplierTypeDTO dto = new SupplierTypeDTO();
+        dto.setId(entity.getId());
+        dto.setTypeCode(entity.getTypeCode());
+        dto.setTypeName(entity.getTypeName());
+        dto.setDescription(entity.getDescription());
+        dto.setIsActive(entity.getIsActive());
+        dto.setCreatedBy(entity.getCreatedBy());
+        dto.setUpdatedBy(entity.getUpdatedBy());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+        return dto;
+    }
+
+    public SupplierCategory toEntity(SupplierCategoryDTO dto) {
+        if (dto == null) return null;
+        SupplierCategory entity = new SupplierCategory();
+        entity.setId(dto.getId());
+        entity.setCategoryCode(dto.getCategoryCode());
+        entity.setCategoryName(dto.getCategoryName());
+        entity.setDescription(dto.getDescription());
+        entity.setIsActive(dto.getIsActive());
+        return entity;
+    }
+
+//    public SupplierResponse toDTO(Supplier entity) {
+//        if (entity == null) return null;
+//        SupplierResponse dto = new SupplierResponse();
+//        dto.setId(entity.getId());
+//        dto.setSupplierCode(entity.getSupplierCode());
+//        dto.setSupplierName(entity.getSupplierName());
+//
+//        if (entity.getSupplierType() != null) {
+//            dto.setSupplierTypeId(entity.getSupplierType().getId());
+//            dto.setSupplierTypeName(entity.getSupplierType().getTypeName());
+//        }
+//        if (entity.getSupplierCategory() != null) {
+//            dto.setSupplierCategoryId(entity.getSupplierCategory().getId());
+//            dto.setSupplierCategoryName(entity.getSupplierCategory().getCategoryName());
+//        }
+//        dto.setTaxId(entity.getTaxId());
+//        dto.setRegistrationNumber(entity.getRegistrationNumber());
+//        dto.setEmail(entity.getEmail());
+//        dto.setPhone(entity.getPhone());
+//        dto.setMobile(entity.getMobile());
+//        dto.setFax(entity.getFax());
+//        dto.setWebsite(entity.getWebsite());
+//        dto.setCreditDays(entity.getCreditDays());
+//        dto.setPaymentTermsDays(entity.getPaymentTermsDays());
+//        dto.setDiscountPercentage(entity.getDiscountPercentage());
+//        dto.setIsActive(entity.getIsActive());
+//        dto.setNotes(entity.getNotes());
+//        if (entity.getContacts() != null) {
+//            dto.setContacts(entity.getContacts().stream().map(this::toDTO).collect(Collectors.toList()));
+//        }
+//        if (entity.getAddresses() != null) {
+//            dto.setAddresses(entity.getAddresses().stream().map(this::toDTO).collect(Collectors.toList()));
+//        }
+//        dto.setCreatedBy(entity.getCreatedBy());
+//        dto.setUpdatedBy(entity.getUpdatedBy());
+//        dto.setCreatedAt(entity.getCreatedAt());
+//        dto.setUpdatedAt(entity.getUpdatedAt());
+//        return dto;
+//    }
 }

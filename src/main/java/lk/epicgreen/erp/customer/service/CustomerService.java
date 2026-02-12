@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.customer.service;
 
+import lk.epicgreen.erp.accounting.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.customer.dto.request.CustomerLedgerRequest;
 import lk.epicgreen.erp.customer.dto.request.CustomerRequest;
 import lk.epicgreen.erp.customer.dto.response.CustomerLedgerResponse;
@@ -459,4 +460,12 @@ public interface CustomerService {
     Double getCustomerOpeningBalance(Long customerId, LocalDate startDate);
 
     void updateLastOrderDate(Long id, LocalDate orderDate);
+
+    boolean customerCodeExists(String customerCode);
+
+    void permanentlyDeleteCustomer(Long id);
+
+    List<LedgerEntryDTO> getCustomerLedgerByDateRange(Long customerId, LocalDate fromDate, LocalDate toDate);
+
+//    List<LedgerEntryDTO> getCustomerLedgerByDateRange(Long customerId, LocalDate fromDate, LocalDate toDate);
 }
