@@ -39,7 +39,7 @@ public class CustomerController {
     // ===================================================================
     
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
     public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(@Valid @RequestBody CustomerRequest request) {
         log.info("Creating customer: {}", request.getCustomerName());
         CustomerResponse created = customerService.createCustomer(request);
@@ -47,7 +47,7 @@ public class CustomerController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
     public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
         @PathVariable Long id,
         @Valid @RequestBody CustomerRequest request
@@ -58,7 +58,7 @@ public class CustomerController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable Long id) {
         log.info("Deleting customer: {}", id);
         customerService.deleteCustomer(id);
@@ -66,7 +66,7 @@ public class CustomerController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable Long id) {
         CustomerResponse customer = customerService.getCustomerById(id);
         return ResponseEntity.ok(ApiResponse.success(customer, "Customer retrieved successfully"));
@@ -94,7 +94,7 @@ public class CustomerController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getAllCustomers(Pageable pageable) {
         PageResponse<CustomerResponse> customers = customerService.getAllCustomers(pageable);
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers retrieved successfully"));
