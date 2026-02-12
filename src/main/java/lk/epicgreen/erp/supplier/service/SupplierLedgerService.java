@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.supplier.service;
 
 import lk.epicgreen.erp.supplier.dto.request.SupplierLedgerRequest;
+import lk.epicgreen.erp.supplier.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.supplier.dto.response.SupplierLedgerResponse;
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lk.epicgreen.erp.supplier.entity.SupplierLedger;
@@ -143,6 +144,13 @@ public interface SupplierLedgerService {
     Double getTotalOutstanding();
 
     Map<String, Object> getDashboardStatistics();
+
+    BigDecimal getBalance(Long supplierId);
+
+    List<LedgerEntryDTO> getBySupplier(Long supplierId);
+
+    List<LedgerEntryDTO> getBySupplierAndDateRange(Long supplierId, LocalDate fromDate, LocalDate toDate);
+
 
     /**
      * DTO for ledger summary

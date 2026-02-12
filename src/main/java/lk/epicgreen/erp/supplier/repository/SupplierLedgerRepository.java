@@ -58,7 +58,23 @@ public interface SupplierLedgerRepository extends JpaRepository<SupplierLedger, 
      * Find ledger entries by supplier and transaction type
      */
     List<SupplierLedger> findBySupplierIdAndTransactionType(Long supplierId, String transactionType);
-    
+
+    @Query("SELECT COALESCE(SUM(l.debitAmount - l.creditAmount), 0) FROM SupplierLedger l " +
+            "WHERE l.supplier.id = :supplierId")
+    BigDecimal calculateBalance(@Param("supplierId") Long supplierId);
+
+    @Query("SELECT l FROM SupplierLedger l WHERE l.supplier.id = :supplierId " +
+            "AND l.transactionDate BETWEEN :fromDate AND :toDate ORDER BY l.transactionDate")
+    List<SupplierLedger> findBySupplierIdAndDateRange(
+            @Param("supplierId") Long supplierId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+    @Query("SELECT l FROM SupplierLedger l WHERE l.dueDate < :currentDate " +
+            "AND l.isReconciled = false ORDER BY l.dueDate")
+    List<SupplierLedger> findOverduePayments(@Param("currentDate") LocalDate currentDate);
+
     /**
      * Find ledger entries by transaction date
      */

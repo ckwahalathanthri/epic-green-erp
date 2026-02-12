@@ -69,6 +69,14 @@ public class Supplier extends AuditEntity {
     @JsonManagedReference
     private List<SupplierGroupMember> supplierGroupMember=new ArrayList<>();
 
+    @OneToMany(mappedBy = "supplier",  orphanRemoval = true)
+    @JsonManagedReference
+    private List<SupplierLedger> supplierLedger=new ArrayList<>();
+
+    @OneToMany(mappedBy = "supplier",  orphanRemoval = true)
+    @JsonManagedReference
+    private List<SupplierStatement> supplierStatement=new ArrayList<>();
+
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<SupplierBankAccount> supplierBankAccount=new ArrayList<>();
