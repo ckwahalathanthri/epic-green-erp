@@ -40,7 +40,7 @@ public class SupplierController {
     // ===================================================================
     
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
     public ResponseEntity<ApiResponse<SupplierResponse>> createSupplier(@Valid @RequestBody SupplierRequest request) {
         log.info("Creating supplier: {}", request.getSupplierName());
         SupplierResponse created = supplierService.createSupplier(request);
@@ -88,7 +88,7 @@ public class SupplierController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<SupplierResponse>>> getAllSuppliers(Pageable pageable) {
         PageResponse<SupplierResponse> suppliers = supplierService.getAllSuppliers(pageable);
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Suppliers retrieved successfully"));
@@ -178,9 +178,10 @@ public class SupplierController {
     // ===================================================================
     
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<Page<Supplier>>> getActiveSuppliers(Pageable pageable) {
         Page<Supplier> suppliers = supplierService.getActiveSuppliers(pageable);
+        System.out.println("Total number of supplier are: "+suppliers.getTotalElements());
         return ResponseEntity.ok(ApiResponse.success(suppliers, "Active suppliers retrieved successfully"));
     }
     

@@ -241,7 +241,7 @@ public class SupplierServiceImpl implements SupplierService {
         log.info("Blocking supplier: {}", id);
 
         Supplier supplier = findSupplierById(id);
-        supplier.setIsBlocked(true);
+        supplier.setisBlocked(true);
         supplier.setBlockReason(blockReason);
         supplierRepository.save(supplier);
 
@@ -254,7 +254,7 @@ public class SupplierServiceImpl implements SupplierService {
         log.info("Unblocking supplier: {}", id);
 
         Supplier supplier = findSupplierById(id);
-        supplier.setIsBlocked(false);
+        supplier.setisBlocked(false);
         supplier.setBlockReason(null);
         supplierRepository.save(supplier);
 
@@ -268,7 +268,7 @@ public class SupplierServiceImpl implements SupplierService {
      */
     @Override
     public Page<Supplier> getActiveSuppliers(Pageable pageable) {
-        return null;
+        return supplierRepository.findByIsActiveTrueAndDeletedAtIsNull(pageable);
     }
 
     @Transactional
