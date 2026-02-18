@@ -5,6 +5,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
@@ -65,6 +67,23 @@ public class Warehouse extends AuditEntity {
     @Size(max = 200)
     @Column(name = "address_line1", length = 200)
     private String addressLine1;
+
+    @OneToMany(mappedBy = "warehouse", orphanRemoval = true)
+    @JsonManagedReference
+    private List<GoodsReceiptNote> grns=new ArrayList<>();
+
+    @OneToMany(mappedBy = "warehouse", orphanRemoval = true)
+    @JsonManagedReference
+    private List<StorageZone> storageZones=new ArrayList<>();
+
+    @OneToMany(mappedBy = "warehouse", orphanRemoval = true)
+    @JsonManagedReference
+    private List<StockIssue> stockIssues=new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "warehouse", orphanRemoval = true)
+    @JsonManagedReference
+    private List<StockLevel> stockLevels=new ArrayList<>();
     
     /**
      * Address line 2

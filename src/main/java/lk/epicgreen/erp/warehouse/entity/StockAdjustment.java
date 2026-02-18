@@ -240,7 +240,6 @@ public class StockAdjustment extends AuditEntity {
         this.status = "REJECTED";
     }
     
-    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (status == null) {
