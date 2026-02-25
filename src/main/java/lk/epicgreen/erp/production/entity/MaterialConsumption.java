@@ -51,6 +51,12 @@ public class MaterialConsumption {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wo_item_id", foreignKey = @ForeignKey(name = "fk_material_consumption_wo_item"))
     private WorkOrderItem workOrderItem;
+
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "production_order_id", foreignKey = @ForeignKey(name = "fk_material_consumption_production_order"))
+    private ProductionOrder productionOrder;
     
     /**
      * Raw material consumed

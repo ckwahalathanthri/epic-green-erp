@@ -47,6 +47,10 @@ public class ProductionOutput {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wo_id", nullable = false, foreignKey = @ForeignKey(name = "fk_production_output_wo"))
     private WorkOrder workOrder;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "production_order_id")
+    private ProductionOrder productionOrder;
     
     /**
      * Output date

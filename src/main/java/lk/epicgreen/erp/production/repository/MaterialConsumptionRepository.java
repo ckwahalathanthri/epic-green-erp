@@ -2,6 +2,7 @@ package lk.epicgreen.erp.production.repository;
 
 import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.production.entity.MaterialConsumption;
+import lk.epicgreen.erp.production.entity.ProductionOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -232,4 +233,6 @@ public interface MaterialConsumptionRepository extends JpaRepository<MaterialCon
 
     @Query("SELECT SUM(mc.totalCost) FROM MaterialConsumption mc WHERE mc.workOrder.id = :woId")
     Optional<BigDecimal> sumTotalCostByWo(@Param("woId") Long woId);
+
+    List<ProductionOrder> findByProductionOrderId(Long orderId);
 }
