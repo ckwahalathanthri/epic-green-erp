@@ -100,6 +100,13 @@ public class StockAdjustment extends AuditEntity {
     @OneToMany(mappedBy = "adjustment", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<StockAdjustmentItem> items = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "stockAdjustment",  orphanRemoval = true)
+    @Builder.Default
+    private List<AdjustmentItem> stockAdjustments = new ArrayList<>();
+
+
     
     /**
      * Add adjustment item
@@ -240,7 +247,6 @@ public class StockAdjustment extends AuditEntity {
         this.status = "REJECTED";
     }
     
-    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (status == null) {

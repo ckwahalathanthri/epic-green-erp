@@ -5,12 +5,17 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lk.epicgreen.erp.credit.controller.entity.CreditLimit;
 import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Inventory entity
@@ -59,7 +64,24 @@ public class Inventory {
 
     @Column
     private double quantity;
-    
+
+    @OneToMany(mappedBy = "inventoryItem", orphanRemoval = true)
+    @JsonManagedReference
+    private List<GRNItem> grnItems=new ArrayList<>();
+
+    @OneToMany(mappedBy = "inventoryItem", orphanRemoval = true)
+    @JsonManagedReference
+    private List<StockLevel> stockLevels=new ArrayList<>();
+
+    @OneToMany(mappedBy = "inventoryItem", orphanRemoval = true)
+    @JsonManagedReference
+    private List<IssueItem> issueItems=new ArrayList<>();
+
+
+
+
+
+
     /**
      * Specific location within warehouse
      */

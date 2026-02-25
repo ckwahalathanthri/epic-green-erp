@@ -202,7 +202,7 @@ return ResponseEntity.ok(ApiResponse.success(response, "Current user profile ret
     
     // Get All Users with Pagination
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(Pageable pageable) {
         PageResponse<UserResponse> response = userService.getAllUsers(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, "Users retrieved successfully"));
