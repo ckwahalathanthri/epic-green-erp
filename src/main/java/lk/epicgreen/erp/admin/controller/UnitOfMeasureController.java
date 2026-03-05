@@ -6,6 +6,8 @@ import lk.epicgreen.erp.admin.dto.response.UnitOfMeasureResponse;
 import lk.epicgreen.erp.admin.service.UnitOfMeasureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +34,7 @@ public class UnitOfMeasureController {
     
     // Create Unit of Measure
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<UnitOfMeasureResponse>> createUnitOfMeasure(
         @Valid @RequestBody UnitOfMeasureRequest request
     ) {
@@ -98,9 +100,9 @@ public class UnitOfMeasureController {
     
     // Get All Units of Measure
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<ApiResponse<List<UnitOfMeasureResponse>>> getAllUnitsOfMeasure() {
-        List<UnitOfMeasureResponse> response = unitOfMeasureService.getAllUnitsOfMeasure();
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    public ResponseEntity<ApiResponse<Page<UnitOfMeasureResponse>>> getAllUnitsOfMeasure(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<UnitOfMeasureResponse> response = unitOfMeasureService.getAllUnitsOfMeasure(PageRequest.of(page, size));
         return ResponseEntity.ok(ApiResponse.success(response, "Units of measure retrieved successfully"));
     }
     

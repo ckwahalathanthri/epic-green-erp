@@ -40,7 +40,7 @@ public class ProductRequest {
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 
-    @NotNull(message = "Base UOM is required")
+//    @NotNull(message = "Base UOM is required")
     private Long baseUomId;
 
     @Size(max = 50, message = "Barcode must not exceed 50 characters")

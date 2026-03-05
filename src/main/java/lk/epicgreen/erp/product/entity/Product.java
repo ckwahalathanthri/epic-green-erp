@@ -99,7 +99,7 @@ public class Product extends AuditEntity {
     /**
      * Base unit of measure
      */
-    @NotNull(message = "Base UOM is required")
+//    @NotNull(message = "Base UOM is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "base_uom_id", nullable = false, foreignKey = @ForeignKey(name = "fk_product_base_uom"))
     private UnitOfMeasure baseUom;

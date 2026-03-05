@@ -98,7 +98,7 @@ public class TaxRateController {
     
     // Get All Tax Rates
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<List<TaxRateResponse>>> getAllTaxRates() {
         List<TaxRateResponse> response = taxRateService.getAllTaxRates();
         return ResponseEntity.ok(ApiResponse.success(response, "Tax rates retrieved successfully"));
