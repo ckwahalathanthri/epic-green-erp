@@ -42,6 +42,10 @@ public class DispatchItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dispatch_id", nullable = false, foreignKey = @ForeignKey(name = "fk_dispatch_item_dispatch"))
     private DispatchNote dispatch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dispatchitm_id", nullable = false, foreignKey = @ForeignKey(name = "fk_dispatch_item_dispatch"))
+    private Dispatch dispatchItem;
     
     /**
      * Sales order item reference
