@@ -56,6 +56,15 @@ public class WarehouseLocationServiceImpl implements WarehouseLocationService {
         return warehouseLocationMapper.toResponse(savedLocation);
     }
 
+    public List<WarehouseLocationResponse> findByWarehouseId(Long warehouseId){
+        List<WarehouseLocation> warehouseLocation=warehouseLocationRepository.findByWarehouseId(warehouseId);
+        return warehouseLocation.stream().map(warehouseLocationMapper::toResponse).collect(Collectors.toList());
+    }
+
+    public WarehouseLocation create(WarehouseLocation location){
+        return warehouseLocationRepository.save(location);
+    }
+
     @Override
     @Transactional
     public WarehouseLocationResponse updateWarehouseLocation(Long id, WarehouseLocationRequest request) {
