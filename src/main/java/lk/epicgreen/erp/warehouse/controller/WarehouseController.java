@@ -83,7 +83,7 @@ public class WarehouseController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<WarehouseResponse>>> getAllWarehouses(Pageable pageable) {
         PageResponse<WarehouseResponse> warehouses = warehouseService.getAllWarehouses(pageable);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses retrieved successfully"));
