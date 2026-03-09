@@ -136,6 +136,22 @@ public class StockMovementServiceImpl implements StockMovementService {
             .collect(Collectors.toList());
     }
 
+    public List<StockMovement> findAll() {
+        return stockMovementRepository.findAll();
+    }
+
+    public List<StockMovement> findByProductAndWarehouse(Long productId, Long warehouseId) {
+        return stockMovementRepository.findByProductIdAndWarehouseId(productId, warehouseId);
+    }
+
+    public List<StockMovement> findByDateRange(LocalDate startDate, LocalDate endDate) {
+        return stockMovementRepository.findByMovementDateBetween(startDate, endDate);
+    }
+
+    public StockMovement create(StockMovement movement) {
+        return stockMovementRepository.save(movement);
+    }
+
     @Override
     public List<StockMovementResponse> getMovementsByReference(String referenceType, Long referenceId) {
         List<StockMovement> movements = stockMovementRepository

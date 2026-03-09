@@ -6,6 +6,7 @@ import lk.epicgreen.erp.warehouse.dto.request.StockMovementRequest;
 import lk.epicgreen.erp.warehouse.dto.response.StockMovementResponse;
 import lk.epicgreen.erp.warehouse.entity.StockMovement;
 import lk.epicgreen.erp.warehouse.service.StockMovementService;
+import lk.epicgreen.erp.warehouse.service.impl.StockMovementServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,7 +36,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class StockMovementController {
     
-    private final StockMovementService stockMovementService;
+    private final StockMovementServiceImpl stockMovementService;
     
     // CRUD Operations
     @PostMapping
@@ -82,6 +83,27 @@ public class StockMovementController {
         PageResponse<StockMovementResponse> movements = stockMovementService.getAllStockMovements(pageable);
         return ResponseEntity.ok(ApiResponse.success(movements, "Stock movements retrieved successfully"));
     }
+
+//    @GetMapping
+//    public ResponseEntity<List<StockMovement>> getAll() {
+//        return ResponseEntity.ok(stockMovementService.findAll());
+//    }
+
+    @GetMapping("/product/{productId}/warehouse/{warehouseId}")
+    public ResponseEntity<List<StockMovement>> getByProductAndWarehouse(
+            @PathVariable Long productId,
+            @PathVariable Long warehouseId
+    ) {
+        return ResponseEntity.ok(stockMovementService.findByProductAndWarehouse(productId, warehouseId));
+    }
+
+//    @GetMapping("/date-range")
+//    public ResponseEntity<List<StockMovement>> getByDateRange(
+//            @RequestParam LocalDate startDate,
+//            @RequestParam LocalDate endDate
+//    ) {
+//        return ResponseEntity.ok(stockMovementService.findByDateRange(startDate, endDate));
+//    }
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")

@@ -2,6 +2,8 @@ package lk.epicgreen.erp.admin.service;
 
 import lk.epicgreen.erp.admin.dto.request.TaxRateRequest;
 import lk.epicgreen.erp.admin.dto.response.TaxRateResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -52,7 +54,7 @@ public interface TaxRateService {
     /**
      * Get all tax rates
      */
-    List<TaxRateResponse> getAllTaxRates();
+    Page<TaxRateResponse> getAllTaxRates(Pageable page);
 
     /**
      * Get all active tax rates

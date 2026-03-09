@@ -1,7 +1,9 @@
 package lk.epicgreen.erp.warehouse.controller;
-import com.epicgreen.erp.warehouse.entity.StockTransfer;
-import com.epicgreen.erp.warehouse.entity.StockTransferItem;
-import com.epicgreen.erp.warehouse.service.StockTransferService;
+
+
+import lk.epicgreen.erp.warehouse.entity.StockTransfer;
+import lk.epicgreen.erp.warehouse.entity.StockTransferItem;
+import lk.epicgreen.erp.warehouse.service.impl.StockTransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

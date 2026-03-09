@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.warehouse.controller;
-import com.epicgreen.erp.warehouse.entity.GoodsIssue;
-import com.epicgreen.erp.warehouse.service.GoodsIssueService;
+
+import lk.epicgreen.erp.warehouse.entity.GoodsIssue;
+import lk.epicgreen.erp.warehouse.service.impl.GoodsIssueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -10,6 +10,8 @@ import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,11 +63,9 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public List<PermissionResponse> getAllPermissions() {
-        List<Permission> permissions = permissionRepository.findAll();
-        return permissions.stream()
-            .map(permissionMapper::toResponse)
-            .collect(Collectors.toList());
+    public Page<PermissionResponse> getAllPermissions(Pageable pageable) {
+        Page<Permission> permissions = permissionRepository.findAll(pageable);
+        return permissions.map(permissionMapper::toResponse);
     }
 
     @Override

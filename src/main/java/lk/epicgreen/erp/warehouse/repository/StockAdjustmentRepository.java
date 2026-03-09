@@ -40,6 +40,9 @@ public interface StockAdjustmentRepository extends JpaRepository<StockAdjustment
      * Find all adjustments for a warehouse
      */
     List<StockAdjustment> findByWarehouseId(Long warehouseId);
+
+    List<StockAdjustment> findByAdjustmentStatus(String status);
+
     
     /**
      * Find all adjustments for a warehouse with pagination

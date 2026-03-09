@@ -88,4 +88,7 @@ public interface StockMovementService {
 	List<StockMovementResponse> getProductMovementHistory(Long productId, LocalDate startDate, LocalDate endDate);
 	List<StockMovementResponse> getWarehouseMovementHistory(Long warehouseId, LocalDate startDate, LocalDate endDate);
 	List<StockMovementResponse> getRecentMovements(int limit);
+	List<StockMovement> findAll();
+	List<StockMovement> findByProductAndWarehouse(Long productId, Long warehouseId);
+	List<StockMovement> findByDateRange(LocalDate startDate, LocalDate endDate);
 }
