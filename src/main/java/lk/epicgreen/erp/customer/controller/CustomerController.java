@@ -234,7 +234,7 @@ public class CustomerController {
     // ===================================================================
     
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<List<CustomerResponse>>> getActiveCustomers() {
         List<CustomerResponse> customers = customerService.getActiveCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers, "Active customers retrieved successfully"));

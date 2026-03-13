@@ -1,8 +1,11 @@
 package lk.epicgreen.erp.supplier.controller;
 
+import lk.epicgreen.erp.supplier.dto.request.PurchaseOrderRequest;
 import lk.epicgreen.erp.supplier.dto.response.PurchaseOrderDTO;
+import lk.epicgreen.erp.supplier.entity.PurchaseOrder;
 import lk.epicgreen.erp.supplier.service.impl.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,5 +25,11 @@ public class PurchaseOrderController {
     @GetMapping("/{id}")
     public ResponseEntity<PurchaseOrderDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<PurchaseOrderDTO> createPurchaseOrder(@RequestBody PurchaseOrderRequest purchaseOrderRequest){
+        System.out.println("The data is "+purchaseOrderRequest.getDeliveryAddress());
+        return ResponseEntity.ok(service.createPurchaseOrder(purchaseOrderRequest));
     }
 }

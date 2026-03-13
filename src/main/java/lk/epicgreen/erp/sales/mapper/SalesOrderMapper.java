@@ -80,24 +80,16 @@ public class SalesOrderMapper {
         String shippingAddress = formatAddress(order.getShippingAddress());
 
         return SalesOrderResponse.builder()
-            .id(order.getId())
+
             .orderNumber(order.getOrderNumber())
             .orderDate(order.getOrderDate())
             .customerId(order.getCustomer() != null ? order.getCustomer().getId() : null)
-            .customerCode(order.getCustomer() != null ? order.getCustomer().getCustomerCode() : null)
-            .customerName(order.getCustomer() != null ? order.getCustomer().getCustomerName() : null)
             .customerPoNumber(order.getCustomerPoNumber())
             .customerPoDate(order.getCustomerPoDate())
             .billingAddressId(order.getBillingAddress() != null ? order.getBillingAddress().getId() : null)
-            .billingAddress(billingAddress)
             .shippingAddressId(order.getShippingAddress() != null ? order.getShippingAddress().getId() : null)
-            .shippingAddress(shippingAddress)
             .warehouseId(order.getWarehouse() != null ? order.getWarehouse().getId() : null)
-            .warehouseCode(order.getWarehouse() != null ? order.getWarehouse().getWarehouseCode() : null)
-            .warehouseName(order.getWarehouse() != null ? order.getWarehouse().getWarehouseName() : null)
             .salesRepId(order.getSalesRep() != null ? order.getSalesRep().getId() : null)
-            .salesRepName(order.getSalesRep() != null ? 
-                order.getSalesRep().getFirstName() + " " + order.getSalesRep().getLastName() : null)
             .orderType(order.getOrderType())
             .status(order.getStatus())
             .paymentMode(order.getPaymentMode())
@@ -109,14 +101,8 @@ public class SalesOrderMapper {
             .discountAmount(order.getDiscountAmount())
             .freightCharges(order.getFreightCharges())
             .totalAmount(order.getTotalAmount())
-            .approvedBy(order.getApprovedBy().getId())
-            .approvedAt(order.getApprovedAt())
             .remarks(order.getRemarks())
-            .createdAt(order.getCreatedAt())
-            .createdBy(order.getCreatedBy())
-            .updatedAt(order.getUpdatedAt())
-            .updatedBy(order.getUpdatedBy())
-            .items(order.getItems() != null ? 
+            .items(order.getItems() != null ?
                 order.getItems().stream()
                     .map(salesOrderItemMapper::toResponse)
                     .collect(Collectors.toList()) : null)

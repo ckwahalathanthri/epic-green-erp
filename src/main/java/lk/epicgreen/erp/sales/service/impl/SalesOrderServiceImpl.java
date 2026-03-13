@@ -110,6 +110,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
         // Create order items
         List<SalesOrderItem> items = new ArrayList<>();
+
         for (SalesOrderItemRequest itemRequest : request.getItems()) {
             SalesOrderItem item = createOrderItem(itemRequest);
             item.setOrder(order);
@@ -185,6 +186,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         order.getItems().clear();
 
         List<SalesOrderItem> newItems = new ArrayList<>();
+
         for (SalesOrderItemRequest itemRequest : request.getItems()) {
             SalesOrderItem item = createOrderItem(itemRequest);
             item.setOrder(order);
@@ -205,9 +207,13 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         Product product = findProductById(itemRequest.getProductId());
         item.setProduct(product);
 
+//        UnitOfMeasure uom=unitOfMeasureRepository.findById(itemRequest.getUomId()).get();
+//        item.setUom(uom);
+
+
         // Verify unit of measure exists
-//        UnitOfMeasure uom = findUnitOfMeasureById(itemRequest.getUnitOfMeasureId());
-//        item.setUnitOfMeasure(uom);
+//        UnitOfMeasure uom = findUnitOfMeasureById(itemRequest.getUomId());
+//        item.setUom(uom);
 
         // Verify tax rate exists if provided
         if (itemRequest.getTaxRateId() != null) {

@@ -9,6 +9,7 @@ public class PurchaseOrderDTO {
     private String poNumber;
     private Long supplierId;
     private String supplierName;
+    private LocalDate expectedDeliveryDate;
     private LocalDate poDate;
     private String poStatus;
     private BigDecimal totalAmount;
