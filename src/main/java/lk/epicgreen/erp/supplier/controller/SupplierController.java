@@ -48,7 +48,7 @@ public class SupplierController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER')")
     public ResponseEntity<ApiResponse<SupplierResponse>> updateSupplier(
         @PathVariable Long id,
         @Valid @RequestBody SupplierRequest request
@@ -67,7 +67,7 @@ public class SupplierController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASE_MANAGER', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<SupplierResponse>> getSupplierById(@PathVariable Long id) {
         SupplierResponse supplier = supplierService.getSupplierById(id);
         return ResponseEntity.ok(ApiResponse.success(supplier, "Supplier retrieved successfully"));
