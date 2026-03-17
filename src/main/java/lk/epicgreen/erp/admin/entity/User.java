@@ -2,6 +2,7 @@ package lk.epicgreen.erp.admin.entity;
 
 
 import lk.epicgreen.erp.common.audit.AuditEntity;
+import lk.epicgreen.erp.customer.entity.Customer;
 import lombok.*;
 
 import javax.persistence.*;
@@ -55,6 +56,9 @@ public class User extends AuditEntity {
     @Size(max = 100)
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
+
+    @OneToMany(mappedBy = "verifiedBy")
+    private List<Customer> verifiedCustomers;
     
     /**
      * Password hash (BCrypt encrypted)
@@ -241,7 +245,7 @@ public class User extends AuditEntity {
         this.status = "ACTIVE";
     }
     
-    @PrePersist
+//    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (status == null) {
