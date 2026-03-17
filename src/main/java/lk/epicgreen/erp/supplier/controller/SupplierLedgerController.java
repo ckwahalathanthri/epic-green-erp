@@ -4,6 +4,7 @@ import lk.epicgreen.erp.common.dto.ApiResponse;
 
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lk.epicgreen.erp.supplier.dto.request.SupplierLedgerRequest;
+import lk.epicgreen.erp.supplier.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.supplier.dto.response.SupplierLedgerResponse;
 import lk.epicgreen.erp.supplier.entity.SupplierLedger;
 import lk.epicgreen.erp.supplier.service.SupplierLedgerService;
@@ -38,6 +39,7 @@ import java.util.Map;
 public class SupplierLedgerController {
     
     private final SupplierLedgerService ledgerService;
+
     
     // ===================================================================
     // CRUD OPERATIONS
@@ -156,7 +158,28 @@ public class SupplierLedgerController {
         SupplierLedger ledger = ledgerService.recordReturn(supplierId, amount, referenceType, referenceId, description, transactionDate);
         return ResponseEntity.ok(ApiResponse.success(ledger, "Return recorded successfully"));
     }
-    
+
+    @GetMapping("/supplier/{supplierId}/date-range")
+    public ResponseEntity<List<LedgerEntryDTO>> getByDateRange(
+            @PathVariable Long supplierId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        return ResponseEntity.ok(ledgerService.getBySupplierAndDateRange(supplierId, fromDate, toDate));
+    }
+
+    @GetMapping("/supplier/{supplierId}")
+    public ResponseEntity<List<lk.epicgreen.erp.supplier.dto.response.LedgerEntryDTO>> getBySupplier(@PathVariable Long supplierId) {
+        return ResponseEntity.ok(ledgerService.getBySupplier(supplierId));
+    }
+
+
+
+//    @GetMapping("/supplier/{supplierId}/balance")
+//    public ResponseEntity<BigDecimal> getBalance(@PathVariable Long supplierId) {
+//        return ResponseEntity.ok(ledgerService.getBalance(supplierId));
+//    }
+
+
     @PostMapping("/record-adjustment")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')")
     public ResponseEntity<ApiResponse<SupplierLedger>> recordAdjustment(
@@ -176,15 +199,15 @@ public class SupplierLedgerController {
     // QUERY OPERATIONS
     // ===================================================================
     
-    @GetMapping("/supplier/{supplierId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<PageResponse<SupplierLedgerResponse>>> getLedgerEntriesBySupplier(
-        @PathVariable Long supplierId,
-        Pageable pageable
-    ) {
-        PageResponse<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplier(supplierId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
-    }
+//    @GetMapping("/supplier/{supplierId}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<PageResponse<SupplierLedgerResponse>>> getLedgerEntriesBySupplier(
+//        @PathVariable Long supplierId,
+//        Pageable pageable
+//    ) {
+//        PageResponse<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplier(supplierId, pageable);
+//        return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
+//    }
     
     @GetMapping("/supplier/{supplierId}/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
@@ -193,17 +216,17 @@ public class SupplierLedgerController {
         return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries list retrieved successfully"));
     }
     
-    @GetMapping("/supplier/{supplierId}/date-range")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<SupplierLedgerResponse>>> getLedgerEntriesBySupplierAndDateRange(
-        @PathVariable Long supplierId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        Pageable pageable
-    ) {
-        List<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplierAndDateRange(supplierId, startDate, endDate);
-        return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
-    }
+//    @GetMapping("/supplier/{supplierId}/date-range")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")
+//    public ResponseEntity<ApiResponse<List<SupplierLedgerResponse>>> getLedgerEntriesBySupplierAndDateRange(
+//        @PathVariable Long supplierId,
+//        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+//        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+//        Pageable pageable
+//    ) {
+//        List<SupplierLedgerResponse> entries = ledgerService.getLedgerEntriesBySupplierAndDateRange(supplierId, startDate, endDate);
+//        return ResponseEntity.ok(ApiResponse.success(entries, "Ledger entries retrieved successfully"));
+//    }
     
     @GetMapping("/supplier/{supplierId}/date-range/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT', 'PURCHASE_MANAGER')")

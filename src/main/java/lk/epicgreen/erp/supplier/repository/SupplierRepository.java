@@ -341,6 +341,9 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long>, JpaSp
     @Query("SELECT s FROM Supplier s WHERE s.isActive = true AND s.deletedAt IS NULL")
     List<Supplier> findByIsActiveTrueAndDeletedAtIsNull();
 
+    @Query("SELECT s  FROM Supplier s WHERE s.isActive=true AND s.deletedAt IS NULL")
+    Page<Supplier> findByIsActiveTrueAndDeletedAtIsNull(Pageable pageable);
+
     @Query("SELECT s FROM Supplier s WHERE s.isApproved = true AND s.deletedAt IS NULL")
     List<Supplier> findByIsApprovedTrueAndDeletedAtIsNull();
 

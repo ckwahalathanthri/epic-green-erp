@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.supplier.service.impl;
 
 import lk.epicgreen.erp.supplier.dto.request.SupplierLedgerRequest;
+import lk.epicgreen.erp.supplier.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.supplier.dto.response.SupplierLedgerResponse;
 import lk.epicgreen.erp.supplier.entity.Supplier;
 import lk.epicgreen.erp.supplier.entity.SupplierLedger;
@@ -76,6 +77,17 @@ public class SupplierLedgerServiceImpl implements SupplierLedgerService {
         log.info("Supplier ledger entry created successfully. New balance: {}", newBalance);
 
         return supplierLedgerMapper.toResponse(savedEntry);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal getBalance(Long supplierId) {
+        return supplierLedgerRepository.calculateBalance(supplierId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LedgerEntryDTO> getBySupplier(Long supplierId) {
+        return supplierLedgerRepository.findBySupplierId(supplierId).stream()
+                .map(this::toDTO).collect(Collectors.toList());
     }
 
 
@@ -217,6 +229,12 @@ public void deleteLedgerEntry(Long id){
     public BigDecimal getSupplierBalance(Long supplierId) {
         return supplierLedgerRepository.getSupplierBalance(supplierId)
             .orElse(BigDecimal.ZERO);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LedgerEntryDTO> getBySupplierAndDateRange(Long supplierId, LocalDate fromDate, LocalDate toDate) {
+        return supplierLedgerRepository.findBySupplierIdAndDateRange(supplierId, fromDate, toDate).stream()
+                .map(this::toDTO).collect(Collectors.toList());
     }
 
     @Transactional
@@ -524,5 +542,27 @@ public void deleteLedgerEntry(Long id){
             .first(ledgerPage.isFirst())
             .empty(ledgerPage.isEmpty())
             .build();
+    }
+
+    private LedgerEntryDTO toDTO(SupplierLedger entity) {
+        LedgerEntryDTO dto = new LedgerEntryDTO();
+        dto.setId(entity.getId());
+        dto.setSupplierId(entity.getSupplier().getId());
+        dto.setSupplierName(entity.getSupplier().getSupplierName());
+        dto.setTransactionType(entity.getTransactionType());
+        dto.setReferenceNumber(entity.getReferenceNumber());
+        dto.setTransactionDate(entity.getTransactionDate());
+        dto.setDueDate(entity.getDueDate());
+        dto.setDebitAmount(entity.getDebitAmount());
+        dto.setCreditAmount(entity.getCreditAmount());
+        dto.setBalance(entity.getBalance());
+        dto.setDescription(entity.getDescription());
+        dto.setIsReconciled(entity.getIsReconciled());
+//        dto.setReconciledDate(entity.getReconciledDate());
+//        dto.setReconciledBy(entity.getReconciledBy());
+//        dto.setNotes(entity.getNotes());
+        dto.setCreatedBy(String.valueOf(entity.getCreatedBy()));
+        dto.setCreatedAt(entity.getCreatedAt());
+        return dto;
     }
 }

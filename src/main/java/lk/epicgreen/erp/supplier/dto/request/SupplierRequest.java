@@ -29,9 +29,9 @@ public class SupplierRequest {
     @Size(max = 200, message = "Supplier name must not exceed 200 characters")
     private String supplierName;
 
-    @NotBlank(message = "Supplier type is required")
-    @Pattern(regexp = "^(RAW_MATERIAL|PACKAGING|SERVICES|OTHER)$", 
-             message = "Supplier type must be one of: RAW_MATERIAL, PACKAGING, SERVICES, OTHER")
+//    @NotBlank(message = "Supplier type is required")
+//    @Pattern(regexp = "^(RAW_MATERIAL|PACKAGING|SERVICES|OTHER)$",
+//             message = "Supplier type must be one of: RAW_MATERIAL, PACKAGING, SERVICES, OTHER")
     private String supplierType;
 
     @Size(max = 100, message = "Contact person must not exceed 100 characters")

@@ -58,16 +58,24 @@ public class Supplier extends AuditEntity {
     /**
      * Supplier type (RAW_MATERIAL, PACKAGING, SERVICES, OTHER)
      */
-    @NotBlank(message = "Supplier type is required")
+//    @NotBlank(message = "Supplier type is required")
     @Column(name = "supplier_type", nullable = false, length = 20)
     private String supplierType;
-
-    @Column
-    private String Status;
+//
+//    @Column
+//    private String Status;
 
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<SupplierGroupMember> supplierGroupMember=new ArrayList<>();
+
+    @OneToMany(mappedBy = "supplier",  orphanRemoval = true)
+    @JsonManagedReference
+    private List<SupplierLedger> supplierLedger=new ArrayList<>();
+
+    @OneToMany(mappedBy = "supplier",  orphanRemoval = true)
+    @JsonManagedReference
+    private List<SupplierStatement> supplierStatement=new ArrayList<>();
 
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -114,8 +122,7 @@ public class Supplier extends AuditEntity {
     @Column
     private boolean isApproved;
 
-    @Column
-    private boolean isBlocked;
+
 
     @Column
     private BigDecimal currentBalance;
@@ -229,7 +236,7 @@ public class Supplier extends AuditEntity {
 
 
     @Column
-    private boolean IsBlocked;
+    private boolean isBlocked;
 
     @Column
     private String BlockReason;
@@ -468,7 +475,7 @@ public class Supplier extends AuditEntity {
     }
 
     public boolean getIsBlocked() {
-        return this.IsBlocked;
+        return this.isBlocked;
     }
 
     public boolean getIsApproved() {
@@ -477,6 +484,10 @@ public class Supplier extends AuditEntity {
 
     public void setIsApproved(boolean b) {
         this.isApproved = b;
+    }
+
+    public void setisBlocked(boolean b) {
+        this.isBlocked=b;
     }
 
 

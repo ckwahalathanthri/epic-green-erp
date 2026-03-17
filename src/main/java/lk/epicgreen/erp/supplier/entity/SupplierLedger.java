@@ -108,7 +108,15 @@ public class SupplierLedger {
      */
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    
+
+    @Column(name = "due_date")
+    private LocalDate dueDate;
+
+
+    @Column(name = "is_reconciled")
+    private Boolean isReconciled = false;
+
+
     /**
      * Created by (user ID)
      */
