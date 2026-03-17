@@ -1,7 +1,9 @@
 package lk.epicgreen.erp.supplier.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lk.epicgreen.erp.common.audit.AuditEntity;
+import lk.epicgreen.erp.credit.controller.entity.CreditLimit;
 import lombok.*;
 
 import javax.persistence.*;
@@ -62,6 +64,18 @@ public class Supplier extends AuditEntity {
 
     @Column
     private String Status;
+
+    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<SupplierGroupMember> supplierGroupMember=new ArrayList<>();
+
+    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<SupplierBankAccount> supplierBankAccount=new ArrayList<>();
+
+    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<SupplierRating> supplierRating=new ArrayList<>();
     
     /**
      * Primary contact person name
