@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -328,6 +329,22 @@ public class CustomerController {
     public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getCustomersByType(@PathVariable String customerType, Pageable pageable) {
         PageResponse<CustomerResponse> customers = customerService.getCustomersByType(customerType, pageable);
         return ResponseEntity.ok(ApiResponse.success(customers, "Customers by type retrieved successfully"));
+    }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Map<String, String>> permanentlyDeleteCustomer(@PathVariable Long id) {
+        customerService.permanentlyDeleteCustomer(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Customer permanently deleted");
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/exists/{customerCode}")
+    public ResponseEntity<Map<String, Boolean>> checkCustomerCodeExists(@PathVariable String customerCode) {
+        boolean exists = customerService.customerCodeExists(customerCode);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
     }
     
     @GetMapping("/route/{route}")
