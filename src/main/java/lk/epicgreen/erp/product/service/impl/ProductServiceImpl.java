@@ -49,18 +49,26 @@ public class ProductServiceImpl implements ProductService {
         log.info("Creating new product: {}", request.getProductCode());
 
         // Validate unique constraints
-        validateUniqueProductCode(request.getProductCode(), null);
-        
-        if (request.getBarcode() != null) {
-            validateUniqueBarcode(request.getBarcode(), null);
-        }
-        
-        if (request.getSku() != null) {
-            validateUniqueSku(request.getSku(), null);
-        }
+//        validateUniqueProductCode(request.getProductCode(), null);
+//
+//        if (request.getBarcode() != null) {
+//            validateUniqueBarcode(request.getBarcode(), null);
+//        }
+//
+//        if (request.getSku() != null) {
+//            validateUniqueSku(request.getSku(), null);
+//        }
 
         // Create product entity
         Product product = productMapper.toEntity(request);
+
+        UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found with ID: " + request.getBaseUomId()));
+
+        System.out.println("The base uom is "+ baseUom.getId());
+        product.setBaseUom(baseUom);
+
+        System.out.println("Base uom from product is "+ product.getBaseUom().getUomName());
 
         // Set category if provided
         if (request.getCategoryId() != null) {
@@ -70,10 +78,9 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // Set base UOM
-        UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
-            .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found: " + request.getBaseUomId()));
-        product.setBaseUom(baseUom);
-
+//        UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
+//            .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found: " + request.getBaseUomId()));
+//        product.setBaseUom(baseUom);
         Product savedProduct = productRepository.save(product);
         log.info("Product created successfully: {}", savedProduct.getProductCode());
 

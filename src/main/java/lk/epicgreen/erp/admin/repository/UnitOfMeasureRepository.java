@@ -34,11 +34,15 @@ public interface UnitOfMeasureRepository extends JpaRepository<UnitOfMeasure, Lo
      * Find unit of measure by name
      */
     Optional<UnitOfMeasure> findByUomName(String uomName);
+
+
     
     /**
      * Find all active units of measure
      */
     List<UnitOfMeasure> findByIsActiveTrue();
+
+
     
     /**
      * Find all active units with pagination
@@ -202,7 +206,8 @@ public interface UnitOfMeasureRepository extends JpaRepository<UnitOfMeasure, Lo
      * Find all units ordered by UOM code
      */
     List<UnitOfMeasure> findAllByOrderByUomCodeAsc();
-    
+
+
     /**
      * Find active units ordered by UOM name
      */

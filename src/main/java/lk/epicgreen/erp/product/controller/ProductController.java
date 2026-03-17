@@ -42,7 +42,7 @@ public class ProductController {
     // ===================================================================
     
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(@Valid @RequestBody ProductRequest request) {
         log.info("Creating product: {}", request.getProductName());
         ProductResponse created = productService.createProduct(request);
@@ -100,7 +100,7 @@ public class ProductController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getAllProducts(Pageable pageable) {
         PageResponse<ProductResponse> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(ApiResponse.success(products, "Products retrieved successfully"));

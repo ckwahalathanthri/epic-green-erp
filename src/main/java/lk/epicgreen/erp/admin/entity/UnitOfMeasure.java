@@ -53,7 +53,7 @@ public class UnitOfMeasure extends AuditEntity {
     /**
      * UOM type (WEIGHT, VOLUME, LENGTH, QUANTITY, AREA)
      */
-    @NotBlank(message = "UOM type is required")
+//    @NotBlank(message = "UOM type is required")
     @Column(name = "uom_type", nullable = false, length = 20)
     private String uomType;
 

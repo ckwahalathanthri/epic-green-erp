@@ -10,6 +10,8 @@ import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,6 +106,11 @@ public class UnitOfMeasureServiceImpl implements UnitOfMeasureService {
         return unitOfMeasureMapper.toResponse(unitOfMeasure);
     }
 
+    public Page<UnitOfMeasureResponse> getAllUnitsOfMeasure(Pageable pageable){
+        Page<UnitOfMeasure> unitOfMeasures=unitOfMeasureRepository.findAll(pageable);
+        return unitOfMeasures.map(unitOfMeasureMapper::toResponse);
+    }
+
     @Override
     public UnitOfMeasureResponse getUnitOfMeasureByCode(String uomCode) {
         UnitOfMeasure unitOfMeasure = unitOfMeasureRepository.findByUomCode(uomCode)
@@ -111,13 +118,13 @@ public class UnitOfMeasureServiceImpl implements UnitOfMeasureService {
         return unitOfMeasureMapper.toResponse(unitOfMeasure);
     }
 
-    @Override
-    public List<UnitOfMeasureResponse> getAllUnitsOfMeasure() {
-        List<UnitOfMeasure> unitsOfMeasure = unitOfMeasureRepository.findAll();
-        return unitsOfMeasure.stream()
-            .map(unitOfMeasureMapper::toResponse)
-            .collect(Collectors.toList());
-    }
+//    @Override
+//    public List<UnitOfMeasureResponse> getAllUnitsOfMeasure() {
+//        List<UnitOfMeasure> unitsOfMeasure = unitOfMeasureRepository.findAll();
+//        return unitsOfMeasure.stream()
+//            .map(unitOfMeasureMapper::toResponse)
+//            .collect(Collectors.toList());
+//    }
 
     @Override
     public List<UnitOfMeasureResponse> getAllActiveUnitsOfMeasure() {

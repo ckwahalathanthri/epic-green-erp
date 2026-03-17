@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.product.mapper;
 
+import lk.epicgreen.erp.admin.repository.UnitOfMeasureRepository;
 import lk.epicgreen.erp.product.dto.request.ProductRequest;
 import lk.epicgreen.erp.product.dto.response.ProductListDTO;
 import lk.epicgreen.erp.product.dto.response.ProductResponse;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ProductMapper {
+    private UnitOfMeasureRepository unitOfMeasureRepository;
 
     public Product toEntity(ProductRequest request) {
         if (request == null) {

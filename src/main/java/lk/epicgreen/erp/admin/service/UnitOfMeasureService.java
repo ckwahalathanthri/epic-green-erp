@@ -2,6 +2,8 @@ package lk.epicgreen.erp.admin.service;
 
 import lk.epicgreen.erp.admin.dto.request.UnitOfMeasureRequest;
 import lk.epicgreen.erp.admin.dto.response.UnitOfMeasureResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -51,7 +53,7 @@ public interface UnitOfMeasureService {
     /**
      * Get all units of measure
      */
-    List<UnitOfMeasureResponse> getAllUnitsOfMeasure();
+    Page<UnitOfMeasureResponse> getAllUnitsOfMeasure(Pageable pageable);
 
     /**
      * Get all active units of measure
