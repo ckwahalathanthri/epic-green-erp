@@ -47,6 +47,10 @@ public class StockLevel {
 
     @Column(name = "quantity_reserved", precision = 15, scale = 3)
     private BigDecimal quantityReserved = BigDecimal.ZERO;
+
+    @Column(name= "reorder_level", precision = 15, scale = 3)
+    private BigDecimal reorderLevel = BigDecimal.ZERO;
+
     @Column(name = "quantity_in_transit", precision = 15, scale = 3)
     private BigDecimal quantityInTransit = BigDecimal.ZERO;
     @Column(name = "stock_status", length = 50)

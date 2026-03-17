@@ -28,7 +28,7 @@ import java.util.Map;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/warehouse/warehouses")
+@RequestMapping("/api/warehouse")
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
