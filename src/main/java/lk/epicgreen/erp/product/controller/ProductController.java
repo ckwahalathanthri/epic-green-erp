@@ -266,14 +266,14 @@ public class ProductController {
     }
     
     @GetMapping("/type/raw-material")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'PURCHASE_MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'PURCHASE_MANAGER')")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getRawMaterialProducts() {
         List<ProductResponse> products = productService.getRawMaterialProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Raw material products retrieved successfully"));
     }
     
     @GetMapping("/type/finished-goods")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getFinishedGoodsProducts() {
         List<ProductResponse> products = productService.getFinishedGoodsProducts();
         return ResponseEntity.ok(ApiResponse.success(products, "Finished goods retrieved successfully"));
@@ -301,25 +301,25 @@ public class ProductController {
     }
     
     @GetMapping("/price-range")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByPriceRange(
-        @RequestParam Double minPrice,
-        @RequestParam Double maxPrice
+        @RequestParam BigDecimal minPrice,
+        @RequestParam BigDecimal maxPrice
     ) {
         List<ProductResponse> products = productService.getProductsByPriceRange(minPrice, maxPrice);
         return ResponseEntity.ok(ApiResponse.success(products, "Products by price range retrieved successfully"));
     }
     
     @GetMapping("/price/below")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsBelowPrice(@RequestParam Double maxPrice) {
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsBelowPrice(@RequestParam BigDecimal maxPrice) {
         List<ProductResponse> products = productService.getProductsBelowPrice(maxPrice);
         return ResponseEntity.ok(ApiResponse.success(products, "Products below price retrieved successfully"));
     }
     
     @GetMapping("/price/above")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsAbovePrice(@RequestParam Double minPrice) {
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsAbovePrice(@RequestParam BigDecimal minPrice) {
         List<ProductResponse> products = productService.getProductsAbovePrice(minPrice);
         return ResponseEntity.ok(ApiResponse.success(products, "Products above price retrieved successfully"));
     }

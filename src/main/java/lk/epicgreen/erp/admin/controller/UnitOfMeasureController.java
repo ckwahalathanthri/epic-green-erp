@@ -108,7 +108,7 @@ public class UnitOfMeasureController {
     
     // Get All Active Units of Measure
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<List<UnitOfMeasureResponse>>> getAllActiveUnitsOfMeasure() {
         List<UnitOfMeasureResponse> response = unitOfMeasureService.getAllActiveUnitsOfMeasure();
         return ResponseEntity.ok(ApiResponse.success(response, "Active units of measure retrieved successfully"));

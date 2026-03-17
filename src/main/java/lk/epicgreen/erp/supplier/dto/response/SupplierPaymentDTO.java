@@ -13,4 +13,5 @@ public class SupplierPaymentDTO {
     private BigDecimal amount;
     private String paymentMethod;
     private String paymentStatus;
+
 }

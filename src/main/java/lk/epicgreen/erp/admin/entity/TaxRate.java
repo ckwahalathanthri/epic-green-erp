@@ -62,8 +62,8 @@ public class TaxRate extends AuditEntity {
     /**
      * Tax type (GST, VAT, SALES_TAX, SERVICE_TAX, OTHER)
      */
-    @NotBlank(message = "Tax type is required")
-    @Column(name = "tax_type", nullable = false, length = 20)
+//    @NotBlank(message = "Tax type is required")
+    @Column(name = "tax_type", length = 20)
     private String taxType;
     
     /**

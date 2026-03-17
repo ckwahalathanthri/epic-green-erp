@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.warehouse.controller;
-import com.epicgreen.erp.warehouse.dto.InventoryItemDTO;
+
+import lk.epicgreen.erp.warehouse.dto.response.InventoryItemDTO;
 import lk.epicgreen.erp.warehouse.service.impl.InventoryItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

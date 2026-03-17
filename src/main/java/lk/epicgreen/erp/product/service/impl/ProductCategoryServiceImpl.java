@@ -235,6 +235,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
+    @Transactional
     public ProductCategory createCategory(ProductCategoryRequest request) {
         String categoryCode = request.getCategoryCode();
         log.info("Creating new product category: {}", categoryCode);
@@ -419,11 +420,9 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
-    public List<ProductCategoryResponse> getActiveCategories() {
-        return productCategoryRepository.findByIsActiveTrue()
-            .stream()
-            .map(productCategoryMapper::toResponse)
-            .collect(Collectors.toList());
+    public List<ProductCategory> getActiveCategories() {
+        return productCategoryRepository.findByIsActiveTrue();
+
     }
 
     @Override

@@ -2,6 +2,8 @@ package lk.epicgreen.erp.warehouse.service;
 
 import lk.epicgreen.erp.warehouse.dto.request.WarehouseLocationRequest;
 import lk.epicgreen.erp.warehouse.dto.response.WarehouseLocationResponse;
+import lk.epicgreen.erp.warehouse.dto.response.WarehouseResponse;
+import lk.epicgreen.erp.warehouse.entity.WarehouseLocation;
 
 import java.util.List;
 
@@ -23,4 +25,8 @@ public interface WarehouseLocationService {
     List<WarehouseLocationResponse> getActiveLocationsByWarehouse(Long warehouseId);
     WarehouseLocationResponse getLocationByWarehouseAndCode(Long warehouseId, String locationCode);
     List<WarehouseLocationResponse> searchLocations(String keyword);
+
+    List<WarehouseLocationResponse> findByWarehouseId(Long warehouseId);
+
+    WarehouseLocation create(WarehouseLocation location);
 }

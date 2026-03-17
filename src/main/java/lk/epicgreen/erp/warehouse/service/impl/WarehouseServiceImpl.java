@@ -256,8 +256,11 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public List<WarehouseResponse> getActiveWarehouses() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getActiveWarehouses'");
+        return warehouseRepository.findByIsActiveTrue()
+                .stream()
+                .map(warehouseMapper::toResponse)
+                .collect(Collectors.toList());
+//        throw new UnsupportedOperationException("Unimplemented method 'getActiveWarehouses'");
     }
 
     @Override

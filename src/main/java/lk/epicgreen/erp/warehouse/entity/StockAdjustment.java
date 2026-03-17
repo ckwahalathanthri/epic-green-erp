@@ -46,6 +46,9 @@ public class StockAdjustment extends AuditEntity {
     @Size(max = 30)
     @Column(name = "adjustment_number", nullable = false, unique = true, length = 30)
     private String adjustmentNumber;
+
+    @Column(name = "posted_at")
+    private LocalDateTime postedAt;
     
     /**
      * Adjustment date
@@ -74,6 +77,9 @@ public class StockAdjustment extends AuditEntity {
      */
     @Column(name = "status", nullable = false, length = 20)
     private String status;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
     
     /**
      * Approved by (user reference)
@@ -105,9 +111,12 @@ public class StockAdjustment extends AuditEntity {
     @OneToMany(mappedBy = "stockAdjustment",  orphanRemoval = true)
     @Builder.Default
     private List<AdjustmentItem> stockAdjustments = new ArrayList<>();
+    private String adjustmentStatus;
+
+    @Column(name = "rejected_at")
+    private LocalDateTime rejectedAt;
 
 
-    
     /**
      * Add adjustment item
      */
@@ -260,6 +269,21 @@ public class StockAdjustment extends AuditEntity {
         if (!(o instanceof StockAdjustment)) return false;
         StockAdjustment that = (StockAdjustment) o;
         return id != null && id.equals(that.getId());
+    }
+    public void approve() {
+        this.adjustmentStatus = "APPROVED";
+        this.approvedAt = LocalDateTime.now();
+    }
+
+    public void reject(String reason) {
+        this.adjustmentStatus = "REJECTED";
+        this.rejectedAt = LocalDateTime.now();
+        this.rejectionReason = reason;
+    }
+
+    public void post() {
+        this.adjustmentStatus = "POSTED";
+        this.postedAt = LocalDateTime.now();
     }
     
     @Override

@@ -53,4 +53,15 @@ public class StockReservationService {
         entity.setReservationDate(dto.getReservationDate());
         return entity;
     }
+    //    public StockReservation fulfill(Long id, BigDecimal quantity) {
+//        StockReservation reservation = findById(id);
+//        reservation.fulfill(quantity);
+//        return repository.save(reservation);
+//    }
+//
+//    public StockReservation cancel(Long id) {
+//        StockReservation reservation = findById(id);
+//        reservation.cancel();
+//        return repository.save(reservation);
+//    }
 }

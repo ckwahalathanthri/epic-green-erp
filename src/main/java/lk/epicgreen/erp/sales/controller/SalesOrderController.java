@@ -40,8 +40,9 @@ public class SalesOrderController {
     
     // CRUD Operations
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
     public ResponseEntity<ApiResponse<SalesOrderResponse>> createSalesOrder(@Valid @RequestBody SalesOrderRequest request) {
+
         log.info("Creating sales order for customer: {}", request.getCustomerId());
         SalesOrderResponse created = salesOrderService.createSalesOrder(request);
         return ResponseEntity.ok(ApiResponse.success(created, "Sales order created successfully"));
@@ -78,7 +79,7 @@ public class SalesOrderController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<SalesOrderResponse>>> getAllSalesOrders(Pageable pageable) {
         PageResponse<SalesOrderResponse> orders = salesOrderService.getAllSalesOrders(pageable);
         return ResponseEntity.ok(ApiResponse.success(orders, "Sales orders retrieved successfully"));

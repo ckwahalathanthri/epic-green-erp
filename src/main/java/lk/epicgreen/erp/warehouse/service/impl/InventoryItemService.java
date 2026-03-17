@@ -1,6 +1,6 @@
 package lk.epicgreen.erp.warehouse.service.impl;
-import com.epicgreen.erp.warehouse.dto.InventoryItemDTO;
 
+import lk.epicgreen.erp.warehouse.dto.response.InventoryItemDTO;
 import lk.epicgreen.erp.warehouse.entity.Inventory;
 import lk.epicgreen.erp.warehouse.repository.InventoryItemRepository;
 import lombok.RequiredArgsConstructor;

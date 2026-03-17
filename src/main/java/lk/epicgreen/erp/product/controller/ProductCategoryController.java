@@ -39,7 +39,7 @@ public class ProductCategoryController {
     // ===================================================================
     
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
     public ResponseEntity<ApiResponse<ProductCategory>> createCategory(@Valid @RequestBody ProductCategoryRequest request) {
         log.info("Creating product category: {}", request.getCategoryName());
         ProductCategory created = categoryService.createCategory(request);
@@ -87,7 +87,7 @@ public class ProductCategoryController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
     public ResponseEntity<ApiResponse<Page<ProductCategory>>> getAllCategories(Pageable pageable) {
         Page<ProductCategory> categories = categoryService.getAllCategories(pageable);
         return ResponseEntity.ok(ApiResponse.success(categories, "Categories retrieved successfully"));
@@ -214,9 +214,9 @@ public class ProductCategoryController {
     // ===================================================================
     
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
-    public ResponseEntity<ApiResponse<List<ProductCategoryResponse>>> getActiveCategories() {
-        List<ProductCategoryResponse> categories = categoryService.getActiveCategories();
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
+    public ResponseEntity<ApiResponse<List<ProductCategory>>> getActiveCategories() {
+        List<ProductCategory> categories = categoryService.getActiveCategories();
         return ResponseEntity.ok(ApiResponse.success(categories, "Active categories retrieved successfully"));
     }
     

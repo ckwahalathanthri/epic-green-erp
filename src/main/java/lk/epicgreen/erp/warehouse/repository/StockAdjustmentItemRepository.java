@@ -37,7 +37,8 @@ public interface StockAdjustmentItemRepository extends JpaRepository<StockAdjust
      * Find all items for an adjustment with pagination
      */
     Page<StockAdjustmentItem> findByAdjustmentId(Long adjustmentId, Pageable pageable);
-    
+
+
     /**
      * Find all items for a product
      */

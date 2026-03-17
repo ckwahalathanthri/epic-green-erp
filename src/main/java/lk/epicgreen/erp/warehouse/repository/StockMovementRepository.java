@@ -44,6 +44,10 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
      * Find all movements for a product
      */
     List<StockMovement> findByProductId(Long productId);
+
+    List<StockMovement> findByProductIdAndWarehouseId(Long productId, Long warehouseId);
+
+
     
     /**
      * Find all movements for a product with pagination

@@ -38,7 +38,7 @@ public class WarehouseController {
     
     // CRUD Operations
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<WarehouseResponse>> createWarehouse(@Valid @RequestBody WarehouseRequest request) {
         log.info("Creating warehouse: {}", request.getWarehouseName());
         WarehouseResponse created = warehouseService.createWarehouse(request);
@@ -83,7 +83,7 @@ public class WarehouseController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<PageResponse<WarehouseResponse>>> getAllWarehouses(Pageable pageable) {
         PageResponse<WarehouseResponse> warehouses = warehouseService.getAllWarehouses(pageable);
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Warehouses retrieved successfully"));
@@ -130,7 +130,7 @@ public class WarehouseController {
     
     // Query Operations
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getActiveWarehouses() {
         List<WarehouseResponse> warehouses = warehouseService.getActiveWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Active warehouses retrieved successfully"));

@@ -23,6 +23,7 @@ public class SalesOrderItemMapper {
 
         return SalesOrderItem.builder()
             .batchNumber(request.getBatchNumber())
+
             .quantityOrdered(request.getQuantityOrdered())
             .quantityDelivered(request.getQuantityDelivered() != null ? request.getQuantityDelivered() : BigDecimal.ZERO)
             .unitPrice(request.getUnitPrice())

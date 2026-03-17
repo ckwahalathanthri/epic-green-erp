@@ -28,12 +28,12 @@ public class TaxRateRequest {
     @DecimalMax(value = "100.0", message = "Tax percentage must be <= 100")
     private BigDecimal taxPercentage;
 
-    @NotBlank(message = "Tax type is required")
+//    @NotBlank(message = "Tax type is required")
     @Pattern(regexp = "^(GST|VAT|SALES_TAX|SERVICE_TAX|OTHER)$", 
              message = "Invalid tax type")
     private String taxType;
 
-    @NotNull(message = "Applicable from date is required")
+//    @NotNull(message = "Applicable from date is required")
     private LocalDate applicableFrom;
 
     private LocalDate applicableTo;

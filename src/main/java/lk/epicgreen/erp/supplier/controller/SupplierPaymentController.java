@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.supplier.controller;
 
 
+import lk.epicgreen.erp.supplier.dto.request.SupplierPaymentRequest;
 import lk.epicgreen.erp.supplier.dto.response.SupplierPaymentDTO;
 import lk.epicgreen.erp.supplier.service.impl.SupplierPaymentService;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,10 @@ public class SupplierPaymentController {
     @GetMapping("/{id}")
     public ResponseEntity<SupplierPaymentDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<SupplierPaymentDTO> createSupplierPayment(@RequestBody SupplierPaymentRequest supplierPaymentRequest){
+        return ResponseEntity.ok(service.createSupplierPayment(supplierPaymentRequest));
     }
 }
