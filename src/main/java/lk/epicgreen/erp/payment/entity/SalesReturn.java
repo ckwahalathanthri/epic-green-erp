@@ -5,6 +5,7 @@ import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.customer.entity.Customer;
 import lk.epicgreen.erp.sales.entity.Invoice;
+import lk.epicgreen.erp.sales.entity.SalesInvoiceItem;
 import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.warehouse.entity.Warehouse;
 import lombok.*;
@@ -52,6 +53,9 @@ public class SalesReturn extends AuditEntity {
     @Size(max = 30)
     @Column(name = "return_number", nullable = false, unique = true, length = 30)
     private String returnNumber;
+//
+//    @OneToMany(mappedBy = "salesReturn", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    private List<SalesReturnItem> items = new ArrayList<>();
     
     /**
      * Return date
@@ -338,7 +342,7 @@ public class SalesReturn extends AuditEntity {
         this.refundStatus = "COMPLETED";
     }
     
-    @PrePersist
+
     protected void onCreate() {
         super.onCreate();
         if (status == null) {
