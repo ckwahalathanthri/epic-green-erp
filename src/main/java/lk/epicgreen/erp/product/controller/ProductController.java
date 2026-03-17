@@ -9,6 +9,7 @@ import lk.epicgreen.erp.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -80,7 +81,10 @@ public class ProductController {
         ProductResponse product = productService.getProductByCode(productCode);
         return ResponseEntity.ok(ApiResponse.success(product, "Product retrieved successfully"));
     }
-    
+
+
+
+
     @GetMapping("/sku/{sku}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductBySku(@PathVariable String sku) {
@@ -101,6 +105,18 @@ public class ProductController {
         PageResponse<ProductResponse> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(ApiResponse.success(products, "Products retrieved successfully"));
     }
+
+//    @GetMapping
+//    public ResponseEntity<Page<ProductResponse>> getAllProducts(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "20") int size) {
+//        Page<ProductResponse> products =  productService.getAllProducts(
+//                PageRequest.of(page, size));
+//        return ResponseEntity.ok(products);
+//    }
+
+
+
     
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER', 'SALES_REP', 'USER')")
@@ -118,6 +134,18 @@ public class ProductController {
         PageResponse<ProductResponse> products = productService.searchProducts(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(products, "Search results retrieved successfully"));
     }
+
+
+
+//    @GetMapping("/search")
+//    public ResponseEntity<Page<ProductResponse>> searchProducts(
+//            @RequestParam String keyword,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "20") int size) {
+//        Page<ProductResponse> products = (Page<ProductResponse>) productService.searchProducts(
+//                keyword, PageRequest.of(page, size));
+//        return ResponseEntity.ok(products);
+//    }
     
     // ===================================================================
     // STATUS OPERATIONS
@@ -512,6 +540,12 @@ public class ProductController {
         Double margin = productService.calculateMargin(product);
         return ResponseEntity.ok(ApiResponse.success(margin, "Margin calculated successfully"));
     }
+
+//    @GetMapping("/{id}")
+//    public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
+//        ProductResponse product = productService.getProductById(id);
+//        return ResponseEntity.ok(product);
+//    }
     
     @GetMapping("/{id}/margin-percentage")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PRODUCT_MANAGER')")
