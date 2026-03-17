@@ -43,6 +43,10 @@ public interface CustomerLedgerRepository extends JpaRepository<CustomerLedger, 
      */
     Page<CustomerLedger> findByCustomerId(Long customerId, Pageable pageable);
 
+    List<CustomerLedger> findByBalanceGreaterThan(BigDecimal amount);
+    
+    
+    CustomerLedger findByCustomerIdAndBalanceGreaterThan(Long customerId, BigDecimal amount);
     /**
      * Find ledger entries by customer ordered by transaction date
      */
@@ -277,6 +281,16 @@ public interface CustomerLedgerRepository extends JpaRepository<CustomerLedger, 
             "FROM CustomerLedger cl WHERE cl.customer.id = :customerId")
     Optional<BigDecimal> getTotalByCustomerAndType(@Param("customerId") Long customerId, @Param("type") String string);
 
+    @Query("SELECT l FROM CustomerLedger l WHERE l.customer.id = :customerId " +
+            "AND l.transactionDate BETWEEN :fromDate AND :toDate " +
+            "ORDER BY l.transactionDate, l.id")
+    List<CustomerLedger> findByCustomerIdAndDateRange(
+            @Param("customerId") Long customerId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+
     @Query("SELECT SUM(cl.debitAmount) FROM CustomerLedger cl " +
             "WHERE cl.customer.id = :id")
     Optional<BigDecimal> getTotalDebitsByCustomer(@Param("id") Long id);
@@ -305,4 +319,6 @@ public interface CustomerLedgerRepository extends JpaRepository<CustomerLedger, 
             "WHERE cl.customer.id = :customerId " +
             "AND cl.transactionDate BETWEEN :startDate AND :endDate")
     Integer countByCustomerIdAndTransactionDateBetween(@Param("customerId") Long customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    List<CustomerLedger> findByCustomerIdOrderByTransactionDateDesc(Long customerId);
 }

@@ -1,5 +1,6 @@
 package lk.epicgreen.erp.customer.service.impl;
 
+import lk.epicgreen.erp.accounting.dto.response.LedgerEntryDTO;
 import lk.epicgreen.erp.customer.dto.request.CustomerLedgerRequest;
 import lk.epicgreen.erp.customer.dto.response.CustomerLedgerResponse;
 import lk.epicgreen.erp.customer.entity.Customer;
@@ -74,6 +75,13 @@ public class CustomerLedgerServiceImpl implements CustomerLedgerService {
         log.info("Customer ledger entry created successfully. New balance: {}", newBalance);
 
         return customerLedgerMapper.toResponse(savedEntry);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LedgerEntryDTO> getCustomerLedgerByDateRange(
+            Long customerId, LocalDate fromDate, LocalDate toDate) {
+        return customerLedgerRepository.findByCustomerIdAndTransactionDateBetween(customerId, fromDate, toDate)
+                .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -253,5 +261,25 @@ public class CustomerLedgerServiceImpl implements CustomerLedgerService {
             .first(ledgerPage.isFirst())
             .empty(ledgerPage.isEmpty())
             .build();
+    }
+
+    private LedgerEntryDTO toDTO(CustomerLedger entity) {
+        LedgerEntryDTO dto = new LedgerEntryDTO();
+        dto.setId(entity.getId());
+        dto.setCustomerId(entity.getCustomer().getId());
+        dto.setCustomerName(entity.getCustomer().getCustomerName());
+        dto.setTransactionDate(entity.getTransactionDate());
+        dto.setTransactionType(entity.getTransactionType());
+        dto.setReferenceType(entity.getReferenceType());
+        dto.setReferenceNumber(entity.getReferenceNumber());
+        dto.setDebitAmount(entity.getDebitAmount());
+        dto.setCreditAmount(entity.getCreditAmount());
+        dto.setBalance(entity.getBalance());
+        dto.setDescription(entity.getDescription());
+//        dto.setDueDate(entity.getDueDate());
+//        dto.setIsReconciled(entity.getIsReconciled());
+        dto.setCreatedBy(String.valueOf(entity.getCreatedBy()));
+        dto.setCreatedAt(entity.getCreatedAt());
+        return dto;
     }
 }

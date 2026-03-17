@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.customer.repository;
 
 import lk.epicgreen.erp.customer.entity.Customer;
+import lk.epicgreen.erp.customer.entity.CustomerLedger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,6 +63,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
      * Find all active customers with pagination
      */
     Page<Customer> findByIsActiveTrue(Pageable pageable);
+    @Query("SELECT cl FROM CustomerLedger cl WHERE cl.customer.id = :customerId " +
+            "AND cl.transactionDate BETWEEN :startDate AND :endDate ORDER BY cl.transactionDate ASC, cl.createdAt ASC")
+    List<CustomerLedger> findByCustomerIdAndTransactionDateBetween(
+            @Param("customerId") Long customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     
     /**
      * Find all inactive customers
@@ -91,7 +97,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
      * Find customers by assigned sales rep with pagination
      */
     Page<Customer> findByAssignedSalesRepId(Long assignedSalesRepId, Pageable pageable);
-    
+
     /**
      * Find customers by region
      */

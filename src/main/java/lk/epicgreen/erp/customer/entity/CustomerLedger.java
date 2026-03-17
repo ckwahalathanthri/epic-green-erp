@@ -11,6 +11,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 
 /**
  * CustomerLedger entity
@@ -51,6 +52,9 @@ public class CustomerLedger {
     @NotNull(message = "Transaction date is required")
     @Column(name = "transaction_date", nullable = false)
     private LocalDate transactionDate;
+
+    @Column(name = "due_date")
+    private LocalDate dueDate;
     
     /**
      * Transaction type (SALE, PAYMENT, RETURN, CREDIT_NOTE, DEBIT_NOTE, ADJUSTMENT)
@@ -255,4 +259,6 @@ public class CustomerLedger {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+
 }

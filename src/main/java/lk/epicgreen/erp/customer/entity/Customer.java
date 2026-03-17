@@ -8,7 +8,6 @@ import lk.epicgreen.erp.admin.entity.User;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lk.epicgreen.erp.credit.controller.entity.CreditLimit;
 import lk.epicgreen.erp.credit.controller.entity.CustomerGroupMember;
-import lk.epicgreen.erp.product.entity.ProductDocument;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -64,7 +63,13 @@ public class Customer extends AuditEntity {
     @JsonManagedReference
     private List<CreditLimit> creditLimits=new ArrayList<>();
 
+    @OneToMany(mappedBy = "customer", orphanRemoval = true)
+    @JsonManagedReference
+    private List<CustomerLedger> customerLedger=new ArrayList<>();
 
+    @OneToMany(mappedBy = "customer", orphanRemoval = true)
+    @JsonManagedReference
+    private List<CustomerStatement> customerStatement=new ArrayList<>();
 
     @Column
     private String Type;
