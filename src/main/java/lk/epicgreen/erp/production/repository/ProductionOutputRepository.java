@@ -337,4 +337,7 @@ public interface ProductionOutputRepository extends JpaRepository<ProductionOutp
 
     @Query("SELECT COUNT(po) FROM ProductionOutput po WHERE po.id = :id")
     Integer countByWoId(@Param("id") Long id);
+
+    @Query("SELECT po FROM ProductionOutput po WHERE po.productionOrder.id=:orderId")
+    List<ProductionOutput> findByProductionOrderId(Long orderId);
 }
