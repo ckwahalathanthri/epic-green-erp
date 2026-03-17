@@ -96,5 +96,26 @@ public class PurchaseOrderService {
         }
         return purchaseOrder;
     }
+    private Long id;
+    private String poNumber;
+    private Long supplierId;
+    private String supplierName;
+    private LocalDate expectedDeliveryDate;
+    private LocalDate poDate;
+    private String poStatus;
+    private BigDecimal totalAmount;
 
+    public List<PurchaseOrderDTO> getPoPending() {
+        return repository.findallByStatusPending()
+                .stream().map(po-> new PurchaseOrderDTO(
+                        po.getId(),
+                        po.getPoNumber(),
+                        po.getSupplierId(),
+                        po.getSupplierName(),
+                        po.getExpectedDeliveryDate(),
+                        po.getPoDate(),
+                        po.getPoStatus(),
+                        po.getTotalAmount()
+                )).collect(Collectors.toList());
+    }
 }

@@ -235,6 +235,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
+    @Transactional
     public ProductCategory createCategory(ProductCategoryRequest request) {
         String categoryCode = request.getCategoryCode();
         log.info("Creating new product category: {}", categoryCode);
@@ -420,8 +421,8 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     public List<ProductCategory> getActiveCategories() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getActiveCategories'");
+        return productCategoryRepository.findByIsActiveTrue();
+
     }
 
     @Override

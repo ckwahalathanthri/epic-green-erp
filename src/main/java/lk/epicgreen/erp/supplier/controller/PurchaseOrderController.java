@@ -26,6 +26,10 @@ public class PurchaseOrderController {
     public ResponseEntity<PurchaseOrderDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
+    @GetMapping("/pending")
+    public ResponseEntity<List<PurchaseOrderDTO>> getPoPending(){
+        return ResponseEntity.ok(service.getPoPending());
+    }
 
     @PostMapping
     public ResponseEntity<PurchaseOrderDTO> createPurchaseOrder(@RequestBody PurchaseOrderRequest purchaseOrderRequest){

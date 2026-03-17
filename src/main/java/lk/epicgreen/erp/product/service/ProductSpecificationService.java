@@ -10,4 +10,6 @@ public interface ProductSpecificationService {
     ProductSpecificationDTO updateSpecification(Long id, ProductSpecificationDTO dto);
     void deleteSpecification(Long id);
     void bulkCreateSpecifications(Long productId, List<ProductSpecificationDTO> specs);
+
+    List<ProductSpecificationDTO> getSpecifications();
 }

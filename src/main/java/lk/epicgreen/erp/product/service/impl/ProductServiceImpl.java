@@ -462,14 +462,17 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public List<ProductResponse> getRawMaterialProducts() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getRawMaterialProducts'");
+		return productRepository.findByProductType("RAW_MATERIAL").stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
+
 	}
 
 	@Override
 	public List<ProductResponse> getFinishedGoodsProducts() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getFinishedGoodsProducts'");
+		return productRepository.findByProductType("FINISHED_GOOD").stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
 	}
 
 	@Override
@@ -478,22 +481,24 @@ public class ProductServiceImpl implements ProductService {
 		throw new UnsupportedOperationException("Unimplemented method 'getProductsByManufacturer'");
 	}
 
-	@Override
-	public List<ProductResponse> getProductsByPriceRange(Double minPrice, Double maxPrice) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getProductsByPriceRange'");
+	public List<ProductResponse> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
+        return productRepository.findBySellingPriceRange(minPrice, maxPrice).stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
 	}
 
 	@Override
-	public List<ProductResponse> getProductsBelowPrice(Double maxPrice) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getProductsBelowPrice'");
+	public List<ProductResponse> getProductsBelowPrice(BigDecimal maxPrice) {
+		return productRepository.findByPriceBelowMax(maxPrice).stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
 	}
 
 	@Override
-	public List<ProductResponse> getProductsAbovePrice(Double minPrice) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getProductsAbovePrice'");
+	public List<ProductResponse> getProductsAbovePrice(BigDecimal minPrice) {
+		return productRepository.finByPriceAboveMinimum(minPrice).stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
 	}
 
 	@Override

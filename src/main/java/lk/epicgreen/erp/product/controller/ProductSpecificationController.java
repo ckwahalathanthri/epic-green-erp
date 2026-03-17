@@ -22,6 +22,11 @@ public class ProductSpecificationController {
         List<ProductSpecificationDTO> specs = specService.getProductSpecifications(productId);
         return ResponseEntity.ok(specs);
     }
+    @GetMapping
+    public ResponseEntity<List<ProductSpecificationDTO>> getAllSpecifications() {
+        List<ProductSpecificationDTO> specs = specService.getSpecifications();
+        return ResponseEntity.ok(specs);
+    }
     
     @PostMapping
     public ResponseEntity<ProductSpecificationDTO> createSpecification(

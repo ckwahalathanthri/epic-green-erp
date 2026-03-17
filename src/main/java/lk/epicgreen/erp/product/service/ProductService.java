@@ -156,11 +156,11 @@ public interface ProductService {
 
     List<ProductResponse> getProductsByManufacturer(String manufacturer);
 
-    List<ProductResponse> getProductsByPriceRange(Double minPrice, Double maxPrice);
+    List<ProductResponse> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
 
-    List<ProductResponse> getProductsBelowPrice(Double maxPrice);
+    List<ProductResponse> getProductsBelowPrice(BigDecimal maxPrice);
 
-    List<ProductResponse> getProductsAbovePrice(Double minPrice);
+    List<ProductResponse> getProductsAbovePrice(BigDecimal minPrice);
 
 	List<ProductResponse> getProductsByCostRange(Double minCost, Double maxCost);
 

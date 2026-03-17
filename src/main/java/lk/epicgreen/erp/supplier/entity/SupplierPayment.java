@@ -32,7 +32,7 @@ public class SupplierPayment {
     
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
-    
+
     @Column(name = "payment_method", nullable = false, length = 50)
     private String paymentMethod; // CASH, CHEQUE, BANK_TRANSFER, CREDIT_CARD, ONLINE
     
@@ -77,7 +77,7 @@ public class SupplierPayment {
     
     @Column(name = "created_by", length = 100)
     private String createdBy;
-    
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -106,11 +106,11 @@ public class SupplierPayment {
         }
         
         // Validate bank details if payment method is BANK_TRANSFER
-        if ("BANK_TRANSFER".equals(this.paymentMethod)) {
-            if (this.bankName == null || this.bankName.trim().isEmpty()) {
-                throw new IllegalArgumentException("Bank name is required for bank transfer payments");
-            }
-        }
+//        if ("BANK_TRANSFER".equals(this.paymentMethod)) {
+//            if (this.bankName == null || this.bankName.trim().isEmpty()) {
+//                throw new IllegalArgumentException("Bank name is required for bank transfer payments");
+//            }
+//        }
     }
     
     // Helper method to mark payment as completed

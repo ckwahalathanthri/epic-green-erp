@@ -46,6 +46,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT p FROM Product p WHERE p.productName = :productName")
     Optional<Product> findByProductName(@Param("productName") String productName);
 
+    @Query("SELECT p FROM Product  p WHERE p.sellingPrice<:price")
+    List<Product>findByPriceBelowMax(@Param("price") BigDecimal price);
+
+    @Query("SELECT p FROM Product p WHERE p.sellingPrice>:price")
+    List<Product> finByPriceAboveMinimum(@Param("price") BigDecimal price);
+
     /**
      * Find product by barcode
      */

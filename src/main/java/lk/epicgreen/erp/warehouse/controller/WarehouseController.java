@@ -130,7 +130,7 @@ public class WarehouseController {
     
     // Query Operations
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER', 'USER')")
     public ResponseEntity<ApiResponse<List<WarehouseResponse>>> getActiveWarehouses() {
         List<WarehouseResponse> warehouses = warehouseService.getActiveWarehouses();
         return ResponseEntity.ok(ApiResponse.success(warehouses, "Active warehouses retrieved successfully"));

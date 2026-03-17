@@ -27,6 +27,12 @@ public class ProductSpecificationServiceImpl implements ProductSpecificationServ
             .map(specMapper::toDTO)
             .collect(Collectors.toList());
     }
+    public List<ProductSpecificationDTO> getSpecifications(){
+        return specRepository.findAll()
+            .stream()
+            .map(specMapper::toDTO)
+            .collect(Collectors.toList());
+    }
     
     @Override
     public ProductSpecificationDTO createSpecification(ProductSpecificationDTO dto) {
