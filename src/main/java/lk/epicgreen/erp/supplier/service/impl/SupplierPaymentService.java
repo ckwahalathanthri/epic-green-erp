@@ -70,4 +70,21 @@ public class SupplierPaymentService {
 
         return toDTO(repository.save(toEntity(supplierPaymentRequest)));
     }
+
+    public SupplierPaymentDTO updateSupplierPayment(Long id,SupplierPaymentRequest supplierPaymentRequest) {
+        SupplierPayment supplierPayment=repository.findById(id).get();
+        supplierPayment.setSupplierName(supplierPaymentRequest.getSupplierName());
+        supplierPayment.setPaymentDate(supplierPaymentRequest.getPaymentDate());
+        supplierPayment.setAmount(BigDecimal.valueOf(supplierPaymentRequest.getAmount()));
+        supplierPayment.setPaymentMethod(supplierPaymentRequest.getPaymentMethod());
+        supplierPayment.setPaymentNumber(supplierPaymentRequest.getReferenceNumber());
+        supplierPayment.setPaymentStatus("Pending");
+        supplierPayment.setSupplierId(supplierPaymentRequest.getSupplierId());
+        supplierPayment.setReferenceNumber(supplierPaymentRequest.getReferenceNumber());
+        supplierPayment.setChequeNumber(supplierPaymentRequest.getChequeNumber());
+        supplierPayment.setChequeDate(supplierPaymentRequest.getChequeDate());
+        supplierPayment.setBankName(supplierPaymentRequest.getBankName());
+        supplierPayment.setNotes(supplierPaymentRequest.getNotes());
+        return toDTO(repository.save(supplierPayment));
+    }
 }

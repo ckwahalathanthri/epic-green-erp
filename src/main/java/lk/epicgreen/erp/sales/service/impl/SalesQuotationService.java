@@ -85,7 +85,8 @@ public class SalesQuotationService {
         if (quotationDTO.getQuotationDate() == null) {
             quotationDTO.setQuotationDate(LocalDate.now());
         }
-        
+        System.out.println(quotationDTO);
+
         SalesQuotation quotation = quotationMapper.toEntity(quotationDTO);
         SalesQuotation savedQuotation = quotationRepository.save(quotation);
         

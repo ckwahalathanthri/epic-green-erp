@@ -420,8 +420,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
-    public List<ProductCategory> getActiveCategories() {
-        return productCategoryRepository.findByIsActiveTrue();
+    public List<ProductCategoryResponse> getActiveCategories() {
+
+        return productCategoryRepository.findByIsActiveTrue().stream().map(
+                productCategoryMapper::toResponse
+        ).collect(Collectors.toList());
 
     }
 

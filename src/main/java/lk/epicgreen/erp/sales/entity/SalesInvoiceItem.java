@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.sales.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -14,12 +15,13 @@ public class SalesInvoiceItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id", nullable = false)
     private SalesInvoice invoice;
     
-    @Column(name = "line_number", nullable = false)
+    @Column(name = "line_number")
     private Integer lineNumber;
     
     @Column(name = "product_id", nullable = false)
