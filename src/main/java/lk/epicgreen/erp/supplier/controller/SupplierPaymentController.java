@@ -30,4 +30,8 @@ public class SupplierPaymentController {
     public ResponseEntity<SupplierPaymentDTO> createSupplierPayment(@RequestBody SupplierPaymentRequest supplierPaymentRequest){
         return ResponseEntity.ok(service.createSupplierPayment(supplierPaymentRequest));
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<SupplierPaymentDTO> updateSupplierPayment(@PathVariable Long id, @RequestBody SupplierPaymentRequest supplierPaymentRequest){
+        return ResponseEntity.ok(service.updateSupplierPayment(id,supplierPaymentRequest));
+    }
 }

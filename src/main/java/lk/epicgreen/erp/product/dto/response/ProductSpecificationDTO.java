@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class ProductSpecificationDTO {
     private Long id;
     private Long productId;
+    private String productName;
     private String specName;
     private String specValue;
     private String specUnit;

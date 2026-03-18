@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.sales.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -22,6 +23,7 @@ import java.util.List;
     @Index(name = "idx_invoice_date", columnList = "invoice_date"),
     @Index(name = "idx_due_date", columnList = "due_date")
 })
+
 @Data
 public class SalesInvoice {
     

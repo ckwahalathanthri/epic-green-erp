@@ -32,6 +32,7 @@ import java.util.List;
     @Index(name = "idx_category_id", columnList = "category_id"),
     @Index(name = "idx_deleted_at", columnList = "deleted_at")
 })
+
 @Getter
 @Setter
 @NoArgsConstructor

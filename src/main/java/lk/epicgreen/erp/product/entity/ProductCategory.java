@@ -5,6 +5,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
 
@@ -86,6 +88,7 @@ public class ProductCategory extends AuditEntity {
      * Products in this category
      */
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
     @Builder.Default
     private List<Product> products = new ArrayList<>();
     

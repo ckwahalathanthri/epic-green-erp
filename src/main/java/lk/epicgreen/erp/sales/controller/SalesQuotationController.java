@@ -19,7 +19,7 @@ public class SalesQuotationController {
     private final SalesQuotationService quotationService;
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
     public ResponseEntity<List<SalesQuotationDTO>> getAllQuotations() {
         return ResponseEntity.ok(quotationService.getAllQuotations());
     }
@@ -43,7 +43,7 @@ public class SalesQuotationController {
     }
     
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
     public ResponseEntity<SalesQuotationDTO> createQuotation(@RequestBody SalesQuotationDTO quotationDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(quotationService.createQuotation(quotationDTO));
     }

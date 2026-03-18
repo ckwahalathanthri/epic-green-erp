@@ -16,8 +16,10 @@ public class ProductSpecificationMapper {
     
     public ProductSpecificationDTO toDTO(ProductSpecification entity) {
         ProductSpecificationDTO dto = new ProductSpecificationDTO();
-        dto.setId(entity.getId());
         dto.setProductId(entity.getProduct().getId());
+        System.out.println("Mapping ProductSpecification to DTO: productId=" + dto.getProductId());
+        dto.setId(entity.getId());
+        dto.setProductName(entity.getProduct().getProductName());
         dto.setSpecName(entity.getSpecName());
         dto.setSpecValue(entity.getSpecValue());
         dto.setSpecUnit(entity.getSpecUnit());

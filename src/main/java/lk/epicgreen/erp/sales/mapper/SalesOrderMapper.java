@@ -80,10 +80,11 @@ public class SalesOrderMapper {
         String shippingAddress = formatAddress(order.getShippingAddress());
 
         return SalesOrderResponse.builder()
-
+                .orderId(order.getId())
             .orderNumber(order.getOrderNumber())
             .orderDate(order.getOrderDate())
             .customerId(order.getCustomer() != null ? order.getCustomer().getId() : null)
+                .customerName(order.getCustomer() != null ? order.getCustomer().getCustomerName(): null)
             .customerPoNumber(order.getCustomerPoNumber())
             .customerPoDate(order.getCustomerPoDate())
             .billingAddressId(order.getBillingAddress() != null ? order.getBillingAddress().getId() : null)

@@ -22,11 +22,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SalesOrderResponse {
-
+    private Long orderId;
     private String orderNumber;
     private LocalDate orderDate;
     private Long customerId;
     private String customerPoNumber;
+    private String customerName;
     private LocalDate customerPoDate;
     private Long billingAddressId;
     private Long shippingAddressId;

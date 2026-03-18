@@ -28,6 +28,9 @@ public class SalesInvoiceService {
         if (invoice.getInvoiceNumber() == null) {
             invoice.setInvoiceNumber(generateInvoiceNumber());
         }
+        if(invoice.getItems()!=null){
+            invoice.getItems().forEach(item->item.setInvoice(invoice));
+        }
         return invoiceRepository.save(invoice);
     }
     
