@@ -2,8 +2,10 @@ package lk.epicgreen.erp.product.service.impl;
 
 
 import lk.epicgreen.erp.product.dto.response.ProductSpecificationDTO;
+import lk.epicgreen.erp.product.entity.Product;
 import lk.epicgreen.erp.product.entity.ProductSpecification;
 import lk.epicgreen.erp.product.mapper.ProductSpecificationMapper;
+import lk.epicgreen.erp.product.repository.ProductRepository;
 import lk.epicgreen.erp.product.repository.ProductSpecificationRepository;
 import lk.epicgreen.erp.product.service.ProductSpecificationService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public class ProductSpecificationServiceImpl implements ProductSpecificationService {
     
     private final ProductSpecificationRepository specRepository;
+    private final ProductRepository productRepository;
     private final ProductSpecificationMapper specMapper;
     
     @Override
@@ -36,7 +39,10 @@ public class ProductSpecificationServiceImpl implements ProductSpecificationServ
     
     @Override
     public ProductSpecificationDTO createSpecification(ProductSpecificationDTO dto) {
+        Product productFound=productRepository.findById(dto.getProductId()).orElseThrow(
+                ()->new RuntimeException("Product not found"));
         ProductSpecification spec = specMapper.toEntity(dto);
+        spec.setProduct(productFound);
         ProductSpecification saved = specRepository.save(spec);
         return specMapper.toDTO(saved);
     }
