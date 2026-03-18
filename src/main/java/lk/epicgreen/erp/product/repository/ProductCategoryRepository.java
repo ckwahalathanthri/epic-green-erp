@@ -38,6 +38,7 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     @Query("SELECT pc FROM ProductCategory pc WHERE pc.categoryName = :categoryName")
     Optional<ProductCategory> findByCategoryName(@Param("categoryName") String categoryName);
 
+    List<ProductCategory> findByParentCategoryIsNull();
     /**
      * Find all active categories
      */
