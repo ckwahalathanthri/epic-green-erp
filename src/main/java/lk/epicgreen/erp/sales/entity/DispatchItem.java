@@ -20,7 +20,7 @@ import java.math.BigDecimal;
  */
 @Entity
 @Table(name = "dispatch_items", indexes = {
-    @Index(name = "idx_dispatch_id", columnList = "dispatch_id"),
+    @Index(name = "idx_dispatch_id", columnList = "dispatchitm_id"),
     @Index(name = "idx_order_item_id", columnList = "order_item_id"),
     @Index(name = "idx_product_id", columnList = "product_id")
 })
@@ -38,21 +38,21 @@ public class DispatchItem {
     /**
      * Dispatch note reference (header)
      */
-    @NotNull(message = "Dispatch note is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dispatch_id", nullable = false, foreignKey = @ForeignKey(name = "fk_dispatch_item_dispatch"))
-    private DispatchNote dispatch;
+//    @NotNull(message = "Dispatch note is required")
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "dispatch_id", foreignKey = @ForeignKey(name = "fk_dispatch_item_dispatch"))
+//    private DispatchNote dispatch;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dispatchitm_id", nullable = false, foreignKey = @ForeignKey(name = "fk_dispatch_item_dispatch"))
-    private Dispatch dispatchItem;
+    private Dispatch dispatch;
     
     /**
      * Sales order item reference
      */
-    @NotNull(message = "Order item is required")
+//    @NotNull(message = "Order item is required")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_item_id", nullable = false, foreignKey = @ForeignKey(name = "fk_dispatch_item_order_item"))
+    @JoinColumn(name = "order_item_id",  foreignKey = @ForeignKey(name = "fk_dispatch_item_order_item"))
     private SalesOrderItem orderItem;
     
     /**
@@ -131,7 +131,4 @@ public class DispatchItem {
         return getClass().hashCode();
     }
 
-    public void setDispatchNote(DispatchNote dispatch) {
-        this.dispatch=dispatch;
-    }
 }

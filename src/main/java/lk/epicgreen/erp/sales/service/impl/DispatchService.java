@@ -56,6 +56,7 @@ public class DispatchService {
         if (dispatchDTO.getDispatchDate() == null) {
             dispatchDTO.setDispatchDate(LocalDate.now());
         }
+        System.out.println("The data accesed  is "+dispatchDTO);
         
         Dispatch dispatch = dispatchMapper.toEntity(dispatchDTO);
         Dispatch savedDispatch = dispatchRepository.save(dispatch);

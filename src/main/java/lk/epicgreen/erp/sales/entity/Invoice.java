@@ -70,7 +70,7 @@ public class Invoice extends AuditEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dispatch_id", foreignKey = @ForeignKey(name = "fk_invoice_dispatch"))
-    private DispatchNote dispatch;
+    private Dispatch dispatch;
     
     /**
      * Customer reference
@@ -362,7 +362,6 @@ public class Invoice extends AuditEntity {
         updatePaymentStatus();
     }
     
-    @PrePersist
     protected void onCreate() {
         super.onCreate();
         if (status == null) {
@@ -401,7 +400,7 @@ public class Invoice extends AuditEntity {
         return getClass().hashCode();
     }
 
-    public void setDispatchNote(DispatchNote dispatch) {
+    public void setDispatch(Dispatch dispatch) {
         this.dispatch=dispatch;
     }
 }

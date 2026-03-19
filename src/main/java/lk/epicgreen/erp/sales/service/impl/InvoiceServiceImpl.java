@@ -3,18 +3,12 @@ package lk.epicgreen.erp.sales.service.impl;
 import lk.epicgreen.erp.sales.dto.request.InvoiceRequest;
 import lk.epicgreen.erp.sales.dto.request.InvoiceItemRequest;
 import lk.epicgreen.erp.sales.dto.response.InvoiceResponse;
-import lk.epicgreen.erp.sales.entity.Invoice;
-import lk.epicgreen.erp.sales.entity.InvoiceItem;
-import lk.epicgreen.erp.sales.entity.SalesOrder;
-import lk.epicgreen.erp.sales.entity.SalesOrderItem;
-import lk.epicgreen.erp.sales.entity.DispatchNote;
+import lk.epicgreen.erp.sales.entity.*;
+//import lk.epicgreen.erp.sales.entity.DispatchNote;
 import lk.epicgreen.erp.sales.mapper.InvoiceMapper;
 import lk.epicgreen.erp.sales.mapper.InvoiceItemMapper;
-import lk.epicgreen.erp.sales.repository.InvoiceRepository;
-import lk.epicgreen.erp.sales.repository.InvoiceItemRepository;
-import lk.epicgreen.erp.sales.repository.SalesOrderRepository;
-import lk.epicgreen.erp.sales.repository.SalesOrderItemRepository;
-import lk.epicgreen.erp.sales.repository.DispatchNoteRepository;
+import lk.epicgreen.erp.sales.repository.*;
+//import lk.epicgreen.erp.sales.repository.DispatchNoteRepository;
 import lk.epicgreen.erp.sales.service.InvoiceService;
 import lk.epicgreen.erp.customer.entity.Customer;
 import lk.epicgreen.erp.customer.entity.CustomerAddress;
@@ -67,7 +61,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceItemRepository invoiceItemRepository;
     private final SalesOrderRepository salesOrderRepository;
     private final SalesOrderItemRepository salesOrderItemRepository;
-    private final DispatchNoteRepository dispatchNoteRepository;
+    private final DispatchRepository dispatchNoteRepository;
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository customerAddressRepository;
     private final ProductRepository productRepository;
@@ -97,8 +91,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         // Set dispatch note if provided
         if (request.getDispatchId() != null) {
-            DispatchNote dispatch = findDispatchNoteById(request.getDispatchId());
-            invoice.setDispatchNote(dispatch);
+            Dispatch dispatch = dispatchNoteRepository.findById(request.getDispatchId()).get();
+            invoice.setDispatch(dispatch);
         }
 
         // Set billing address
@@ -157,10 +151,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         // Update dispatch note
         if (request.getDispatchId() != null) {
-            DispatchNote dispatch = findDispatchNoteById(request.getDispatchId());
-            invoice.setDispatchNote(dispatch);
+            Dispatch dispatch = dispatchNoteRepository.findById(request.getDispatchId()).get();
+            invoice.setDispatch(dispatch);
         } else {
-            invoice.setDispatchNote(null);
+            invoice.setDispatch(null);
         }
 
         // Update billing address
@@ -496,10 +490,10 @@ public class InvoiceServiceImpl implements InvoiceService {
             .orElseThrow(() -> new ResourceNotFoundException("Sales Order Item not found: " + id));
     }
 
-    private DispatchNote findDispatchNoteById(Long id) {
-        return dispatchNoteRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Dispatch Note not found: " + id));
-    }
+//    private DispatchNote findDispatchNoteById(Long id) {
+//        return dispatchNoteRepository.findById(id)
+//            .orElseThrow(() -> new ResourceNotFoundException("Dispatch Note not found: " + id));
+//    }
 
     private Customer findCustomerById(Long id) {
         return customerRepository.findByIdAndDeletedAtIsNull(id).get();

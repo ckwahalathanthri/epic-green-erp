@@ -34,7 +34,7 @@ public class DispatchItemMapper {
         return DispatchItemResponse.builder()
             .id(item.getId())
             .dispatchId(item.getDispatch().getId() != null ? item.getDispatch().getId() : null)
-            .orderItemId(item.getOrderItem() != null ? item.getOrderItem().getId() : null)
+//            .orderItemId(item.getDispatchItem() != null ? item.getDispatchItem().getId() : null)
             .productId(item.getProduct() != null ? item.getProduct().getId() : null)
             .productCode(item.getProduct() != null ? item.getProduct().getProductCode() : null)
             .productName(item.getProduct() != null ? item.getProduct().getProductName() : null)
