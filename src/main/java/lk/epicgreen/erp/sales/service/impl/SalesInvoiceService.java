@@ -36,7 +36,29 @@ public class SalesInvoiceService {
     
     public SalesInvoice updateInvoice(Long id, SalesInvoice invoice) {
         SalesInvoice existing = getInvoiceById(id);
-        // Update fields
+        existing.setCustomerId(invoice.getCustomerId());
+        existing.setCustomerName(invoice.getCustomerName());
+        existing.setCustomerEmail(invoice.getCustomerEmail());
+        existing.setInvoiceDate(invoice.getInvoiceDate());
+        existing.setDueDate(invoice.getDueDate());
+        existing.setSubtotal(invoice.getSubtotal());
+        existing.setTotalAmount(invoice.getTotalAmount());
+        existing.setInvoiceDate(invoice.getInvoiceDate());
+        existing.setInvoiceNumber(invoice.getInvoiceNumber());
+        existing.setInvoiceType(invoice.getInvoiceType());
+        existing.setInvoiceStatus(invoice.getInvoiceStatus());
+        existing.setOrderId(invoice.getOrderId());
+        existing.setPaymentTerms(invoice.getPaymentTerms());
+        if(existing.getItems()!=null){
+            existing.getItems().clear();
+
+            if (invoice.getItems() != null) {
+                invoice.getItems().forEach(item -> {
+                    item.setInvoice(existing); // maintain relationship
+                    existing.getItems().add(item); // add to existing list
+                });
+            }
+        }
         return invoiceRepository.save(existing);
     }
     

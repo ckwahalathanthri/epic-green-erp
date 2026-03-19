@@ -115,8 +115,11 @@ public class Dispatch {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "dispatch", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Invoice> Invoice = new ArrayList<>();
     
-    @OneToMany(mappedBy = "dispatchItem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dispatch", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<DispatchItem> items = new ArrayList<>();
 
     @PrePersist
