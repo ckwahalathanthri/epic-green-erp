@@ -7,6 +7,7 @@ import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lk.epicgreen.erp.admin.entity.UnitOfMeasure;
 import lk.epicgreen.erp.common.audit.AuditEntity;
 import lombok.*;
@@ -63,6 +64,54 @@ public class Product extends AuditEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ProductSpecification> specification=new ArrayList<>();
+
+    /**
+     * Warehouse inventory items for this product
+     */
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonBackReference
+    @Builder.Default
+    private List<lk.epicgreen.erp.warehouse.entity.Inventory> inventories=new ArrayList<>();
+
+    /**
+     * Stock levels for this product across warehouses
+     */
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonBackReference
+    @Builder.Default
+    private List<lk.epicgreen.erp.warehouse.entity.StockLevel> stockLevels=new ArrayList<>();
+
+    /**
+     * GRN items for this product
+     */
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonBackReference
+    @Builder.Default
+    private List<lk.epicgreen.erp.warehouse.entity.GRNItem> grnItems=new ArrayList<>();
+
+    /**
+     * Issue items for this product
+     */
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonBackReference
+    @Builder.Default
+    private List<lk.epicgreen.erp.warehouse.entity.IssueItem> issueItems=new ArrayList<>();
+
+    /**
+     * Stock adjustment items for this product
+     */
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonBackReference
+    @Builder.Default
+    private List<lk.epicgreen.erp.warehouse.entity.StockAdjustmentItem> adjustmentItems=new ArrayList<>();
+
+    /**
+     * Stock movements for this product
+     */
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonBackReference
+    @Builder.Default
+    private List<lk.epicgreen.erp.warehouse.entity.StockMovement> movements=new ArrayList<>();
 
 
 

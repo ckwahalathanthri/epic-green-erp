@@ -7,6 +7,7 @@ import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lk.epicgreen.erp.credit.controller.entity.CreditLimit;
 import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;
@@ -70,11 +71,11 @@ public class Inventory {
     private List<GRNItem> grnItems=new ArrayList<>();
 
     @OneToMany(mappedBy = "inventoryItem", orphanRemoval = true)
-    @JsonManagedReference
+    @JsonBackReference
     private List<StockLevel> stockLevels=new ArrayList<>();
 
     @OneToMany(mappedBy = "inventoryItem", orphanRemoval = true)
-    @JsonManagedReference
+    @JsonBackReference
     private List<IssueItem> issueItems=new ArrayList<>();
 
 

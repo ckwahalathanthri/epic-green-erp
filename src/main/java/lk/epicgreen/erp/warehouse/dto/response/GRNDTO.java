@@ -17,8 +17,8 @@ public class GRNDTO {
     private Long warehouseId;
     private String warehouseName;
     private LocalDate receivedDate;
-    private String supplierInvoiceNumber;
-    private String deliveryNoteNumber;
+    private String invoiceNumber;
+    private String deliveryNote;
     private String grnStatus;
     private String qualityStatus;
     private String notes;

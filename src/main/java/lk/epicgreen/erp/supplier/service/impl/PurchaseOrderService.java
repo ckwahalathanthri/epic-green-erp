@@ -48,6 +48,8 @@ public class PurchaseOrderService {
         purchaseOrderDTO.setSupplierId(entity.getSupplierId());
         purchaseOrderDTO.setPoDate(entity.getPoDate());
         purchaseOrderDTO.setSupplierName(entity.getSupplierName());
+        purchaseOrderDTO.setItems(entity.getItems());
+
         return purchaseOrderDTO;
 
     }
@@ -115,7 +117,8 @@ public class PurchaseOrderService {
                         po.getExpectedDeliveryDate(),
                         po.getPoDate(),
                         po.getPoStatus(),
-                        po.getTotalAmount()
+                        po.getTotalAmount(),
+                        po.getItems()
                 )).collect(Collectors.toList());
     }
 }
