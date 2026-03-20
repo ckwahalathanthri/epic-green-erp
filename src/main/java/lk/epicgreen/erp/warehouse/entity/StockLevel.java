@@ -1,6 +1,7 @@
 package lk.epicgreen.erp.warehouse.entity;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lk.epicgreen.erp.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "stock_levels")
+@Table(name = "stock_levels",
+       indexes = {
+           @Index(name = "idx_inventory_item_id", columnList = "inventory_item_id"),
+           @Index(name = "idx_warehouse_id", columnList = "warehouse_id"),
+           @Index(name = "idx_batch_number", columnList = "batch_number"),
+           @Index(name = "idx_expiry_date", columnList = "expiry_date")
+       })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,13 +29,27 @@ public class StockLevel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Inventory item reference (bidirectional relationship)
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_item_id", nullable = false)
+    @JoinColumn(name = "inventory_item_id", nullable = false, foreignKey = @ForeignKey(name = "fk_stock_level_inventory"))
+    @JsonBackReference
     private Inventory inventoryItem;
 
+    /**
+     * Warehouse reference
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "warehouse_id", nullable = false)
+    @JoinColumn(name = "warehouse_id", nullable = false, foreignKey = @ForeignKey(name = "fk_stock_level_warehouse"))
     private Warehouse warehouse;
+    
+    /**
+     * Product reference (direct reference for easier access)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_stock_level_product"))
+    private Product product;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -27,6 +27,7 @@ public class GRNController {
     
     @PostMapping
     public ResponseEntity<GRNDTO> create(@RequestBody GRNDTO dto) {
+        System.out.println("Received data for GRN creation: " + dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(grnService.create(dto));
     }
     

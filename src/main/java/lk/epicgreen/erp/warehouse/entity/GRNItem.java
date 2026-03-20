@@ -1,5 +1,7 @@
 package lk.epicgreen.erp.warehouse.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -28,8 +30,12 @@ public class GRNItem {
     @JoinColumn(name = "inventory_item_id", nullable = false)
     private Inventory inventoryItem;
     
-    @Column(name = "product_id")
-    private Long productId;
+    /**
+     * Product reference (direct reference for easier access)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false, foreignKey = @ForeignKey(name = "fk_grn_item_product"))
+    private Product product;
     
     @Column(name = "product_code", length = 50)
     private String productCode;

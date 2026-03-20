@@ -1,5 +1,7 @@
 package lk.epicgreen.erp.warehouse.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lk.epicgreen.erp.product.entity.Product;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -8,7 +10,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "issue_items")
+@Table(name = "issue_items",
+       indexes = {
+           @Index(name = "idx_stock_issue_id", columnList = "stock_issue_id"),
+           @Index(name = "idx_inventory_item_id", columnList = "inventory_item_id"),
+           @Index(name = "idx_product_id", columnList = "product_id"),
+           @Index(name = "idx_batch_number", columnList = "batch_number")
+       })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,16 +25,27 @@ public class IssueItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    /**
+     * Stock Issue reference
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stock_issue_id", nullable = false)
+    @JoinColumn(name = "stock_issue_id", nullable = false, foreignKey = @ForeignKey(name = "fk_issue_item_stock_issue"))
     private StockIssue stockIssue;
     
+    /**
+     * Inventory item reference (bidirectional relationship)
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_item_id", nullable = false)
+    @JoinColumn(name = "inventory_item_id", nullable = false, foreignKey = @ForeignKey(name = "fk_issue_item_inventory"))
+    @JsonBackReference
     private Inventory inventoryItem;
     
-    @Column(name = "product_id")
-    private Long productId;
+    /**
+     * Product reference (direct reference for easier access)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false, foreignKey = @ForeignKey(name = "fk_issue_item_product"))
+    private Product product;
     
     @Column(name = "product_code", length = 50)
     private String productCode;

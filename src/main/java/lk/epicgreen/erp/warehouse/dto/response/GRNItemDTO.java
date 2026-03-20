@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class GRNItemDTO {
@@ -21,5 +23,9 @@ public class GRNItemDTO {
     private Long binId;
     private BigDecimal unitPrice;
     private String qualityStatus;
+    private BigDecimal taxPercentage;
+    private BigDecimal receivedQantity;
+    private BigDecimal taxAmount;
+    private BigDecimal totalPrice;
     private String notes;
 }
