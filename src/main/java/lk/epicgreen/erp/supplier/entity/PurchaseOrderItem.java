@@ -37,7 +37,7 @@ public class PurchaseOrderItem {
     private Integer quantity;
     
     @Column(name = "received_quantity")
-    private Integer receivedQuantity = 0;
+    private Integer receivedQuantity ;
     
     @Column(name = "unit_of_measure", nullable = false, length = 20)
     private String unitOfMeasure;
@@ -68,7 +68,7 @@ public class PurchaseOrderItem {
     @PreUpdate
     public void calculateTotals() {
         // Calculate base amount
-        BigDecimal baseAmount = this.unitPrice.multiply(BigDecimal.valueOf(this.quantity));
+        BigDecimal baseAmount = this.unitPrice.multiply(BigDecimal.valueOf(this.receivedQuantity != null ? this.receivedQuantity : this.quantity));
         
         // Calculate discount amount
         if (this.discountPercentage != null && this.discountPercentage.compareTo(BigDecimal.ZERO) > 0) {

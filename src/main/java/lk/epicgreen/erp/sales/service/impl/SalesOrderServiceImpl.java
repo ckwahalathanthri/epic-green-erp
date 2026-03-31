@@ -212,8 +212,8 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
 
         // Verify unit of measure exists
-//        UnitOfMeasure uom = findUnitOfMeasureById(itemRequest.getUomId());
-//        item.setUom(uom);
+        UnitOfMeasure uom = findUnitOfMeasureById(itemRequest.getUomId());
+        item.setUom(uom);
 
         // Verify tax rate exists if provided
         if (itemRequest.getTaxRateId() != null) {

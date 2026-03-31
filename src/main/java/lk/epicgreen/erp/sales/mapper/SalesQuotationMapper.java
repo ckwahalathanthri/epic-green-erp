@@ -42,7 +42,10 @@ public class SalesQuotationMapper {
         entity.setCreatedAt(dto.getCreatedAt());
         entity.setTaxAmount(dto.getTaxAmount());
         entity.setCurrency(dto.getCurrency());
-
+        entity.setPaymentTerms(dto.getPaymentTerms());
+        entity.setReferenceNumber(dto.getReferenceNumber());
+        entity.setTermsAndConditions(dto.getTermsAndConditions());
+        entity.setNotes(dto.getNotes());
         entity.setQuotationStatus(dto.getQuotationStatus());
         if(dto.getItems()!=null){
             entity.setItems(dto.getItems().stream()
