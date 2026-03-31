@@ -35,5 +35,7 @@ public class SupplierPaymentRequest {
     private String chequeNumber;
     private LocalDate chequeDate;
     private String bankName;
+    private Long purchaseOrderId;
+    private double balance;
     private String notes;
 }

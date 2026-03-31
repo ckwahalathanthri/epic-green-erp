@@ -26,7 +26,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
-public class SystemConfigController {
+public class
+SystemConfigController {
     
     private final SystemConfigService systemConfigService;
     

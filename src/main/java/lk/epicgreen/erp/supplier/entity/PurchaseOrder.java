@@ -61,6 +61,9 @@ public class PurchaseOrder {
     
     @Column(name = "discount_amount", precision = 15, scale = 2)
     private BigDecimal discountAmount;
+
+    @Column
+    private double balance;
     
     @Column(name = "tax_percentage", precision = 5, scale = 2)
     private BigDecimal taxPercentage;

@@ -11,4 +11,10 @@ import java.util.List;
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
     @Query("SELECT s FROM PurchaseOrder s WHERE s.poStatus='PENDING' ")
     List<PurchaseOrder> findallByStatusPending();
+
+    List<PurchaseOrder> findBySupplierIdAndPoStatusIn(Long supplierId,List<String> poStatus);
+
+    List<PurchaseOrder> findAllByPoStatus(String status);
+
+    List<PurchaseOrder> findBySupplierId(Long id);
 }

@@ -19,6 +19,7 @@ public class PurchaseOrderDTO {
     private LocalDate expectedDeliveryDate;
     private LocalDate poDate;
     private String poStatus;
+    private double balance;
     private BigDecimal totalAmount;
     private List<PurchaseOrderItem> items;
 }

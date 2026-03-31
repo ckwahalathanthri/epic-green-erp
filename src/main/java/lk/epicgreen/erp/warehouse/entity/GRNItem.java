@@ -96,8 +96,8 @@ public class GRNItem {
     @PrePersist
     @PreUpdate
     public void calculate() {
-        if (receivedQuantity != null && rejectedQuantity != null) {
-            acceptedQuantity = receivedQuantity.subtract(rejectedQuantity);
+        if (orderedQuantity!= null && rejectedQuantity != null) {
+            acceptedQuantity = orderedQuantity.subtract(rejectedQuantity);
         }
         if (acceptedQuantity != null && unitPrice != null) {
             totalValue = acceptedQuantity.multiply(unitPrice);
