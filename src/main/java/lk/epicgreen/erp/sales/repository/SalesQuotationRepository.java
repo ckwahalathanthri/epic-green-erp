@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface SalesQuotationRepository extends JpaRepository<SalesQuotation, Long> {
     
     Optional<SalesQuotation> findByQuotationNumber(String quotationNumber);
+
+    List<SalesQuotation> findByQuotationStatusNotInAndValidUntilLessThan(List<String> status, LocalDate date);
     
     List<SalesQuotation> findByCustomerId(Long customerId);
     

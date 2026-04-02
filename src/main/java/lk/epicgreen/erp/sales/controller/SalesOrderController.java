@@ -65,7 +65,7 @@ public class SalesOrderController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER', 'ACCOUNTANT', 'USER')")
     public ResponseEntity<ApiResponse<SalesOrderResponse>> getSalesOrderById(@PathVariable Long id) {
         SalesOrderResponse order = salesOrderService.getSalesOrderById(id);
         return ResponseEntity.ok(ApiResponse.success(order, "Sales order retrieved successfully"));
