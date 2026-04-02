@@ -4,6 +4,8 @@ package lk.epicgreen.erp.sales.controller;
 import lk.epicgreen.erp.sales.dto.response.SalesQuotationDTO;
 import lk.epicgreen.erp.sales.service.impl.SalesQuotationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,8 +22,8 @@ public class SalesQuotationController {
     
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP')")
-    public ResponseEntity<List<SalesQuotationDTO>> getAllQuotations() {
-        return ResponseEntity.ok(quotationService.getAllQuotations());
+    public ResponseEntity<Page<SalesQuotationDTO>> getAllQuotations(Pageable pageable) {
+        return ResponseEntity.ok(quotationService.getAllQuotations(pageable));
     }
     
     @GetMapping("/{id}")

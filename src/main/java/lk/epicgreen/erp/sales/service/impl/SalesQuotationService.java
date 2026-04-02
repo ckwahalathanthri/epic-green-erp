@@ -7,6 +7,8 @@ import lk.epicgreen.erp.sales.mapper.SalesQuotationMapper;
 import lk.epicgreen.erp.sales.repository.OrderStatusHistoryRepository;
 import lk.epicgreen.erp.sales.repository.SalesQuotationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -26,10 +28,9 @@ public class SalesQuotationService {
     /**
      * Get all quotations
      */
-    public List<SalesQuotationDTO> getAllQuotations() {
-        return quotationRepository.findAll().stream()
-            .map(quotationMapper::toDTO)
-            .collect(Collectors.toList());
+    public Page<SalesQuotationDTO> getAllQuotations(Pageable pageable) {
+        return quotationRepository.findAll(pageable)
+            .map(quotationMapper::toDTO);
     }
     
     /**
@@ -77,17 +78,15 @@ public class SalesQuotationService {
             quotationDTO.setQuotationNumber(generateQuotationNumber());
         }
         
-        // Set default values
-        if (quotationDTO.getQuotationStatus() == null) {
-            quotationDTO.setQuotationStatus("DRAFT");
-        }
+
         
         if (quotationDTO.getQuotationDate() == null) {
             quotationDTO.setQuotationDate(LocalDate.now());
         }
-        System.out.println(quotationDTO);
+
 
         SalesQuotation quotation = quotationMapper.toEntity(quotationDTO);
+        quotation.setQuotationStatus("CREATED");
         SalesQuotation savedQuotation = quotationRepository.save(quotation);
         
         return quotationMapper.toDTO(savedQuotation);

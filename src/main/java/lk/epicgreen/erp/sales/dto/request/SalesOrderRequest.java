@@ -50,6 +50,8 @@ public class SalesOrderRequest {
 
     private Long salesRepId;
 
+    private Long quotationId;
+
     @Pattern(regexp = "^(REGULAR|URGENT|ADVANCE_ORDER)$", 
              message = "Order type must be one of: REGULAR, URGENT, ADVANCE_ORDER")
     private String orderType;

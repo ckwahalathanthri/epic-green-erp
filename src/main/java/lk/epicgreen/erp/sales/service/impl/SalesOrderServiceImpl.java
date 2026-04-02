@@ -5,10 +5,12 @@ import lk.epicgreen.erp.sales.dto.request.SalesOrderItemRequest;
 import lk.epicgreen.erp.sales.dto.response.SalesOrderResponse;
 import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.entity.SalesOrderItem;
+import lk.epicgreen.erp.sales.entity.SalesQuotation;
 import lk.epicgreen.erp.sales.mapper.SalesOrderMapper;
 import lk.epicgreen.erp.sales.mapper.SalesOrderItemMapper;
 import lk.epicgreen.erp.sales.repository.SalesOrderRepository;
 import lk.epicgreen.erp.sales.repository.SalesOrderItemRepository;
+import lk.epicgreen.erp.sales.repository.SalesQuotationRepository;
 import lk.epicgreen.erp.sales.service.SalesOrderService;
 import lk.epicgreen.erp.customer.entity.Customer;
 import lk.epicgreen.erp.customer.entity.CustomerAddress;
@@ -61,6 +63,7 @@ import java.util.stream.Collectors;
 public class SalesOrderServiceImpl implements SalesOrderService {
 
     private final SalesOrderRepository salesOrderRepository;
+    private final SalesQuotationRepository salesQuotationRepository;
     private final SalesOrderItemRepository salesOrderItemRepository;
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository customerAddressRepository;
@@ -76,7 +79,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
     @Transactional
     public SalesOrderResponse createSalesOrder(SalesOrderRequest request) {
         log.info("Creating new Sales Order: {}", request.getOrderNumber());
-
+        SalesQuotation salesQuotation;
         // Validate unique constraint
         validateUniqueOrderNumber(request.getOrderNumber(), null);
 
@@ -90,6 +93,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         SalesOrder order = salesOrderMapper.toEntity(request);
         order.setCustomer(customer);
         order.setWarehouse(warehouse);
+
 
         // Set addresses
         if (request.getBillingAddressId() != null) {
@@ -107,6 +111,15 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             User salesRep = findUserById(request.getSalesRepId());
             order.setSalesRep(salesRep);
         }
+
+        if(request.getQuotationId() != null){
+            salesQuotation=salesQuotationRepository.findById(request.getQuotationId())
+                    .orElseThrow(()->new ResourceNotFoundException("Sales Quotation not found: "+request.getQuotationId()));
+            salesQuotation.setQuotationStatus("CONVERTED");
+                salesQuotationRepository.save(salesQuotation);
+
+        }
+        order.setStatus("CONFIRMED");
 
         // Create order items
         List<SalesOrderItem> items = new ArrayList<>();

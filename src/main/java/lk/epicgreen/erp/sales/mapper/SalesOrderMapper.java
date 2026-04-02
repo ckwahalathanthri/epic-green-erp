@@ -35,9 +35,9 @@ public class SalesOrderMapper {
             .customerPoDate(request.getCustomerPoDate())
             .orderType(request.getOrderType() != null ? request.getOrderType() : "REGULAR")
             .status(request.getStatus() != null ? request.getStatus() : "DRAFT")
+
             .paymentMode(request.getPaymentMode())
                 .subtotal(request.getSubtotal() !=null?request.getSubtotal():BigDecimal.ZERO)
-                .totalAmount(request.getTotalAmount() != null ? request.getTotalAmount() : BigDecimal.ZERO)
             .deliveryMode(request.getDeliveryMode() != null ? request.getDeliveryMode() : "COMPANY_DELIVERY")
             .expectedDeliveryDate(request.getExpectedDeliveryDate())
             .subtotal(request.getSubtotal() != null ? request.getSubtotal() : BigDecimal.ZERO)

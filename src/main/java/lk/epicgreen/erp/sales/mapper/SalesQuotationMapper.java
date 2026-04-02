@@ -36,6 +36,7 @@ public class SalesQuotationMapper {
         entity.setQuotationDate(dto.getQuotationDate());
         entity.setCustomerId(dto.getCustomerId());
         entity.setCustomerName(dto.getCustomerName());
+        entity.setValidUntil(dto.getValidUntil());
         entity.setDiscountAmount(dto.getDiscountAmount());
         entity.setSubtotal(dto.getSubtotal());
         entity.setTotalAmount(dto.getTotalAmount());
