@@ -5,20 +5,27 @@ import lk.epicgreen.erp.product.entity.Product;
 import lk.epicgreen.erp.product.repository.ProductRepository;
 import lk.epicgreen.erp.product.service.impl.ProductServiceImpl;
 import lk.epicgreen.erp.sales.dto.response.DispatchDTO;
+import lk.epicgreen.erp.sales.dto.response.DispatchItemDTO;
 import lk.epicgreen.erp.sales.entity.Dispatch;
 import lk.epicgreen.erp.sales.entity.DispatchItem;
 import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.entity.SalesOrderItem;
 import lk.epicgreen.erp.sales.repository.SalesOrderRepository;
+import lk.epicgreen.erp.warehouse.entity.Inventory;
+import lk.epicgreen.erp.warehouse.repository.InventoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
 public class DispatchMapper {
     @Autowired
     private ProductRepository productRepository;
+    private InventoryRepository inventoryRepository;
 
     @Autowired
     private SalesOrderRepository salesOrderRepository;
@@ -50,7 +57,8 @@ public class DispatchMapper {
         return dto;
     }
     
-    public Dispatch toEntity(DispatchDTO dto) {
+    public Dispatch
+    toEntity(DispatchDTO dto) {
         if (dto == null) return null;
         
         Dispatch entity = new Dispatch();
@@ -60,8 +68,10 @@ public class DispatchMapper {
         entity.setOrderNumber(dto.getOrderNumber());
         entity.setCustomerId(dto.getCustomerId());
         entity.setCustomerName(dto.getCustomerName());
+        entity.setDispatchDate(dto.getDispatchDate());
+        entity.setDispatchedAt(dto.getDispatchedAt());
         entity.setShippingAddress(dto.getShippingAddress());
-        entity.setDispatchStatus(dto.getDispatchStatus());
+        entity.setDispatchStatus("DISPATCHED");
         entity.setDispatchType(dto.getDispatchType());
         entity.setVehicleId(dto.getVehicleId());
         entity.setVehicleNumber(dto.getVehicleNumber());
@@ -75,9 +85,18 @@ public class DispatchMapper {
         entity.setTrackingNumber(dto.getTrackingNumber());
         entity.setRouteDetails(dto.getRouteDetails());
         entity.setNotes(dto.getNotes());
+        List<Long> productIds = dto.getItems().stream()
+            .map(DispatchItemDTO::getProductId)
+            .collect(Collectors.toList());
+        System.out.println("The product ids are "+productIds.get(0).toString());
+        List<Inventory> inventories = inventoryRepository.findByProductIdIn(productIds);
+        AtomicInteger inventoryIndex = new AtomicInteger(0);
+
         entity.setItems(dto.getItems().stream().map(itemDto->{
             DispatchItem dispatchItem=new DispatchItem();
             Product product= productRepository.findById(itemDto.getProductId()).orElse(null);
+            BigDecimal quantityAvailable=inventories.get(inventoryIndex.get()).getQuantityAvailable();
+            inventories.get(inventoryIndex.getAndIncrement()).setQuantityAvailable((quantityAvailable.subtract(itemDto.getDispatchedQuantity())));
             SalesOrder salesOrder=salesOrderRepository.findById(dto.getOrderId()).orElse(null);
 
             dispatchItem.setProduct(product);
@@ -87,6 +106,7 @@ public class DispatchMapper {
             dispatchItem.setDispatch(entity);
             return dispatchItem;
         }).collect(Collectors.toList()));
+        inventoryRepository.saveAll(inventories);
         return entity;
     }
     

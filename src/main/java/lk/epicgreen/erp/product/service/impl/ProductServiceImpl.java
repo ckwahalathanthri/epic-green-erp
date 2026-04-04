@@ -13,6 +13,10 @@ import lk.epicgreen.erp.admin.repository.UnitOfMeasureRepository;
 import lk.epicgreen.erp.common.exception.ResourceNotFoundException;
 import lk.epicgreen.erp.common.exception.DuplicateResourceException;
 import lk.epicgreen.erp.common.dto.PageResponse;
+import lk.epicgreen.erp.warehouse.entity.Inventory;
+import lk.epicgreen.erp.warehouse.entity.Warehouse;
+import lk.epicgreen.erp.warehouse.repository.InventoryRepository;
+import lk.epicgreen.erp.warehouse.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,6 +46,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCategoryRepository productCategoryRepository;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
     private final ProductMapper productMapper;
+    private final InventoryRepository inventoryRepository;
+    private final WarehouseRepository warehouseRepository;
 
     @Override
     @Transactional
@@ -76,13 +82,32 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.getCategoryId()));
             product.setCategory(category);
         }
+        Product savedProduct = productRepository.save(product);
+
+        log.info("Product created successfully: {}", savedProduct.getProductCode());
+
+        if(product.getProductType().equals("FINISHED_GOOD")){
+            Warehouse warehouse=warehouseRepository.findById(1L).orElseThrow(()->new ResourceNotFoundException("Warehouse not found with ID: 1"));
+            Inventory inventory=inventoryRepository.findByProductIdOrProductProductName(product.getId(), product.getProductName())
+                    .orElseGet(() -> {
+                        Inventory newInventory = new Inventory();
+                        newInventory.setWarehouse(warehouse);
+                        newInventory.setProduct(product);
+                         newInventory.setQuantityAvailable(BigDecimal.valueOf(0));
+                        return newInventory;
+                    });
+            inventory.receive(product.getMaximumStockLevel());
+
+            inventory.setUnitCost(null);
+            inventory.setLocation(null);
+
+            inventoryRepository.save(inventory);
+        }
 
         // Set base UOM
 //        UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
 //            .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found: " + request.getBaseUomId()));
 //        product.setBaseUom(baseUom);
-        Product savedProduct = productRepository.save(product);
-        log.info("Product created successfully: {}", savedProduct.getProductCode());
 
         return productMapper.toResponse(savedProduct);
     }

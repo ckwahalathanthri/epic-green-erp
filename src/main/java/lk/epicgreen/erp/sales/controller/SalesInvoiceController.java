@@ -21,6 +21,11 @@ public class SalesInvoiceController {
     public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
         return ResponseEntity.ok(invoiceService.getAllInvoices());
     }
+
+//    @GetMapping
+//    public ResponseEntity<List<SalesInvoice>> getInvoiceByOrderStatus(){
+//        return ResponseEntity.ok(invoiceService.getInvoiceByOrderStatus());
+//    }
     
     @GetMapping("/{id}")
     public ResponseEntity<SalesInvoice> getInvoiceById(@PathVariable Long id) {

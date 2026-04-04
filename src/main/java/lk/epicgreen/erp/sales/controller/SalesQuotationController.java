@@ -80,4 +80,9 @@ public class SalesQuotationController {
     public ResponseEntity<List<SalesQuotationDTO>> getExpiredQuotations() {
         return ResponseEntity.ok(quotationService.getExpiredQuotations());
     }
+
+    @GetMapping("/created/quotations")
+    public ResponseEntity<List<SalesQuotationDTO>> getCreatedQuotations() {
+        return ResponseEntity.ok(quotationService.getCreatedQuotations());
+    }
 }

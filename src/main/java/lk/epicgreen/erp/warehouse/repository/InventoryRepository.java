@@ -42,6 +42,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
      */
     List<Inventory> findByWarehouseId(Long warehouseId);
 
+
+    Inventory findByProduct(Long productId);
     List<Inventory> findByProductIdIn(List<Long> productIds);
     
     /**
@@ -52,8 +54,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     /**
      * Find all inventory for a product
      */
-    List<Inventory> findByProductId(Long productId);
-    
+    Optional<Inventory> findByProductIdOrProductProductName(Long productId, String productName);
+
+    @Query("SELECT i FROM Inventory i WHERE i.product.id = :productId")
+    List<Inventory> findInventiryByProductId(Long productId);
+
+//    List<Inventory> findByProductIdIn(List<Long> productIds);
+
     /**
      * Find all inventory for a product with pagination
      */

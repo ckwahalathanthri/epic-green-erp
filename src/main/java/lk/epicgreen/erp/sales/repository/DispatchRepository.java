@@ -12,4 +12,5 @@ public interface DispatchRepository extends JpaRepository<Dispatch, Long> {
     List<Dispatch> findByOrderId(Long orderId);
     List<Dispatch> findByDispatchStatus(String status);
     List<Dispatch> findByVehicleId(Long vehicleId);
+    List<Dispatch> findByDispatchStatusAndExpectedDeliveryDateLessThan(String status, java.time.LocalDate date);
 }

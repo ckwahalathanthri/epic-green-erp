@@ -1,12 +1,15 @@
 package lk.epicgreen.erp.sales.service.impl;
 
 import lk.epicgreen.erp.sales.entity.SalesInvoice;
+import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.repository.SalesInvoiceRepository;
+import lk.epicgreen.erp.sales.repository.SalesOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +17,7 @@ import java.util.List;
 public class SalesInvoiceService {
     
     private final SalesInvoiceRepository invoiceRepository;
+    private final SalesOrderRepository orderRepository;
     
     public List<SalesInvoice> getAllInvoices() {
         return invoiceRepository.findAll();
@@ -25,12 +29,22 @@ public class SalesInvoiceService {
     }
     
     public SalesInvoice createInvoice(SalesInvoice invoice) {
+        SalesOrder salesOrder=orderRepository.findById(invoice.getOrderId())
+                .orElseThrow(()->new RuntimeException("Sales Order not found: "+invoice.getOrderId()));
         if (invoice.getInvoiceNumber() == null) {
             invoice.setInvoiceNumber(generateInvoiceNumber());
         }
         if(invoice.getItems()!=null){
             invoice.getItems().forEach(item->item.setInvoice(invoice));
         }
+
+        if(!Objects.equals(invoice.getInvoiceStatus(), "Sent") && !Objects.equals(salesOrder.getStatus(), "Invoiced")){
+            invoice.setInvoiceStatus("Sent");
+            salesOrder.setStatus("Invoiced");
+        }else {
+            throw new RuntimeException("Invoice status must be 'Sent' to update order status to 'Invoiced'");
+        }
+        orderRepository.save(salesOrder);
         return invoiceRepository.save(invoice);
     }
     
@@ -72,4 +86,6 @@ public class SalesInvoiceService {
         long count = invoiceRepository.count() + 1;
         return String.format("INV-%s-%04d", LocalDate.now().getYear(), count);
     }
+
+
 }

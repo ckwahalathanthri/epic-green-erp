@@ -3,13 +3,17 @@ package lk.epicgreen.erp.sales.service.impl;
 
 import lk.epicgreen.erp.sales.dto.response.DispatchDTO;
 import lk.epicgreen.erp.sales.entity.Dispatch;
+import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.mapper.DispatchMapper;
 import lk.epicgreen.erp.sales.repository.DispatchRepository;
+import lk.epicgreen.erp.sales.repository.SalesOrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +23,7 @@ public class DispatchService {
     
     private final DispatchRepository dispatchRepository;
     private final DispatchMapper dispatchMapper;
+    private final SalesOrderRepository orderRepository;
     
     public List<DispatchDTO> getAllDispatches() {
         return dispatchRepository.findAll().stream()
@@ -49,9 +54,9 @@ public class DispatchService {
             dispatchDTO.setDispatchNumber(generateDispatchNumber());
         }
         
-        if (dispatchDTO.getDispatchStatus() == null) {
-            dispatchDTO.setDispatchStatus("PLANNED");
-        }
+//        if (dispatchDTO.getDispatchStatus() == null) {
+//            dispatchDTO.setDispatchStatus("PLANNED");
+//        }
         
         if (dispatchDTO.getDispatchDate() == null) {
             dispatchDTO.setDispatchDate(LocalDate.now());
@@ -59,9 +64,37 @@ public class DispatchService {
         System.out.println("The data accesed  is "+dispatchDTO);
         
         Dispatch dispatch = dispatchMapper.toEntity(dispatchDTO);
+        dispatch.setExpectedDeliveryDate(LocalDate.now().minusDays(1));
         Dispatch savedDispatch = dispatchRepository.save(dispatch);
-        
+
+        SalesOrder order = orderRepository.findById(savedDispatch.getOrderId())
+            .orElseThrow(() -> new RuntimeException("Sales Order not found with id: " + savedDispatch.getOrderId()));
+
+
+        order.setDeliveryStatus("DISPATCHED");
+        order.setStatus("DISPATCHED");
+        orderRepository.save(order);
         return dispatchMapper.toDTO(savedDispatch);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void makeDelivered(){
+        List<Dispatch> inTransitDispatches=dispatchRepository.findByDispatchStatusAndExpectedDeliveryDateLessThan("DISPATCHED", LocalDate.now());
+        List<Long> orderIds=inTransitDispatches.stream().map(Dispatch::getOrderId).collect(Collectors.toList());
+        System.out.println("The order ids are "+orderIds.size());
+        Map<Long,SalesOrder> ordersMap=orderRepository.findAllById(orderIds).stream().collect(Collectors.toMap(SalesOrder::getId,order->order));
+        for(Dispatch inTransitDispatch:inTransitDispatches){
+            ordersMap.get(inTransitDispatch.getOrderId()).setDeliveryStatus("DELIVERED");
+            ordersMap.get(inTransitDispatch.getOrderId()).setStatus("DELIVERED");
+            inTransitDispatch.markDelivered("System");
+            inTransitDispatch.setDispatchStatus("DELIVERED");
+
+        }
+        orderRepository.saveAll(ordersMap.values());
+        dispatchRepository.saveAll(inTransitDispatches);
+
+
     }
     
     public DispatchDTO updateDispatch(Long id, DispatchDTO dispatchDTO) {

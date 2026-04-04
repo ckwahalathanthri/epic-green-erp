@@ -2,6 +2,7 @@ package lk.epicgreen.erp.sales.service.impl;
 
 import lk.epicgreen.erp.sales.dto.request.SalesOrderRequest;
 import lk.epicgreen.erp.sales.dto.request.SalesOrderItemRequest;
+import lk.epicgreen.erp.sales.dto.response.SalesOrderDTO;
 import lk.epicgreen.erp.sales.dto.response.SalesOrderResponse;
 import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.entity.SalesOrderItem;
@@ -137,6 +138,24 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return salesOrderMapper.toResponse(savedOrder);
     }
 
+    public List<SalesOrderResponse> getNotInvoicedOrders(){
+        log.info("Retrieving Sales Orders that are not invoiced");
+
+        List<SalesOrder> orders = salesOrderRepository.findByStatusNot("INVOICED");
+
+        log.info("Retrieved {} Sales Orders that are not invoiced", orders.size());
+        return orders.stream().map(salesOrderMapper::toResponse).collect(Collectors.toList());
+    }
+    public List<SalesOrderResponse> getInvoicedOrders(){
+        log.info("Retrieving Sales Orders that are invoiced");
+        List<String> statuses=new ArrayList<>();
+        statuses.add("INVOICED");
+        List<SalesOrder> orders = salesOrderRepository.findByStatusIn(statuses);
+
+        log.info("Retrieved {} Sales Orders that are invoiced", orders.size());
+        return orders.stream().map(salesOrderMapper::toResponse).collect(Collectors.toList());
+    }
+
     @Override
     @Transactional
     public SalesOrderResponse updateSalesOrder(Long id, SalesOrderRequest request) {
@@ -214,10 +233,13 @@ public class SalesOrderServiceImpl implements SalesOrderService {
     }
 
     private SalesOrderItem createOrderItem(SalesOrderItemRequest itemRequest) {
-        SalesOrderItem item = salesOrderItemMapper.toEntity(itemRequest);
-
-        // Verify product exists
         Product product = findProductById(itemRequest.getProductId());
+
+        if(!product.getProductType().equals("FINISHED_GOOD")){
+            throw new InvalidOperationException("Only finished goods can be added to sales orders. Product ID: " + product.getId());
+        }
+
+        SalesOrderItem item = salesOrderItemMapper.toEntity(itemRequest);
         item.setProduct(product);
 
 //        UnitOfMeasure uom=unitOfMeasureRepository.findById(itemRequest.getUomId()).get();
@@ -484,10 +506,10 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return orders;
     }
     @Transactional
-    public  List<SalesOrder> getConfirmedOrders(){
+    public  List<SalesOrderResponse> getConfirmedOrders(){
         log.info("Retrieving CONFIRMED Sales Orders");
 
-        List<SalesOrder> orders = salesOrderRepository.findByStatus("CONFIRMED");
+        List<SalesOrderResponse> orders = salesOrderRepository.findByStatus("CONFIRMED").stream().map(salesOrderMapper::toResponse).collect(Collectors.toList());
 
         log.info("Retrieved {} CONFIRMED Sales Orders", orders.size());
         return orders;

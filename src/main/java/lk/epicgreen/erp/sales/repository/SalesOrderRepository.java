@@ -44,6 +44,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
      * Find all orders for a customer
      */
     List<SalesOrder> findByCustomerId(Long customerId);
+
+    List<SalesOrder> findByStatusIn(List<String> statuses);
     
     /**
      * Find all orders for a customer with pagination
@@ -365,4 +367,6 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, J
 
 @Query("SELECT AVG(so.totalAmount) FROM SalesOrder so")
     Optional<Double> averageOrderValue();
+
+    List<SalesOrder> findByStatusNot(String status);
 }
