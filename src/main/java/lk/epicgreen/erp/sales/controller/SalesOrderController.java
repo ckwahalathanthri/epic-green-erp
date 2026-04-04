@@ -4,6 +4,7 @@ import lk.epicgreen.erp.common.dto.ApiResponse;
 
 import lk.epicgreen.erp.common.dto.PageResponse;
 import lk.epicgreen.erp.sales.dto.request.SalesOrderRequest;
+import lk.epicgreen.erp.sales.dto.response.SalesOrderDTO;
 import lk.epicgreen.erp.sales.dto.response.SalesOrderResponse;
 import lk.epicgreen.erp.sales.entity.SalesOrder;
 import lk.epicgreen.erp.sales.service.SalesOrderService;
@@ -210,9 +211,9 @@ public class SalesOrderController {
     }
     
     @GetMapping("/confirmed")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
-    public ResponseEntity<ApiResponse<List<SalesOrder>>> getConfirmedOrders() {
-        List<SalesOrder> orders = salesOrderService.getConfirmedOrders();
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
+    public ResponseEntity<ApiResponse<List<SalesOrderResponse>>> getConfirmedOrders() {
+        List<SalesOrderResponse> orders = salesOrderService.getConfirmedOrders();
         return ResponseEntity.ok(ApiResponse.success(orders, "Confirmed orders retrieved successfully"));
     }
     
@@ -243,7 +244,21 @@ public class SalesOrderController {
         List<SalesOrder> orders = salesOrderService.getOrdersPendingApproval();
         return ResponseEntity.ok(ApiResponse.success(orders, "Orders pending approval retrieved successfully"));
     }
-    
+
+    @GetMapping("/Orders")
+    public ResponseEntity<List<SalesOrderResponse>> getNotInvoicedOrders() {
+        List<SalesOrderResponse> orders = salesOrderService.getNotInvoicedOrders();
+        return ResponseEntity.ok(orders);
+    }
+
+
+
+
+    @GetMapping("/invoiced/orders")
+    public ResponseEntity<List<SalesOrderResponse>> getInvoicedOrders() {
+        List<SalesOrderResponse> orders = salesOrderService.getInvoicedOrders();
+        return ResponseEntity.ok(orders);
+    }
     @GetMapping("/pending-dispatch")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<ApiResponse<List<SalesOrder>>> getOrdersPendingDispatch() {
@@ -271,6 +286,8 @@ public class SalesOrderController {
         List<SalesOrder> orders = salesOrderService.getOverdueDeliveries();
         return ResponseEntity.ok(ApiResponse.success(orders, "Overdue deliveries retrieved successfully"));
     }
+
+
     
     @GetMapping("/high-priority")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_REP', 'WAREHOUSE_MANAGER')")

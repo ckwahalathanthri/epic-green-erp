@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -225,7 +226,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public List<InventoryResponse> getInventoryByProduct(Long productId) {
-        List<Inventory> inventories = inventoryRepository.findByProductId(productId);
+        List<Inventory> inventories = inventoryRepository.findInventiryByProductId(productId);
         return inventories.stream()
             .map(inventoryMapper::toResponse)
             .collect(Collectors.toList());

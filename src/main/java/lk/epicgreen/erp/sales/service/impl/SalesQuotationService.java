@@ -186,4 +186,10 @@ public class SalesQuotationService {
         long count = quotationRepository.count() + 1;
         return String.format("QT-%s-%04d", year, count);
     }
+
+    public List<SalesQuotationDTO> getCreatedQuotations() {
+        return quotationRepository.findByQuotationStatus("CREATED").stream()
+                .map(quotationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
 }

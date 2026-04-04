@@ -179,7 +179,7 @@ public interface SalesOrderService {
 
     List<SalesOrder>getPendingOrders();
 
-    List<SalesOrder> getConfirmedOrders();
+    List<SalesOrderResponse> getConfirmedOrders();
     List<SalesOrder> getProcessingOrders();
 
     List<SalesOrder> getCompletedOrders();
@@ -231,4 +231,8 @@ public interface SalesOrderService {
     List<SalesOrder> getOverdueDeliveries();
 
     SalesOrder rejectSalesOrder(Long id, String rejectionReason);
+
+    List<SalesOrderResponse> getNotInvoicedOrders();
+
+    List<SalesOrderResponse> getInvoicedOrders();
 }
