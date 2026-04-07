@@ -1,15 +1,26 @@
 package lk.epicgreen.erp.sales.mapper;
 
 
+import lk.epicgreen.erp.product.entity.Product;
+import lk.epicgreen.erp.product.repository.ProductRepository;
 import lk.epicgreen.erp.sales.dto.response.SalesQuotationDTO;
+import lk.epicgreen.erp.sales.dto.response.SalesQuotationItemDTO;
 import lk.epicgreen.erp.sales.entity.SalesQuotation;
 import lk.epicgreen.erp.sales.entity.SalesQuotationItem;
+import lk.epicgreen.erp.warehouse.entity.Inventory;
+import lk.epicgreen.erp.warehouse.repository.InventoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
 public class SalesQuotationMapper {
+
+    @Autowired
+    InventoryRepository inventoryRepository;
     
     public SalesQuotationDTO toDTO(SalesQuotation entity) {
         if (entity == null) return null;
@@ -48,10 +59,16 @@ public class SalesQuotationMapper {
         entity.setTermsAndConditions(dto.getTermsAndConditions());
         entity.setNotes(dto.getNotes());
         entity.setQuotationStatus(dto.getQuotationStatus());
+        List<Long> productIds=dto.getItems().stream().map(SalesQuotationItemDTO::getProductId).collect(Collectors.toList());
+        List<Inventory> inventories=inventoryRepository.findAllByProductIdIn(productIds);
+        AtomicInteger lineNumberCounter=new AtomicInteger(0);
         if(dto.getItems()!=null){
             entity.setItems(dto.getItems().stream()
                     .map(itemDto->{
                         SalesQuotationItem item= new SalesQuotationItem();
+                        if(itemDto.getQuantity().compareTo(inventories.get(lineNumberCounter.getAndIncrement()).getQuantityAvailable())>0){
+                            throw new RuntimeException("Insufficient stock for product ID: "+itemDto.getProductId());
+                        }
                         item.setLineTotal(itemDto.getLineTotal());
                         item.setProductId(itemDto.getProductId());
                         item.setProductName(itemDto.getProductName());

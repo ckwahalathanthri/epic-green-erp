@@ -49,67 +49,195 @@ public class ProductServiceImpl implements ProductService {
     private final InventoryRepository inventoryRepository;
     private final WarehouseRepository warehouseRepository;
 
+
+    private Product searchByProductName(ProductRequest request){
+        return productRepository.findByProductNameAndProductType(request.getProductName().toUpperCase(), request.getProductType())
+                 .orElseGet(() -> {
+                     try {
+                         return productMapper.toEntity(request);
+                     } catch (Exception e) {
+                         log.error("Error mapping product request to entity: {}", request.getProductCode(), e);
+                         throw new RuntimeException("Failed to map product request to entity", e);
+                     }
+                 });
+    }
+
     @Override
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
-        log.info("Creating new product: {}", request.getProductCode());
+        try {
+            log.info("Creating new product: {}", request.getProductCode());
 
-        // Validate unique constraints
-//        validateUniqueProductCode(request.getProductCode(), null);
-//
-//        if (request.getBarcode() != null) {
-//            validateUniqueBarcode(request.getBarcode(), null);
-//        }
-//
-//        if (request.getSku() != null) {
-//            validateUniqueSku(request.getSku(), null);
-//        }
+            // Validate unique constraints
+            //        validateUniqueProductCode(request.getProductCode(), null);
+            //
+            //        if (request.getBarcode() != null) {
+            //            validateUniqueBarcode(request.getBarcode(), null);
+            //        }
+            //
+            //        if (request.getSku() != null) {
+            //            validateUniqueSku(request.getSku(), null);
+            //        }
 
-        // Create product entity
-        Product product = productMapper.toEntity(request);
+            //  finished good which has the same product name should be updated or created a new one
+            //and the inventory should be updated with the maximum stock level of the product
 
-        UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found with ID: " + request.getBaseUomId()));
+            Product product;
 
-        System.out.println("The base uom is "+ baseUom.getId());
-        product.setBaseUom(baseUom);
 
-        System.out.println("Base uom from product is "+ product.getBaseUom().getUomName());
+            if(request.getProductType().equals("FINISHED_GOOD")){
+                try {
+                    product = searchByProductName(request)
+;
+                } catch (Exception e) {
+                    log.error("Error finding or creating finished good product: {}", request.getProductName(), e);
+                    throw new RuntimeException("Failed to find or create product", e);
+                }
 
-        // Set category if provided
-        if (request.getCategoryId() != null) {
-            ProductCategory category = productCategoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.getCategoryId()));
-            product.setCategory(category);
+                BigDecimal previousMaxStock = product.getMaximumStockLevel() != null ? product.getMaximumStockLevel() : BigDecimal.ZERO;
+                
+                if(product.getBaseUom()==null){
+                    try {
+                        UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found with ID: " + request.getBaseUomId()));
+                        product.setBaseUom(baseUom);
+                    } catch (ResourceNotFoundException e) {
+                        log.error("Unit of measure not found with ID: {}", request.getBaseUomId(), e);
+                        throw e;
+                    } catch (Exception e) {
+                        log.error("Error retrieving unit of measure for ID: {}", request.getBaseUomId(), e);
+                        throw new RuntimeException("Failed to retrieve unit of measure", e);
+                    }
+
+                    if (request.getCategoryId() != null) {
+                        try {
+                            ProductCategory category = productCategoryRepository.findById(request.getCategoryId())
+                                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.getCategoryId()));
+                            product.setCategory(category);
+                        } catch (ResourceNotFoundException e) {
+                            log.error("Category not found with ID: {}", request.getCategoryId(), e);
+                            throw e;
+                        } catch (Exception e) {
+                            log.error("Error retrieving category with ID: {}", request.getCategoryId(), e);
+                            throw new RuntimeException("Failed to retrieve category", e);
+                        }
+                    }
+                }
+                
+                // Update the product's maximum stock level from the request
+                product.setMaximumStockLevel(request.getMaximumStockLevel());
+                
+                Product savedProduct;
+                try {
+                    savedProduct = productRepository.save(product);
+                    log.info("Product created successfully: {}", savedProduct.getProductCode());
+                } catch (Exception e) {
+                    log.error("Error saving product: {}", request.getProductCode(), e);
+                    throw new RuntimeException("Failed to save product", e);
+                }
+
+                // Handle inventory updates for finished goods
+                try {
+                    Warehouse warehouse = warehouseRepository.findById(1L)
+                            .orElseThrow(()-> new ResourceNotFoundException("Warehouse not found with ID: 1"));
+                    
+                    Inventory inventory;
+                    try {
+                        inventory = inventoryRepository.findByProductIdOrProductProductName(product.getId(), product.getProductName())
+                                .orElseGet(() -> {
+                                    Inventory newInventory = new Inventory();
+                                    newInventory.setWarehouse(warehouse);
+                                    newInventory.setProduct(product);
+                                    newInventory.setQuantityAvailable(BigDecimal.valueOf(0));
+                                    return newInventory;
+                                });
+                    } catch (Exception e) {
+                        log.error("Error finding inventory for product: {}", product.getProductName(), e);
+                        throw new RuntimeException("Failed to find inventory", e);
+                    }
+                    
+                    // Calculate the difference and add only the delta to inventory
+                    BigDecimal stockLevelDifference = savedProduct.getMaximumStockLevel().subtract(previousMaxStock);
+                    if (stockLevelDifference.compareTo(BigDecimal.ZERO) > 0) {
+                        inventory.receive(stockLevelDifference);
+                    }
+
+                    inventory.setUnitCost(null);
+                    inventory.setLocation(null);
+                    
+                    try {
+                        inventoryRepository.save(inventory);
+                        log.info("Inventory updated successfully for product: {}", product.getProductCode());
+                    } catch (Exception e) {
+                        log.error("Error saving inventory for product: {}", product.getProductCode(), e);
+                        throw new RuntimeException("Failed to save inventory", e);
+                    }
+                } catch (ResourceNotFoundException e) {
+                    log.error("Warehouse not found, cannot update inventory", e);
+                    throw e;
+                } catch (Exception e) {
+                    log.error("Error handling inventory for finished good product: {}", product.getProductCode(), e);
+                    throw new RuntimeException("Failed to handle inventory update", e);
+                }
+
+            } else {
+                try {
+                    product = productMapper.toEntity(request);
+                } catch (Exception e) {
+                    log.error("Error mapping product request to entity: {}", request.getProductCode(), e);
+                    throw new RuntimeException("Failed to map product request to entity", e);
+                }
+                
+                try {
+                    UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found with ID: " + request.getBaseUomId()));
+                    product.setBaseUom(baseUom);
+                } catch (ResourceNotFoundException e) {
+                    log.error("Unit of measure not found with ID: {}", request.getBaseUomId(), e);
+                    throw e;
+                } catch (Exception e) {
+                    log.error("Error retrieving unit of measure for ID: {}", request.getBaseUomId(), e);
+                    throw new RuntimeException("Failed to retrieve unit of measure", e);
+                }
+
+                if (request.getCategoryId() != null) {
+                    try {
+                        ProductCategory category = productCategoryRepository.findById(request.getCategoryId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.getCategoryId()));
+                        product.setCategory(category);
+                    } catch (ResourceNotFoundException e) {
+                        log.error("Category not found with ID: {}", request.getCategoryId(), e);
+                        throw e;
+                    } catch (Exception e) {
+                        log.error("Error retrieving category with ID: {}", request.getCategoryId(), e);
+                        throw new RuntimeException("Failed to retrieve category", e);
+                    }
+                }
+                
+                try {
+                    Product savedProduct = productRepository.save(product);
+                    log.info("Product created successfully: {}", savedProduct.getProductCode());
+                } catch (Exception e) {
+                    log.error("Error saving product: {}", request.getProductCode(), e);
+                    throw new RuntimeException("Failed to save product", e);
+                }
+            }
+
+            return productMapper.toResponse(product);
+            
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found while creating product: {}", request.getProductCode(), e);
+            throw e;
+        } catch (DuplicateResourceException e) {
+            log.error("Duplicate resource error while creating product: {}", request.getProductCode(), e);
+            throw e;
+        } catch (RuntimeException e) {
+            log.error("Runtime exception while creating product: {}", request.getProductCode(), e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while creating product: {}", request.getProductCode(), e);
+            throw new RuntimeException("Unexpected error during product creation", e);
         }
-        Product savedProduct = productRepository.save(product);
-
-        log.info("Product created successfully: {}", savedProduct.getProductCode());
-
-        if(product.getProductType().equals("FINISHED_GOOD")){
-            Warehouse warehouse=warehouseRepository.findById(1L).orElseThrow(()->new ResourceNotFoundException("Warehouse not found with ID: 1"));
-            Inventory inventory=inventoryRepository.findByProductIdOrProductProductName(product.getId(), product.getProductName())
-                    .orElseGet(() -> {
-                        Inventory newInventory = new Inventory();
-                        newInventory.setWarehouse(warehouse);
-                        newInventory.setProduct(product);
-                         newInventory.setQuantityAvailable(BigDecimal.valueOf(0));
-                        return newInventory;
-                    });
-            inventory.receive(product.getMaximumStockLevel());
-
-            inventory.setUnitCost(null);
-            inventory.setLocation(null);
-
-            inventoryRepository.save(inventory);
-        }
-
-        // Set base UOM
-//        UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
-//            .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found: " + request.getBaseUomId()));
-//        product.setBaseUom(baseUom);
-
-        return productMapper.toResponse(savedProduct);
     }
 
     @Override
@@ -130,10 +258,10 @@ public class ProductServiceImpl implements ProductService {
             validateUniqueSku(request.getSku(), id);
         }
 
-        // Update fields
+       
         productMapper.updateEntityFromRequest(request, product);
 
-        // Update category if provided
+        
         if (request.getCategoryId() != null) {
             ProductCategory category = productCategoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.getCategoryId()));
@@ -142,7 +270,7 @@ public class ProductServiceImpl implements ProductService {
             product.setCategory(null);
         }
 
-        // Update base UOM
+        
         UnitOfMeasure baseUom = unitOfMeasureRepository.findById(request.getBaseUomId())
             .orElseThrow(() -> new ResourceNotFoundException("Unit of measure not found: " + request.getBaseUomId()));
         product.setBaseUom(baseUom);

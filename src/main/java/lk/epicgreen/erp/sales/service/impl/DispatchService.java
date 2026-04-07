@@ -61,7 +61,7 @@ public class DispatchService {
         if (dispatchDTO.getDispatchDate() == null) {
             dispatchDTO.setDispatchDate(LocalDate.now());
         }
-        System.out.println("The data accesed  is "+dispatchDTO);
+        System.out.println("The data accessed  is "+dispatchDTO);
         
         Dispatch dispatch = dispatchMapper.toEntity(dispatchDTO);
         dispatch.setExpectedDeliveryDate(LocalDate.now().minusDays(1));

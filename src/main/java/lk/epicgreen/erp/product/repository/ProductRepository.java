@@ -456,4 +456,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Modifying
     @Query("UPDATE Product p SET p.category.id = :categoryId WHERE p.id IN :productIds")
     int updateCategoryForProducts(@Param("productIds") List<Long> productIds, @Param("categoryId") ProductCategory category);
+
+    Optional<Product> findByProductNameAndProductType(String productName, String productType);
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 public class DispatchMapper {
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
     private InventoryRepository inventoryRepository;
 
     @Autowired
@@ -88,8 +91,9 @@ public class DispatchMapper {
         List<Long> productIds = dto.getItems().stream()
             .map(DispatchItemDTO::getProductId)
             .collect(Collectors.toList());
+        System.out.println("The product ids are "+ productIds.toString());
         System.out.println("The product ids are "+productIds.get(0).toString());
-        List<Inventory> inventories = inventoryRepository.findByProductIdIn(productIds);
+        List<Inventory> inventories = inventoryRepository.findAllByProductIdIn(productIds);
         AtomicInteger inventoryIndex = new AtomicInteger(0);
 
         entity.setItems(dto.getItems().stream().map(itemDto->{

@@ -24,7 +24,7 @@ public class ProductMapper {
 
         return Product.builder()
             .productCode(request.getProductCode())
-            .productName(request.getProductName())
+            .productName(request.getProductName().toUpperCase())
             .productType(request.getProductType())
             .description(request.getDescription())
             .barcode(request.getBarcode())

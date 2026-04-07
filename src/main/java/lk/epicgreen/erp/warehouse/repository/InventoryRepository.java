@@ -44,12 +44,14 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
 
     Inventory findByProduct(Long productId);
-    List<Inventory> findByProductIdIn(List<Long> productIds);
+    List<Inventory> findByProduct_IdIn(List<Long> productIds);
     
     /**
      * Find all inventory for a warehouse with pagination
      */
     Page<Inventory> findByWarehouseId(Long warehouseId, Pageable pageable);
+
+    List<Inventory> findAllByProductIdIn(List<Long> productIds);
     
     /**
      * Find all inventory for a product
